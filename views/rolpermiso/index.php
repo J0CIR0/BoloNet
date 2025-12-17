@@ -1,11 +1,9 @@
 <?php
 $title = 'Asignar Permisos';
 ?>
-
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Asignar Permisos a Roles</h2>
 </div>
-
 <div class="card">
     <div class="card-header">
         <h4 class="mb-0">Seleccione un Rol</h4>

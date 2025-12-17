@@ -5,7 +5,6 @@ if (!isset($persona) || empty($persona)) {
 }
 $title = 'Editar Persona';
 ?>
-
 <div class="card">
     <div class="card-header">
         <h4 class="mb-0">Editar Persona: <?php echo htmlspecialchars($persona['nombre'] . ' ' . $persona['apellido']); ?></h4>
@@ -22,7 +21,6 @@ $title = 'Editar Persona';
                     <input type="date" name="fecha_nacimiento" class="form-control" value="<?php echo htmlspecialchars($persona['fecha_nacimiento']); ?>" required>
                 </div>
             </div>
-            
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Nombre</label>
@@ -33,7 +31,6 @@ $title = 'Editar Persona';
                     <input type="text" name="apellido" class="form-control" value="<?php echo htmlspecialchars($persona['apellido']); ?>" required>
                 </div>
             </div>
-            
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Género</label>
@@ -48,12 +45,10 @@ $title = 'Editar Persona';
                     <input type="text" name="telefono" class="form-control" value="<?php echo htmlspecialchars($persona['telefono'] ?? ''); ?>">
                 </div>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label">Dirección</label>
                 <textarea name="direccion" class="form-control" rows="2"><?php echo htmlspecialchars($persona['direccion'] ?? ''); ?></textarea>
             </div>
-            
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-success">Actualizar</button>
                 <a href="personas.php" class="btn btn-secondary">Cancelar</a>

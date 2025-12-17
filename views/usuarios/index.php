@@ -1,7 +1,6 @@
 <?php
 $title = 'Usuarios';
 ?>
-
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Usuarios</h2>
     <?php 
@@ -12,7 +11,6 @@ $title = 'Usuarios';
     <a href="usuarios.php?action=create" class="btn btn-success">Nuevo Usuario</a>
     <?php endif; ?>
 </div>
-
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
@@ -47,7 +45,6 @@ $title = 'Usuarios';
                             <?php if($usuarioModel->hasPermission($_SESSION['user_id'], 'editar_usuario')): ?>
                             <a href="usuarios.php?action=edit&id=<?php echo $usuarioItem['id']; ?>" class="btn btn-warning btn-sm">Editar</a>
                             <?php endif; ?>
-                            
                             <?php 
                             $puede_eliminar = false;
                             if($usuarioModel->hasPermission($_SESSION['user_id'], 'eliminar_usuario')) {
@@ -57,7 +54,6 @@ $title = 'Usuarios';
                                     }
                                 }
                             }
-                            
                             if($puede_eliminar): 
                             ?>
                             <a href="usuarios.php?action=delete&id=<?php echo $usuarioItem['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar usuario?')">Eliminar</a>

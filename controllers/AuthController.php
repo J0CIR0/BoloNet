@@ -1,35 +1,28 @@
 <?php
 require_once __DIR__ . '/../config/conexion.php';
-
 class AuthController {
     private $usuario;
-    
     public function __construct() {
         require_once __DIR__ . '/../models/Usuario.php';
         $this->usuario = new Usuario();
     }
-    
     public function login() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $email = $_POST['email'];
             $password = $_POST['password'];
-            
             $user = $this->usuario->findByEmail($email);
-            
             if ($user) {
                 if ($user['estado'] == 0) {
                     $_SESSION['error'] = 'Cuenta no verificada. Revisa tu email.';
                     header('Location: index.php');
                     exit();
                 }
-                
                 if ($password == $user['password']) {
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['user_name'] = $user['persona_nombre'] . ' ' . $user['persona_apellido'];
                     $_SESSION['user_email'] = $user['email'];
                     $_SESSION['user_role'] = $user['rol_nombre'];
                     $_SESSION['role_id'] = $user['rol_id'];
-                    
                     header('Location: dashboard.php');
                     exit();
                 } else {
@@ -39,24 +32,19 @@ class AuthController {
                 $_SESSION['error'] = 'Usuario no encontrado';
             }
         }
-        
         header('Location: index.php');
         exit();
     }
-    
     public function register() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             require_once __DIR__ . '/../models/Email.php';
-            
             $existing = $this->usuario->findByEmail($_POST['email']);
             if ($existing) {
                 $_SESSION['error'] = 'El email ya está registrado';
                 header('Location: register.php');
                 exit();
             }
-            
             $verification_token = bin2hex(random_bytes(32));
-            
             $data = [
                 'ci' => $_POST['ci'],
                 'nombre' => $_POST['nombre'],
@@ -72,17 +60,14 @@ class AuthController {
                 'verification_token' => $verification_token,
                 'token_expires' => date('Y-m-d H:i:s', strtotime('+24 hours'))
             ];
-            
             if ($this->usuario->create($data)) {
                 $email = new Email();
                 $nombre_completo = $data['nombre'] . ' ' . $data['apellido'];
-                
                 if ($email->enviarVerificacion($data['email'], $nombre_completo, $verification_token)) {
                     $_SESSION['success'] = 'Registro exitoso. Revisa tu email para verificar tu cuenta.';
                 } else {
                     $_SESSION['warning'] = 'Registro exitoso, pero hubo un problema con el email.';
                 }
-                
                 header('Location: index.php');
                 exit();
             } else {
@@ -91,33 +76,25 @@ class AuthController {
                 exit();
             }
         }
-        
         require_once __DIR__ . '/../views/auth/register.php';
     }
-    
     public function logout() {
         session_destroy();
         header('Location: index.php');
         exit();
     }
-    
     public function solicitarRecuperacion() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             require_once __DIR__ . '/../models/Email.php';
-            
             $email = trim($_POST['email']);
-            
             if (empty($email)) {
                 $_SESSION['error'] = 'Ingresa tu email';
                 header('Location: forgot_password.php');
                 exit();
             }
-            
             $result = $this->usuario->generarCodigoRecuperacion($email);
-            
             if (isset($result['success']) && $result['success']) {
                 $emailSender = new Email();
-                
                 if ($emailSender->enviarCodigoRecuperacion($email, $result['nombre'], $result['codigo'])) {
                     $_SESSION['reset_email'] = $email;
                     $_SESSION['success'] = 'Código enviado a tu email.';
@@ -130,30 +107,23 @@ class AuthController {
                 $_SESSION['error'] = $result['error'] ?? 'Error al procesar la solicitud';
             }
         }
-        
         require_once __DIR__ . '/../views/auth/forgot_password.php';
     }
-    
     public function resetPassword() {
         if (!isset($_SESSION['reset_email'])) {
             header('Location: forgot_password.php');
             exit();
         }
-        
         $email = $_SESSION['reset_email'];
-        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (isset($_POST['codigo'])) {
                 $codigo = trim($_POST['codigo']);
-                
                 if (empty($codigo) || strlen($codigo) !== 6) {
                     $_SESSION['error'] = 'Código inválido';
                     header('Location: reset_password.php');
                     exit();
                 }
-                
                 $user_id = $this->usuario->validarCodigoRecuperacion($email, $codigo);
-                
                 if ($user_id) {
                     $_SESSION['reset_valid'] = true;
                     $_SESSION['reset_user_id'] = $user_id;
@@ -161,21 +131,17 @@ class AuthController {
                     $_SESSION['error'] = 'Código incorrecto o expirado';
                 }
             }
-            
             if (isset($_POST['new_password']) && isset($_SESSION['reset_valid'])) {
                 $new_password = $_POST['new_password'];
                 $confirm_password = $_POST['confirm_password'];
-                
                 if ($new_password !== $confirm_password) {
                     $_SESSION['error'] = 'Las contraseñas no coinciden';
                 } else {
                     $result = $this->usuario->actualizarPassword($_SESSION['reset_user_id'], $new_password);
-                    
                     if (isset($result['success']) && $result['success']) {
                         unset($_SESSION['reset_email']);
                         unset($_SESSION['reset_valid']);
                         unset($_SESSION['reset_user_id']);
-                        
                         $_SESSION['success'] = 'Contraseña actualizada. Ya puedes iniciar sesión.';
                         header('Location: index.php');
                         exit();
@@ -185,7 +151,6 @@ class AuthController {
                 }
             }
         }
-        
         require_once __DIR__ . '/../views/auth/reset_password.php';
     }
 }

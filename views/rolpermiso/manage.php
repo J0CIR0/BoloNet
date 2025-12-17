@@ -1,16 +1,13 @@
 <?php
 $title = 'Asignar Permisos: ' . htmlspecialchars($rol['nombre']);
 ?>
-
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Asignar Permisos a: <?php echo htmlspecialchars($rol['nombre']); ?></h2>
     <a href="rolpermiso.php" class="btn btn-secondary">Volver</a>
 </div>
-
 <?php if(isset($_SESSION['success'])): ?>
 <div class="alert alert-success"><?php echo $_SESSION['success']; unset($_SESSION['success']); ?></div>
 <?php endif; ?>
-
 <div class="card">
     <div class="card-header">
         <h4 class="mb-0">Permisos Disponibles</h4>
@@ -27,7 +24,6 @@ $title = 'Asignar Permisos: ' . htmlspecialchars($rol['nombre']);
                     $modulos[$permiso['modulo']][] = $permiso;
                 }
                 ?>
-                
                 <?php foreach($modulos as $modulo_nombre => $permisos_modulo): ?>
                 <div class="col-md-4 mb-4">
                     <div class="card bg-dark">
@@ -52,7 +48,6 @@ $title = 'Asignar Permisos: ' . htmlspecialchars($rol['nombre']);
                 </div>
                 <?php endforeach; ?>
             </div>
-            
             <div class="mt-4">
                 <button type="submit" class="btn btn-success">Guardar Asignación</button>
                 <a href="rolpermiso.php" class="btn btn-secondary">Cancelar</a>

@@ -51,3 +51,38 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </div>
         </div>
     </nav>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if(isset($_SESSION['error'])): ?>
+    Swal.fire({
+        title: 'Error',
+        text: '<?php echo str_replace("'", "\\'", $_SESSION['error']); ?>',
+        icon: 'error',
+        confirmButtonColor: '#28a745',
+        background: '#121212',
+        color: '#ffffff'
+    });
+    <?php unset($_SESSION['error']); endif; ?>
+    <?php if(isset($_SESSION['success'])): ?>
+    Swal.fire({
+        title: 'Éxito',
+        text: '<?php echo str_replace("'", "\\'", $_SESSION['success']); ?>',
+        icon: 'success',
+        confirmButtonColor: '#28a745',
+        background: '#121212',
+        color: '#ffffff'
+    });
+    <?php unset($_SESSION['success']); endif; ?>
+    <?php if(isset($_SESSION['warning'])): ?>
+    Swal.fire({
+        title: 'Advertencia',
+        text: '<?php echo str_replace("'", "\\'", $_SESSION['warning']); ?>',
+        icon: 'warning',
+        confirmButtonColor: '#28a745',
+        background: '#121212',
+        color: '#ffffff'
+    });
+    <?php unset($_SESSION['warning']); endif; ?>
+});
+</script>

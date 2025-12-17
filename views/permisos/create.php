@@ -1,7 +1,6 @@
 <?php
 $title = 'Nuevo Permiso';
 ?>
-
 <div class="card">
     <div class="card-header">
         <h4 class="mb-0">Crear Nuevo Permiso</h4>
@@ -12,17 +11,14 @@ $title = 'Nuevo Permiso';
                 <label class="form-label">Nombre del Permiso</label>
                 <input type="text" name="nombre" class="form-control" required>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label">Módulo</label>
                 <input type="text" name="modulo" class="form-control" required>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label">Descripción</label>
                 <textarea name="descripcion" class="form-control" rows="3" required></textarea>
             </div>
-            
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-success">Guardar</button>
                 <a href="permisos.php" class="btn btn-secondary">Cancelar</a>

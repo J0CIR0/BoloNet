@@ -1,7 +1,6 @@
 <?php
 $title = 'Nueva Persona';
 ?>
-
 <div class="card">
     <div class="card-header">
         <h4 class="mb-0">Crear Nueva Persona</h4>
@@ -18,7 +17,6 @@ $title = 'Nueva Persona';
                     <input type="date" name="fecha_nacimiento" class="form-control" required>
                 </div>
             </div>
-            
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Nombre</label>
@@ -29,7 +27,6 @@ $title = 'Nueva Persona';
                     <input type="text" name="apellido" class="form-control" required>
                 </div>
             </div>
-            
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Género</label>
@@ -44,12 +41,10 @@ $title = 'Nueva Persona';
                     <input type="text" name="telefono" class="form-control">
                 </div>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label">Dirección</label>
                 <textarea name="direccion" class="form-control" rows="2"></textarea>
             </div>
-            
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-success">Guardar</button>
                 <a href="personas.php" class="btn btn-secondary">Cancelar</a>

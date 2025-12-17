@@ -5,12 +5,10 @@ if (!isset($curso) || empty($curso)) {
 }
 $title = 'Gestionar Inscripciones';
 ?>
-
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Gestionar Inscripciones: <?php echo htmlspecialchars($curso['nombre']); ?></h2>
     <a href="cursos.php" class="btn btn-secondary">Volver a Cursos</a>
 </div>
-
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
@@ -62,7 +60,6 @@ $title = 'Gestionar Inscripciones';
                 </tbody>
             </table>
         </div>
-        
         <?php if(empty($inscripciones)): ?>
         <div class="alert alert-info">No hay inscripciones en este curso.</div>
         <?php endif; ?>

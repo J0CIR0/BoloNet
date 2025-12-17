@@ -1,13 +1,11 @@
 <?php
 $title = 'Restablecer Contraseña';
 require_once __DIR__ . '/../layouts/header.php';
-
 if(!isset($_SESSION['reset_email'])) {
     header('Location: forgot_password.php');
     exit();
 }
 ?>
-
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-5">
@@ -16,7 +14,6 @@ if(!isset($_SESSION['reset_email'])) {
                     <h4 class="mb-0">Restablecer Contraseña</h4>
                 </div>
                 <div class="card-body">
-                    
                     <?php if(!isset($_SESSION['reset_valid'])): ?>
                     <form method="POST" action="">
                         <div class="mb-3">
@@ -47,5 +44,4 @@ if(!isset($_SESSION['reset_email'])) {
         </div>
     </div>
 </div>
-
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>

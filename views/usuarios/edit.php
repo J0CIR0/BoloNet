@@ -5,7 +5,6 @@ if (!isset($usuario_data) || empty($usuario_data)) {
 }
 $title = 'Editar Usuario';
 ?>
-
 <div class="card">
     <div class="card-header">
         <h4 class="mb-0">Editar Usuario: <?php echo htmlspecialchars($usuario_data['persona_nombre'] . ' ' . $usuario_data['persona_apellido']); ?></h4>
@@ -22,7 +21,6 @@ $title = 'Editar Usuario';
                     <input type="date" name="fecha_nacimiento" class="form-control" value="<?php echo htmlspecialchars($usuario_data['fecha_nacimiento'] ?? '2000-01-01'); ?>" required>
                 </div>
             </div>
-            
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Nombre</label>
@@ -33,7 +31,6 @@ $title = 'Editar Usuario';
                     <input type="text" name="apellido" class="form-control" value="<?php echo htmlspecialchars($usuario_data['persona_apellido']); ?>" required>
                 </div>
             </div>
-            
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Género</label>
@@ -48,17 +45,14 @@ $title = 'Editar Usuario';
                     <input type="text" name="telefono" class="form-control" value="<?php echo htmlspecialchars($usuario_data['telefono'] ?? ''); ?>">
                 </div>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label">Dirección</label>
                 <textarea name="direccion" class="form-control" rows="2"><?php echo htmlspecialchars($usuario_data['direccion'] ?? ''); ?></textarea>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label">Email</label>
                 <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($usuario_data['email']); ?>" required>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label">Rol</label>
                 <select name="rol_id" class="form-control" required>
@@ -70,13 +64,11 @@ $title = 'Editar Usuario';
                     <?php endforeach; ?>
                 </select>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label">Nueva Contraseña (dejar vacío para no cambiar)</label>
                 <input type="password" name="password" class="form-control" placeholder="Nueva contraseña">
                 <small class="text-muted">Solo llena este campo si quieres cambiar la contraseña</small>
             </div>
-            
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-success">Actualizar</button>
                 <a href="usuarios.php" class="btn btn-secondary">Cancelar</a>

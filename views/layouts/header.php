@@ -38,39 +38,31 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </div>
         </div>
     </nav>
-    
     <?php if(isset($_SESSION['user_id'])): ?>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-2 sidebar">
                 <div class="position-sticky pt-3">
                     <a href="dashboard.php" class="<?php echo $current_page == 'dashboard.php' ? 'bg-success text-dark' : ''; ?>">Dashboard</a>
-                    
                     <?php 
                     require_once __DIR__ . '/../../models/Usuario.php';
                     $usuario = new Usuario();
-                    
                     if($usuario->hasPermission($_SESSION['user_id'], 'ver_usuarios')): 
                     ?>
                     <a href="usuarios.php" class="<?php echo $current_page == 'usuarios.php' ? 'bg-success text-dark' : ''; ?>">Usuarios</a>
                     <?php endif; ?>
-                    
                     <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_personas')): ?>
                     <a href="personas.php" class="<?php echo $current_page == 'personas.php' ? 'bg-success text-dark' : ''; ?>">Personas</a>
                     <?php endif; ?>
-                    
                     <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_cursos')): ?>
                     <a href="cursos.php" class="<?php echo $current_page == 'cursos.php' ? 'bg-success text-dark' : ''; ?>">Cursos</a>
                     <?php endif; ?>
-                    
                     <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_roles')): ?>
                     <a href="roles.php" class="<?php echo $current_page == 'roles.php' ? 'bg-success text-dark' : ''; ?>">Roles</a>
                     <?php endif; ?>
-                    
                     <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_permisos')): ?>
                     <a href="permisos.php" class="<?php echo $current_page == 'permisos.php' ? 'bg-success text-dark' : ''; ?>">Permisos</a>
                     <?php endif; ?>
-                    
                     <?php if($usuario->hasPermission($_SESSION['user_id'], 'asignar_permisos')): ?>
                     <a href="rolpermiso.php" class="<?php echo $current_page == 'rolpermiso.php' ? 'bg-success text-dark' : ''; ?>">Asignar Permisos</a>
                     <?php endif; ?>
@@ -78,7 +70,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </div>
             <div class="col-md-10 p-4">
     <?php endif; ?>
-    
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         <?php if(isset($_SESSION['error'])): ?>
@@ -91,7 +82,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
             color: '#ffffff'
         });
         <?php unset($_SESSION['error']); endif; ?>
-        
         <?php if(isset($_SESSION['success'])): ?>
         Swal.fire({
             title: 'Éxito',
@@ -102,7 +92,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
             color: '#ffffff'
         });
         <?php unset($_SESSION['success']); endif; ?>
-        
         <?php if(isset($_SESSION['warning'])): ?>
         Swal.fire({
             title: 'Advertencia',

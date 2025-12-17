@@ -1,12 +1,10 @@
 <?php
 $title = 'Mis Cursos';
 ?>
-
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Mis Cursos</h2>
     <a href="cursos.php" class="btn btn-secondary">Volver a Cursos</a>
 </div>
-
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
@@ -42,7 +40,6 @@ $title = 'Mis Cursos';
                 </tbody>
             </table>
         </div>
-        
         <?php if(empty($inscripciones)): ?>
         <div class="alert alert-info">No estás inscrito en ningún curso.</div>
         <?php endif; ?>

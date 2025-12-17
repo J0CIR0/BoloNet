@@ -2,7 +2,6 @@
 $title = 'Registro';
 require_once __DIR__ . '/../layouts/header.php';
 ?>
-
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
@@ -22,7 +21,6 @@ require_once __DIR__ . '/../layouts/header.php';
                                 <input type="date" name="fecha_nacimiento" class="form-control" required>
                             </div>
                         </div>
-                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Nombre</label>
@@ -33,7 +31,6 @@ require_once __DIR__ . '/../layouts/header.php';
                                 <input type="text" name="apellido" class="form-control" required>
                             </div>
                         </div>
-                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Género</label>
@@ -48,22 +45,18 @@ require_once __DIR__ . '/../layouts/header.php';
                                 <input type="text" name="telefono" class="form-control">
                             </div>
                         </div>
-                        
                         <div class="mb-3">
                             <label class="form-label">Dirección</label>
                             <textarea name="direccion" class="form-control" rows="2"></textarea>
                         </div>
-                        
                         <div class="mb-3">
                             <label class="form-label">Email</label>
                             <input type="email" name="email" class="form-control" required>
                         </div>
-                        
                         <div class="mb-3">
                             <label class="form-label">Contraseña</label>
                             <input type="password" name="password" class="form-control" required>
-                        </div>
-                        
+                        </div> 
                         <button type="submit" class="btn btn-success w-100">Registrarse</button>
                         <div class="text-center mt-3">
                             <a href="index.php" class="text-success">¿Ya tienes cuenta? Inicia sesión</a>
@@ -74,5 +67,4 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     </div>
 </div>
-
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
