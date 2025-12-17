@@ -13,7 +13,13 @@ class UsuarioController {
     }
     
     public function checkPermission($permiso) {
-        if (!isset($_SESSION['user_id']) || !$this->usuario->hasPermission($_SESSION['user_id'], $permiso)) {
+        if (!isset($_SESSION['user_id'])) {
+            $_SESSION['error'] = 'Debes iniciar sesión';
+            header('Location: index.php');
+            exit();
+        }
+        
+        if (!$this->usuario->hasPermission($_SESSION['user_id'], $permiso)) {
             $_SESSION['error'] = 'No tienes permisos para esta acción';
             header('Location: dashboard.php');
             exit();
@@ -122,26 +128,28 @@ class UsuarioController {
             exit();
         }
         
+        // No puede eliminarse a sí mismo
         if ($id == $_SESSION['user_id']) {
             $_SESSION['error'] = 'No puedes eliminarte a ti mismo';
             header('Location: usuarios.php');
             exit();
         }
         
-        if ($usuario_a_eliminar['rol_nombre'] == 'administrador') {
-            $_SESSION['error'] = 'No se puede eliminar al administrador';
+        // No se puede eliminar al usuario con rol "registro" (administrador)
+        if ($usuario_a_eliminar['rol_nombre'] == 'registro') {
+            $_SESSION['error'] = 'No se puede eliminar al administrador del sistema';
             header('Location: usuarios.php');
             exit();
         }
         
         if ($this->usuario->delete($id)) {
-            $_SESSION['success'] = 'Usuario eliminado exitosamente';
+            header('Location: usuarios.php');
+            exit();
         } else {
             $_SESSION['error'] = 'Error al eliminar usuario';
+            header('Location: usuarios.php');
+            exit();
         }
-        
-        header('Location: usuarios.php');
-        exit();
     }
     
 }

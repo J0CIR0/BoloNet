@@ -32,7 +32,7 @@ $title = 'Roles';
                         <td><?php echo htmlspecialchars($rol['nombre']); ?></td>
                         <td><?php echo htmlspecialchars($rol['descripcion']); ?></td>
                         <td>
-                            <?php if($usuario->hasPermission($_SESSION['user_id'], 'editar_rol')): ?>
+                            <?php if($usuario->hasPermission($_SESSION['user_id'], 'editar_rol') && $rol['nombre'] != 'registro'): ?>
                             <a href="roles.php?action=edit&id=<?php echo $rol['id']; ?>" class="btn btn-warning btn-sm">Editar</a>
                             <?php endif; ?>
                             
@@ -43,7 +43,7 @@ $title = 'Roles';
                             <?php 
                             $puede_eliminar_rol = false;
                             if($usuario->hasPermission($_SESSION['user_id'], 'eliminar_rol')) {
-                                if($rol['nombre'] != 'administrador') {
+                                if($rol['nombre'] != 'registro' && $rol['nombre'] != 'adm' && $rol['nombre'] != 'estudiante') {
                                     $puede_eliminar_rol = true;
                                 }
                             }

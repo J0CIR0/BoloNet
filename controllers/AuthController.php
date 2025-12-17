@@ -25,7 +25,7 @@ class AuthController {
                 
                 if ($password == $user['password']) {
                     $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_name'] = $user['nombre'] . ' ' . $user['apellido'];
+                    $_SESSION['user_name'] = $user['persona_nombre'] . ' ' . $user['persona_apellido'];
                     $_SESSION['user_email'] = $user['email'];
                     $_SESSION['user_role'] = $user['rol_nombre'];
                     $_SESSION['role_id'] = $user['rol_id'];
@@ -40,9 +40,10 @@ class AuthController {
             }
         }
         
-        require_once __DIR__ . '/../views/auth/login.php';
+        header('Location: index.php');
+        exit();
     }
-        
+    
     public function register() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             require_once __DIR__ . '/../models/Email.php';
@@ -79,13 +80,15 @@ class AuthController {
                 if ($email->enviarVerificacion($data['email'], $nombre_completo, $verification_token)) {
                     $_SESSION['success'] = 'Registro exitoso. Revisa tu email para verificar tu cuenta.';
                 } else {
-                    $_SESSION['warning'] = 'Registro exitoso, pero hubo un problema al enviar el email de verificación.';
+                    $_SESSION['warning'] = 'Registro exitoso, pero hubo un problema con el email.';
                 }
                 
                 header('Location: index.php');
                 exit();
             } else {
                 $_SESSION['error'] = 'Error al registrar usuario';
+                header('Location: register.php');
+                exit();
             }
         }
         

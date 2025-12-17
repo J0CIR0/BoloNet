@@ -23,5 +23,12 @@ $title = 'Editar Rol';
                 <a href="roles.php" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
+        
+        <hr class="border-success my-4">
+        
+        <div class="mb-3">
+            <h5>Administrar Permisos</h5>
+            <a href="rolpermiso.php?action=manage&id=<?php echo $rol['id']; ?>" class="btn btn-info">Asignar Permisos</a>
+        </div>
     </div>
 </div>

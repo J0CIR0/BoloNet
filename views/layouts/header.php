@@ -45,60 +45,73 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <div class="col-md-2 sidebar">
                 <div class="position-sticky pt-3">
                     <a href="dashboard.php" class="<?php echo $current_page == 'dashboard.php' ? 'bg-success text-dark' : ''; ?>">Dashboard</a>
+                    
                     <?php 
                     require_once __DIR__ . '/../../models/Usuario.php';
                     $usuario = new Usuario();
+                    
                     if($usuario->hasPermission($_SESSION['user_id'], 'ver_usuarios')): 
                     ?>
                     <a href="usuarios.php" class="<?php echo $current_page == 'usuarios.php' ? 'bg-success text-dark' : ''; ?>">Usuarios</a>
                     <?php endif; ?>
+                    
                     <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_personas')): ?>
                     <a href="personas.php" class="<?php echo $current_page == 'personas.php' ? 'bg-success text-dark' : ''; ?>">Personas</a>
                     <?php endif; ?>
+                    
                     <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_cursos')): ?>
                     <a href="cursos.php" class="<?php echo $current_page == 'cursos.php' ? 'bg-success text-dark' : ''; ?>">Cursos</a>
                     <?php endif; ?>
                     
-                    <?php 
-                    if($_SESSION['user_role'] == 'registro'): 
-                    ?>
+                    <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_roles')): ?>
                     <a href="roles.php" class="<?php echo $current_page == 'roles.php' ? 'bg-success text-dark' : ''; ?>">Roles</a>
+                    <?php endif; ?>
+                    
+                    <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_permisos')): ?>
                     <a href="permisos.php" class="<?php echo $current_page == 'permisos.php' ? 'bg-success text-dark' : ''; ?>">Permisos</a>
+                    <?php endif; ?>
+                    
+                    <?php if($usuario->hasPermission($_SESSION['user_id'], 'asignar_permisos')): ?>
                     <a href="rolpermiso.php" class="<?php echo $current_page == 'rolpermiso.php' ? 'bg-success text-dark' : ''; ?>">Asignar Permisos</a>
                     <?php endif; ?>
                 </div>
             </div>
-
+            <div class="col-md-10 p-4">
+    <?php endif; ?>
     
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        function mostrarAlerta(titulo, texto, tipo) {
-            Swal.fire({
-                title: titulo,
-                text: texto,
-                icon: tipo,
-                confirmButtonColor: '#28a745',
-                background: '#121212',
-                color: '#ffffff'
-            });
-        }
-        
         <?php if(isset($_SESSION['error'])): ?>
-        mostrarAlerta('Error', '<?php echo addslashes($_SESSION['error']); ?>', 'error');
+        Swal.fire({
+            title: 'Error',
+            text: '<?php echo str_replace("'", "\\'", $_SESSION['error']); ?>',
+            icon: 'error',
+            confirmButtonColor: '#28a745',
+            background: '#121212',
+            color: '#ffffff'
+        });
         <?php unset($_SESSION['error']); endif; ?>
         
         <?php if(isset($_SESSION['success'])): ?>
-        mostrarAlerta('Éxito', '<?php echo addslashes($_SESSION['success']); ?>', 'success');
+        Swal.fire({
+            title: 'Éxito',
+            text: '<?php echo str_replace("'", "\\'", $_SESSION['success']); ?>',
+            icon: 'success',
+            confirmButtonColor: '#28a745',
+            background: '#121212',
+            color: '#ffffff'
+        });
         <?php unset($_SESSION['success']); endif; ?>
         
         <?php if(isset($_SESSION['warning'])): ?>
-        mostrarAlerta('Advertencia', '<?php echo addslashes($_SESSION['warning']); ?>', 'warning');
-        <?php unset($_SESSION['warning']); endif; ?>
+        Swal.fire({
+            title: 'Advertencia',
+            text: '<?php echo str_replace("'", "\\'", $_SESSION['warning']); ?>',
+            icon: 'warning',
+            confirmButtonColor: '#28a745',
+            background: '#121212',
+            color: '#ffffff'
         });
-        </script>
-                </div>
-            </div>
-        </div>
-        <?php endif; ?>
-    </body>
-    </html>
+        <?php unset($_SESSION['warning']); endif; ?>
+    });
+    </script>

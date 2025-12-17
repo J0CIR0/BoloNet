@@ -18,7 +18,7 @@ $result = $usuario->verificarUsuario($token);
 if ($result['success']) {
     $_SESSION['success'] = 'Cuenta verificada exitosamente. Ya puedes iniciar sesión.';
 } else {
-    $_SESSION['error'] = 'Enlace inválido o expirado. Solicita un nuevo enlace de verificación.';
+    $_SESSION['error'] = 'Enlace inválido o expirado';
 }
 
 header('Location: index.php');

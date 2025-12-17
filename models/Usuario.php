@@ -318,6 +318,22 @@ class Usuario {
         $stmt->bind_param("is", $usuario_id, $permiso_nombre);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
+        
+        // Si no tiene el permiso específico, verificar si tiene permiso de administrador
+        if ($result['tiene'] == 0) {
+            // Verificar si es rol registro (tiene todos los permisos de creación)
+            $sql_role = "SELECT r.nombre FROM usuario u JOIN rol r ON u.rol_id = r.id WHERE u.id = ?";
+            $stmt_role = $this->db->prepare($sql_role);
+            $stmt_role->bind_param("i", $usuario_id);
+            $stmt_role->execute();
+            $role_result = $stmt_role->get_result()->fetch_assoc();
+            
+            // Si es rol registro, permitir acceso a creación
+            if ($role_result['nombre'] == 'registro' && strpos($permiso_nombre, 'crear_') === 0) {
+                return true;
+            }
+        }
+        
         return $result['tiene'] > 0;
     }
     

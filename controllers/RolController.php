@@ -63,6 +63,22 @@ class RolController {
     
     public function delete($id) {
         $this->checkPermission('eliminar_rol');
+        
+        $rol = $this->rol->getById($id);
+        
+        if (!$rol) {
+            $_SESSION['error'] = 'Rol no encontrado';
+            header('Location: roles.php');
+            exit();
+        }
+        
+        // No se pueden eliminar los roles base del sistema
+        if (in_array($rol['nombre'], ['registro', 'adm', 'estudiante'])) {
+            $_SESSION['error'] = 'No se puede eliminar este rol del sistema';
+            header('Location: roles.php');
+            exit();
+        }
+        
         $this->rol->delete($id);
         header('Location: roles.php');
         exit();

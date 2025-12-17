@@ -19,10 +19,26 @@ $usuarioModel = new Usuario();
 $personaModel = new Persona();
 $cursoModel = new Curso();
 
-$total_usuarios = count($usuarioModel->getAll());
-$total_personas = count($personaModel->getAll());
-$total_cursos = count($cursoModel->getAll());
-$cursos_activos = count($cursoModel->getCursosActivos());
+$total_usuarios = 0;
+$total_personas = 0;
+$total_cursos = 0;
+$cursos_activos = 0;
+
+if($usuarioModel->hasPermission($_SESSION['user_id'], 'ver_usuarios')) {
+    $usuarios = $usuarioModel->getAll();
+    $total_usuarios = count($usuarios);
+}
+
+if($usuarioModel->hasPermission($_SESSION['user_id'], 'ver_personas')) {
+    $personas = $personaModel->getAll();
+    $total_personas = count($personas);
+}
+
+if($usuarioModel->hasPermission($_SESSION['user_id'], 'ver_cursos')) {
+    $cursos = $cursoModel->getAll();
+    $total_cursos = count($cursos);
+    $cursos_activos = count($cursoModel->getCursosActivos());
+}
 ?>
 
 <div class="container-fluid p-4">
@@ -87,53 +103,6 @@ $cursos_activos = count($cursoModel->getCursosActivos());
         </div>
         <?php endif; ?>
     </div>
-    
-    <?php if($usuarioModel->hasPermission($_SESSION['user_id'], 'ver_inscripciones')): 
-        $inscripciones = $cursoModel->getInscripcionesByEstudiante($_SESSION['user_id']);
-        if(!empty($inscripciones)):
-    ?>
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Mis Cursos Inscritos</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-dark table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Curso</th>
-                                    <th>Código</th>
-                                    <th>Estado</th>
-                                    <th>Nota</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach($inscripciones as $inscripcion): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($inscripcion['curso_nombre']); ?></td>
-                                    <td><?php echo htmlspecialchars($inscripcion['codigo']); ?></td>
-                                    <td>
-                                        <?php 
-                                        $estado_clase = $inscripcion['estado'] == 'aprobado' ? 'success' : 
-                                                      ($inscripcion['estado'] == 'reprobado' ? 'danger' : 
-                                                      ($inscripcion['estado'] == 'retirado' ? 'warning' : 'info'));
-                                        ?>
-                                        <span class="badge bg-<?php echo $estado_clase; ?>"><?php echo ucfirst($inscripcion['estado']); ?></span>
-                                    </td>
-                                    <td><?php echo $inscripcion['nota_final'] ? $inscripcion['nota_final'] : 'N/A'; ?></td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    <a href="cursos.php?action=mis_cursos" class="btn btn-success">Ver Todos Mis Cursos</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php endif; endif; ?>
 </div>
 
 <?php require_once 'views/layouts/footer.php'; ?>
