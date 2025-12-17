@@ -128,14 +128,11 @@ class UsuarioController {
             exit();
         }
         
-        // No puede eliminarse a sí mismo
         if ($id == $_SESSION['user_id']) {
             $_SESSION['error'] = 'No puedes eliminarte a ti mismo';
             header('Location: usuarios.php');
             exit();
         }
-        
-        // No se puede eliminar al usuario con rol "registro" (administrador)
         if ($usuario_a_eliminar['rol_nombre'] == 'registro') {
             $_SESSION['error'] = 'No se puede eliminar al administrador del sistema';
             header('Location: usuarios.php');

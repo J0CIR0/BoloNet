@@ -72,7 +72,6 @@ class RolController {
             exit();
         }
         
-        // No se pueden eliminar los roles base del sistema
         if (in_array($rol['nombre'], ['registro', 'adm', 'estudiante'])) {
             $_SESSION['error'] = 'No se puede eliminar este rol del sistema';
             header('Location: roles.php');

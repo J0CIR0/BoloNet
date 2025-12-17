@@ -123,7 +123,6 @@ class PersonaController {
             exit();
         }
         
-        // Verificar si la persona tiene usuario asociado
         $sql = "SELECT u.id FROM usuario u WHERE u.persona_id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("i", $id);
@@ -133,14 +132,12 @@ class PersonaController {
         if ($result->num_rows > 0) {
             $usuario = $result->fetch_assoc();
             
-            // Verificar si es el usuario actual
             if ($usuario['id'] == $_SESSION['user_id']) {
                 $_SESSION['error'] = 'No puedes eliminar tu propia persona';
                 header('Location: personas.php');
                 exit();
             }
             
-            // Verificar si el usuario es administrador
             $sql_admin = "SELECT r.nombre FROM usuario u JOIN rol r ON u.rol_id = r.id WHERE u.id = ? AND r.nombre = 'registro'";
             $stmt_admin = $this->db->prepare($sql_admin);
             $stmt_admin->bind_param("i", $usuario['id']);
