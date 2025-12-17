@@ -48,7 +48,6 @@ bolonet
 ----forgot_password.php
 ----index.php
 ----logout.php
-----install_phpmailer.php
 ----permisos.php
 ----register.php
 ----reset_password.php

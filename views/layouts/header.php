@@ -52,6 +52,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     ?>
                     <a href="usuarios.php" class="<?php echo $current_page == 'usuarios.php' ? 'bg-success text-dark' : ''; ?>">Usuarios</a>
                     <?php endif; ?>
+                    <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_personas')): ?>
+                    <a href="personas.php" class="<?php echo $current_page == 'personas.php' ? 'bg-success text-dark' : ''; ?>">Personas</a>
+                    <?php endif; ?>
+                    <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_cursos')): ?>
+                    <a href="cursos.php" class="<?php echo $current_page == 'cursos.php' ? 'bg-success text-dark' : ''; ?>">Cursos</a>
+                    <?php endif; ?>
                     <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_roles')): ?>
                     <a href="roles.php" class="<?php echo $current_page == 'roles.php' ? 'bg-success text-dark' : ''; ?>">Roles</a>
                     <?php endif; ?>

@@ -10,13 +10,20 @@ class Usuario {
     }
     
     public function getAll() {
-        $sql = "SELECT u.*, r.nombre as rol_nombre FROM usuario u JOIN rol r ON u.rol_id = r.id";
+        $sql = "SELECT u.*, r.nombre as rol_nombre, p.ci, p.nombre as persona_nombre, p.apellido as persona_apellido 
+                FROM usuario u 
+                JOIN rol r ON u.rol_id = r.id 
+                JOIN persona p ON u.persona_id = p.id";
         $result = $this->db->query($sql);
         return $result->fetch_all(MYSQLI_ASSOC);
     }
     
     public function getById($id) {
-        $sql = "SELECT u.*, r.nombre as rol_nombre FROM usuario u JOIN rol r ON u.rol_id = r.id WHERE u.id = ?";
+        $sql = "SELECT u.*, r.nombre as rol_nombre, p.ci, p.nombre as persona_nombre, p.apellido as persona_apellido 
+                FROM usuario u 
+                JOIN rol r ON u.rol_id = r.id 
+                JOIN persona p ON u.persona_id = p.id 
+                WHERE u.id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
@@ -24,7 +31,11 @@ class Usuario {
     }
     
     public function findByEmail($email) {
-        $sql = "SELECT u.*, r.nombre as rol_nombre FROM usuario u JOIN rol r ON u.rol_id = r.id WHERE u.email = ?";
+        $sql = "SELECT u.*, r.nombre as rol_nombre, p.nombre as persona_nombre, p.apellido as persona_apellido 
+                FROM usuario u 
+                JOIN rol r ON u.rol_id = r.id 
+                JOIN persona p ON u.persona_id = p.id 
+                WHERE u.email = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -32,62 +43,148 @@ class Usuario {
     }
     
     public function create($data) {
-        $sql = "INSERT INTO usuario (nombre, apellido, email, password, telefono, direccion, rol_id, estado, verification_token, token_expires) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("ssssssiiss", 
-            $data['nombre'], 
-            $data['apellido'], 
-            $data['email'], 
-            $data['password'], 
-            $data['telefono'], 
-            $data['direccion'], 
-            $data['rol_id'],
-            $data['estado'],
-            $data['verification_token'],
-            $data['token_expires']
-        );
-        return $stmt->execute();
+        $this->db->begin_transaction();
+        
+        try {
+            $sql_persona = "INSERT INTO persona (ci, nombre, apellido, fecha_nacimiento, genero, telefono, direccion) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $stmt_persona = $this->db->prepare($sql_persona);
+            $stmt_persona->bind_param("sssssss", 
+                $data['ci'], 
+                $data['nombre'], 
+                $data['apellido'], 
+                $data['fecha_nacimiento'] ?? '2000-01-01',
+                $data['genero'] ?? 'M',
+                $data['telefono'] ?? '',
+                $data['direccion'] ?? ''
+            );
+            
+            if (!$stmt_persona->execute()) {
+                throw new Exception("Error al crear persona");
+            }
+            
+            $persona_id = $this->db->insert_id;
+            
+            $sql_usuario = "INSERT INTO usuario (persona_id, email, password, rol_id, estado, verification_token, token_expires) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $stmt_usuario = $this->db->prepare($sql_usuario);
+            $stmt_usuario->bind_param("issiiss", 
+                $persona_id,
+                $data['email'], 
+                $data['password'], 
+                $data['rol_id'],
+                $data['estado'] ?? 0,
+                $data['verification_token'] ?? NULL,
+                $data['token_expires'] ?? NULL
+            );
+            
+            if (!$stmt_usuario->execute()) {
+                throw new Exception("Error al crear usuario");
+            }
+            
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollback();
+            return false;
+        }
     }
     
     public function update($id, $data) {
-        if (isset($data['password']) && !empty($data['password'])) {
-            $sql = "UPDATE usuario SET nombre = ?, apellido = ?, email = ?, password = ?, telefono = ?, direccion = ?, rol_id = ? WHERE id = ?";
-            $stmt = $this->db->prepare($sql);
-            $stmt->bind_param("ssssssii", 
-                $data['nombre'], 
-                $data['apellido'], 
-                $data['email'], 
-                $data['password'], 
-                $data['telefono'], 
-                $data['direccion'], 
-                $data['rol_id'],
-                $id
+        $usuario = $this->getById($id);
+        if (!$usuario) return false;
+        
+        $this->db->begin_transaction();
+        
+        try {
+            $sql_persona = "UPDATE persona SET ci = ?, nombre = ?, apellido = ?, fecha_nacimiento = ?, genero = ?, telefono = ?, direccion = ? WHERE id = ?";
+            $stmt_persona = $this->db->prepare($sql_persona);
+            $stmt_persona->bind_param("sssssssi", 
+                $data['ci'] ?? $usuario['ci'], 
+                $data['nombre'] ?? $usuario['persona_nombre'], 
+                $data['apellido'] ?? $usuario['persona_apellido'], 
+                $data['fecha_nacimiento'] ?? '2000-01-01',
+                $data['genero'] ?? 'M',
+                $data['telefono'] ?? '',
+                $data['direccion'] ?? '',
+                $usuario['persona_id']
             );
-        } else {
-            $sql = "UPDATE usuario SET nombre = ?, apellido = ?, email = ?, telefono = ?, direccion = ?, rol_id = ? WHERE id = ?";
-            $stmt = $this->db->prepare($sql);
-            $stmt->bind_param("sssssii", 
-                $data['nombre'], 
-                $data['apellido'], 
-                $data['email'], 
-                $data['telefono'], 
-                $data['direccion'], 
-                $data['rol_id'],
-                $id
-            );
+            
+            $stmt_persona->execute();
+            
+            $sql_usuario = "UPDATE usuario SET email = ?, rol_id = ?";
+            $params = [$data['email'] ?? $usuario['email'], $data['rol_id'] ?? $usuario['rol_id']];
+            $types = "si";
+            
+            if (isset($data['password']) && !empty($data['password'])) {
+                $sql_usuario .= ", password = ?";
+                $params[] = $data['password'];
+                $types .= "s";
+            }
+            
+            $sql_usuario .= " WHERE id = ?";
+            $params[] = $id;
+            $types .= "i";
+            
+            $stmt_usuario = $this->db->prepare($sql_usuario);
+            $stmt_usuario->bind_param($types, ...$params);
+            $stmt_usuario->execute();
+            
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollback();
+            return false;
         }
-        return $stmt->execute();
     }
     
     public function delete($id) {
-        $sql = "DELETE FROM usuario WHERE id = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("i", $id);
-        return $stmt->execute();
+        $usuario = $this->getById($id);
+        if (!$usuario) return false;
+        
+        $this->db->begin_transaction();
+        
+        try {
+            $sql_usuario = "DELETE FROM usuario WHERE id = ?";
+            $stmt_usuario = $this->db->prepare($sql_usuario);
+            $stmt_usuario->bind_param("i", $id);
+            $stmt_usuario->execute();
+            
+            $sql_persona = "DELETE FROM persona WHERE id = ?";
+            $stmt_persona = $this->db->prepare($sql_persona);
+            $stmt_persona->bind_param("i", $usuario['persona_id']);
+            $stmt_persona->execute();
+            
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollback();
+            return false;
+        }
+    }
+    
+    public function getProfesores() {
+        $sql = "SELECT u.id, CONCAT(p.nombre, ' ', p.apellido) as nombre_completo 
+                FROM usuario u 
+                JOIN persona p ON u.persona_id = p.id 
+                JOIN rol r ON u.rol_id = r.id 
+                WHERE r.nombre = 'profesor' 
+                ORDER BY p.apellido, p.nombre";
+        $result = $this->db->query($sql);
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+    
+    public function getEstudiantes() {
+        $sql = "SELECT u.id, CONCAT(p.nombre, ' ', p.apellido) as nombre_completo, p.ci 
+                FROM usuario u 
+                JOIN persona p ON u.persona_id = p.id 
+                JOIN rol r ON u.rol_id = r.id 
+                WHERE r.nombre = 'estudiante' 
+                ORDER BY p.apellido, p.nombre";
+        $result = $this->db->query($sql);
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
     
     public function verificarUsuario($token) {
-        $sql = "SELECT id, email FROM usuario WHERE verification_token = ? AND token_expires > NOW()";
+        $sql = "SELECT u.id, u.email FROM usuario u WHERE verification_token = ? AND token_expires > NOW()";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("s", $token);
         $stmt->execute();
@@ -105,7 +202,7 @@ class Usuario {
     }
     
     public function generarCodigoRecuperacion($email) {
-        $sql = "SELECT id, nombre, estado FROM usuario WHERE email = ?";
+        $sql = "SELECT u.id, p.nombre, u.estado FROM usuario u JOIN persona p ON u.persona_id = p.id WHERE u.email = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("s", $email);
         $stmt->execute();

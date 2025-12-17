@@ -48,7 +48,18 @@ $title = 'Usuarios';
                             <a href="usuarios.php?action=edit&id=<?php echo $usuarioItem['id']; ?>" class="btn btn-warning btn-sm">Editar</a>
                             <?php endif; ?>
                             
-                            <?php if($usuarioModel->hasPermission($_SESSION['user_id'], 'eliminar_usuario')): ?>
+                            <?php 
+                            $puede_eliminar = false;
+                            if($usuarioModel->hasPermission($_SESSION['user_id'], 'eliminar_usuario')) {
+                                if($usuarioItem['id'] != $_SESSION['user_id']) {
+                                    if($usuarioItem['rol_nombre'] != 'administrador') {
+                                        $puede_eliminar = true;
+                                    }
+                                }
+                            }
+                            
+                            if($puede_eliminar): 
+                            ?>
                             <a href="usuarios.php?action=delete&id=<?php echo $usuarioItem['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar usuario?')">Eliminar</a>
                             <?php endif; ?>
                         </td>

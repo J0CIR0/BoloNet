@@ -57,12 +57,15 @@ class AuthController {
             $verification_token = bin2hex(random_bytes(32));
             
             $data = [
+                'ci' => $_POST['ci'],
                 'nombre' => $_POST['nombre'],
                 'apellido' => $_POST['apellido'],
                 'email' => $_POST['email'],
                 'password' => $_POST['password'],
                 'telefono' => $_POST['telefono'] ?? '',
                 'direccion' => $_POST['direccion'] ?? '',
+                'fecha_nacimiento' => $_POST['fecha_nacimiento'] ?? '2000-01-01',
+                'genero' => $_POST['genero'] ?? 'M',
                 'rol_id' => 3,
                 'estado' => 0,
                 'verification_token' => $verification_token,

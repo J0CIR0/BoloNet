@@ -97,9 +97,29 @@ class UsuarioController {
         require_once __DIR__ . '/../views/usuarios/edit.php';
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
-    
+
     public function delete($id) {
         $this->checkPermission('eliminar_usuario');
+        
+        $usuario_a_eliminar = $this->usuario->getById($id);
+        
+        if (!$usuario_a_eliminar) {
+            $_SESSION['error'] = 'Usuario no encontrado';
+            header('Location: usuarios.php');
+            exit();
+        }
+        
+        if ($id == $_SESSION['user_id']) {
+            $_SESSION['error'] = 'No puedes eliminarte a ti mismo';
+            header('Location: usuarios.php');
+            exit();
+        }
+        
+        if ($usuario_a_eliminar['rol_nombre'] == 'administrador') {
+            $_SESSION['error'] = 'No se puede eliminar al administrador';
+            header('Location: usuarios.php');
+            exit();
+        }
         
         if ($this->usuario->delete($id)) {
             $_SESSION['success'] = 'Usuario eliminado exitosamente';
@@ -110,5 +130,6 @@ class UsuarioController {
         header('Location: usuarios.php');
         exit();
     }
+    
 }
 ?>

@@ -40,7 +40,16 @@ $title = 'Roles';
                             <a href="rolpermiso.php?action=manage&id=<?php echo $rol['id']; ?>" class="btn btn-info btn-sm">Permisos</a>
                             <?php endif; ?>
                             
-                            <?php if($usuario->hasPermission($_SESSION['user_id'], 'eliminar_rol')): ?>
+                            <?php 
+                            $puede_eliminar_rol = false;
+                            if($usuario->hasPermission($_SESSION['user_id'], 'eliminar_rol')) {
+                                if($rol['nombre'] != 'administrador') {
+                                    $puede_eliminar_rol = true;
+                                }
+                            }
+                            
+                            if($puede_eliminar_rol): 
+                            ?>
                             <a href="roles.php?action=delete&id=<?php echo $rol['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar rol?')">Eliminar</a>
                             <?php endif; ?>
                         </td>
