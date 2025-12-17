@@ -58,41 +58,47 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_cursos')): ?>
                     <a href="cursos.php" class="<?php echo $current_page == 'cursos.php' ? 'bg-success text-dark' : ''; ?>">Cursos</a>
                     <?php endif; ?>
-                    <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_roles')): ?>
+                    
+                    <?php 
+                    if($_SESSION['user_role'] == 'registro'): 
+                    ?>
                     <a href="roles.php" class="<?php echo $current_page == 'roles.php' ? 'bg-success text-dark' : ''; ?>">Roles</a>
-                    <?php endif; ?>
-                    <?php if($usuario->hasPermission($_SESSION['user_id'], 'ver_permisos')): ?>
                     <a href="permisos.php" class="<?php echo $current_page == 'permisos.php' ? 'bg-success text-dark' : ''; ?>">Permisos</a>
-                    <?php endif; ?>
-                    <?php if($usuario->hasPermission($_SESSION['user_id'], 'asignar_permisos')): ?>
                     <a href="rolpermiso.php" class="<?php echo $current_page == 'rolpermiso.php' ? 'bg-success text-dark' : ''; ?>">Asignar Permisos</a>
                     <?php endif; ?>
                 </div>
             </div>
-            <div class="col-md-10 p-4">
-    <?php endif; ?>
+
     
     <script>
-    function mostrarAlerta(titulo, texto, tipo) {
-        Swal.fire({
-            title: titulo,
-            text: texto,
-            icon: tipo,
-            confirmButtonColor: '#28a745',
-            background: '#121212',
-            color: '#ffffff'
+    document.addEventListener('DOMContentLoaded', function() {
+        function mostrarAlerta(titulo, texto, tipo) {
+            Swal.fire({
+                title: titulo,
+                text: texto,
+                icon: tipo,
+                confirmButtonColor: '#28a745',
+                background: '#121212',
+                color: '#ffffff'
+            });
+        }
+        
+        <?php if(isset($_SESSION['error'])): ?>
+        mostrarAlerta('Error', '<?php echo addslashes($_SESSION['error']); ?>', 'error');
+        <?php unset($_SESSION['error']); endif; ?>
+        
+        <?php if(isset($_SESSION['success'])): ?>
+        mostrarAlerta('Éxito', '<?php echo addslashes($_SESSION['success']); ?>', 'success');
+        <?php unset($_SESSION['success']); endif; ?>
+        
+        <?php if(isset($_SESSION['warning'])): ?>
+        mostrarAlerta('Advertencia', '<?php echo addslashes($_SESSION['warning']); ?>', 'warning');
+        <?php unset($_SESSION['warning']); endif; ?>
         });
-    }
-    
-    <?php if(isset($_SESSION['error'])): ?>
-    mostrarAlerta('Error', '<?php echo $_SESSION['error']; ?>', 'error');
-    <?php unset($_SESSION['error']); endif; ?>
-    
-    <?php if(isset($_SESSION['success'])): ?>
-    mostrarAlerta('Éxito', '<?php echo $_SESSION['success']; ?>', 'success');
-    <?php unset($_SESSION['success']); endif; ?>
-    
-    <?php if(isset($_SESSION['warning'])): ?>
-    mostrarAlerta('Advertencia', '<?php echo $_SESSION['warning']; ?>', 'warning');
-    <?php unset($_SESSION['warning']); endif; ?>
-    </script>
+        </script>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+    </body>
+    </html>

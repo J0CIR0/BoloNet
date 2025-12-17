@@ -32,8 +32,8 @@ $title = 'Usuarios';
                     <?php foreach($usuarios as $usuarioItem): ?>
                     <tr>
                         <td><?php echo $usuarioItem['id']; ?></td>
-                        <td><?php echo htmlspecialchars($usuarioItem['nombre']); ?></td>
-                        <td><?php echo htmlspecialchars($usuarioItem['apellido']); ?></td>
+                        <td><?php echo htmlspecialchars($usuarioItem['persona_nombre'] ?? $usuarioItem['nombre'] ?? ''); ?></td>
+                        <td><?php echo htmlspecialchars($usuarioItem['persona_apellido'] ?? $usuarioItem['apellido'] ?? ''); ?></td>
                         <td><?php echo htmlspecialchars($usuarioItem['email']); ?></td>
                         <td><span class="badge bg-success"><?php echo htmlspecialchars($usuarioItem['rol_nombre']); ?></span></td>
                         <td>
@@ -52,7 +52,7 @@ $title = 'Usuarios';
                             $puede_eliminar = false;
                             if($usuarioModel->hasPermission($_SESSION['user_id'], 'eliminar_usuario')) {
                                 if($usuarioItem['id'] != $_SESSION['user_id']) {
-                                    if($usuarioItem['rol_nombre'] != 'administrador') {
+                                    if($usuarioItem['rol_nombre'] != 'registro') {
                                         $puede_eliminar = true;
                                     }
                                 }

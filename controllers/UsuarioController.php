@@ -33,14 +33,24 @@ class UsuarioController {
         
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $data = [
+                'ci' => $_POST['ci'],
                 'nombre' => $_POST['nombre'],
                 'apellido' => $_POST['apellido'],
                 'email' => $_POST['email'],
                 'password' => $_POST['password'],
+                'fecha_nacimiento' => $_POST['fecha_nacimiento'],
+                'genero' => $_POST['genero'],
                 'telefono' => $_POST['telefono'] ?? '',
                 'direccion' => $_POST['direccion'] ?? '',
                 'rol_id' => $_POST['rol_id']
             ];
+            
+            $existing = $this->usuario->findByEmail($data['email']);
+            if ($existing) {
+                $_SESSION['error'] = 'El email ya está registrado';
+                header('Location: usuarios.php?action=create');
+                exit();
+            }
             
             if ($this->usuario->create($data)) {
                 $_SESSION['success'] = 'Usuario creado exitosamente';
@@ -63,11 +73,14 @@ class UsuarioController {
         
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $data = [
+                'ci' => $_POST['ci'],
                 'nombre' => $_POST['nombre'],
                 'apellido' => $_POST['apellido'],
                 'email' => $_POST['email'],
                 'telefono' => $_POST['telefono'] ?? '',
                 'direccion' => $_POST['direccion'] ?? '',
+                'fecha_nacimiento' => $_POST['fecha_nacimiento'] ?? '2000-01-01',
+                'genero' => $_POST['genero'] ?? 'M',
                 'rol_id' => $_POST['rol_id']
             ];
             
@@ -84,7 +97,7 @@ class UsuarioController {
             }
         }
         
-        $usuario_data = $this->usuario->getById($id); // Cambiado a $usuario_data
+        $usuario_data = $this->usuario->getById($id);
         if (!$usuario_data) {
             $_SESSION['error'] = 'Usuario no encontrado';
             header('Location: usuarios.php');

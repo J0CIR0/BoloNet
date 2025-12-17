@@ -42,7 +42,7 @@ class AuthController {
         
         require_once __DIR__ . '/../views/auth/login.php';
     }
-    
+        
     public function register() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             require_once __DIR__ . '/../models/Email.php';
@@ -77,9 +77,9 @@ class AuthController {
                 $nombre_completo = $data['nombre'] . ' ' . $data['apellido'];
                 
                 if ($email->enviarVerificacion($data['email'], $nombre_completo, $verification_token)) {
-                    $_SESSION['success'] = 'Registro exitoso. Revisa tu email.';
+                    $_SESSION['success'] = 'Registro exitoso. Revisa tu email para verificar tu cuenta.';
                 } else {
-                    $_SESSION['warning'] = 'Registro exitoso, pero hubo un problema con el email.';
+                    $_SESSION['warning'] = 'Registro exitoso, pero hubo un problema al enviar el email de verificación.';
                 }
                 
                 header('Location: index.php');

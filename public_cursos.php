@@ -50,8 +50,7 @@ $cursos = $curso->getCursosActivos();
         <?php if(isset($_SESSION['user_id'])): ?>
         <a href="dashboard.php" class="btn btn-success">Volver al Dashboard</a>
         <?php else: ?>
-        <a href="index.php" class="btn btn-success">Iniciar Sesión para Inscribirse</a>
-        <a href="register.php" class="btn btn-outline-success ms-2">Registrarse</a>
+        <a href="index.php" class="btn btn-success">Regresar al Inicio</a>
         <?php endif; ?>
     </div>
 </div>

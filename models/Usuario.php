@@ -48,14 +48,23 @@ class Usuario {
         try {
             $sql_persona = "INSERT INTO persona (ci, nombre, apellido, fecha_nacimiento, genero, telefono, direccion) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt_persona = $this->db->prepare($sql_persona);
+            
+            $ci = $data['ci'];
+            $nombre = $data['nombre'];
+            $apellido = $data['apellido'];
+            $fecha_nacimiento = $data['fecha_nacimiento'] ?? '2000-01-01';
+            $genero = $data['genero'] ?? 'M';
+            $telefono = $data['telefono'] ?? '';
+            $direccion = $data['direccion'] ?? '';
+            
             $stmt_persona->bind_param("sssssss", 
-                $data['ci'], 
-                $data['nombre'], 
-                $data['apellido'], 
-                $data['fecha_nacimiento'] ?? '2000-01-01',
-                $data['genero'] ?? 'M',
-                $data['telefono'] ?? '',
-                $data['direccion'] ?? ''
+                $ci, 
+                $nombre, 
+                $apellido, 
+                $fecha_nacimiento,
+                $genero,
+                $telefono,
+                $direccion
             );
             
             if (!$stmt_persona->execute()) {
@@ -66,14 +75,22 @@ class Usuario {
             
             $sql_usuario = "INSERT INTO usuario (persona_id, email, password, rol_id, estado, verification_token, token_expires) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt_usuario = $this->db->prepare($sql_usuario);
+            
+            $email = $data['email'];
+            $password = $data['password'];
+            $rol_id = $data['rol_id'];
+            $estado = $data['estado'] ?? 0;
+            $verification_token = $data['verification_token'] ?? NULL;
+            $token_expires = $data['token_expires'] ?? NULL;
+            
             $stmt_usuario->bind_param("issiiss", 
                 $persona_id,
-                $data['email'], 
-                $data['password'], 
-                $data['rol_id'],
-                $data['estado'] ?? 0,
-                $data['verification_token'] ?? NULL,
-                $data['token_expires'] ?? NULL
+                $email, 
+                $password, 
+                $rol_id,
+                $estado,
+                $verification_token,
+                $token_expires
             );
             
             if (!$stmt_usuario->execute()) {
@@ -91,27 +108,42 @@ class Usuario {
     public function update($id, $data) {
         $usuario = $this->getById($id);
         if (!$usuario) return false;
-        
         $this->db->begin_transaction();
-        
         try {
             $sql_persona = "UPDATE persona SET ci = ?, nombre = ?, apellido = ?, fecha_nacimiento = ?, genero = ?, telefono = ?, direccion = ? WHERE id = ?";
             $stmt_persona = $this->db->prepare($sql_persona);
+            
+            $ci = $data['ci'] ?? $usuario['ci'];
+            $nombre = $data['nombre'] ?? $usuario['persona_nombre'];
+            $apellido = $data['apellido'] ?? $usuario['persona_apellido'];
+            $fecha_nacimiento = $data['fecha_nacimiento'] ?? '2000-01-01';
+            $genero = $data['genero'] ?? 'M';
+            $telefono = $data['telefono'] ?? '';
+            $direccion = $data['direccion'] ?? '';
+            $persona_id = $usuario['persona_id'];
+            
             $stmt_persona->bind_param("sssssssi", 
-                $data['ci'] ?? $usuario['ci'], 
-                $data['nombre'] ?? $usuario['persona_nombre'], 
-                $data['apellido'] ?? $usuario['persona_apellido'], 
-                $data['fecha_nacimiento'] ?? '2000-01-01',
-                $data['genero'] ?? 'M',
-                $data['telefono'] ?? '',
-                $data['direccion'] ?? '',
-                $usuario['persona_id']
+                $ci, 
+                $nombre, 
+                $apellido, 
+                $fecha_nacimiento,
+                $genero,
+                $telefono,
+                $direccion,
+                $persona_id
             );
             
             $stmt_persona->execute();
             
             $sql_usuario = "UPDATE usuario SET email = ?, rol_id = ?";
-            $params = [$data['email'] ?? $usuario['email'], $data['rol_id'] ?? $usuario['rol_id']];
+            $params = [];
+            $types = "";
+            
+            $email = $data['email'] ?? $usuario['email'];
+            $rol_id = $data['rol_id'] ?? $usuario['rol_id'];
+            
+            $params[] = $email;
+            $params[] = $rol_id;
             $types = "si";
             
             if (isset($data['password']) && !empty($data['password'])) {
@@ -125,6 +157,7 @@ class Usuario {
             $types .= "i";
             
             $stmt_usuario = $this->db->prepare($sql_usuario);
+            
             $stmt_usuario->bind_param($types, ...$params);
             $stmt_usuario->execute();
             

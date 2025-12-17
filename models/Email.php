@@ -39,7 +39,7 @@ class Email {
             $this->mailer->isHTML(true);
             $this->mailer->Subject = 'Verifica tu cuenta - ' . SITE_NAME;
             
-            $verification_link = SITE_URL . "verify.php?token=" . $token;
+            $verification_link = SITE_URL . "verify.php?token=" . urlencode($token);
             
             $this->mailer->Body = $this->crearTemplateVerificacion($nombre, $verification_link);
             $this->mailer->AltBody = "Hola $nombre,\n\nVerifica tu cuenta: $verification_link\n\nVálido por 24 horas.";
