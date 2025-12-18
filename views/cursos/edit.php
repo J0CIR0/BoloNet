@@ -3,11 +3,8 @@ if (!isset($curso) || empty($curso)) {
     echo '<div class="alert alert-danger">Curso no encontrado</div>';
     return;
 }
-if (is_object($curso)) {
-    $curso_data = (array) $curso;
-} else {
-    $curso_data = $curso;
-}
+
+$curso_data = is_object($curso) ? (array) $curso : $curso;
 $curso_data['codigo'] = $curso_data['codigo'] ?? '';
 $curso_data['nombre'] = $curso_data['nombre'] ?? '';
 $curso_data['descripcion'] = $curso_data['descripcion'] ?? '';
@@ -16,9 +13,11 @@ $curso_data['fecha_inicio'] = $curso_data['fecha_inicio'] ?? '';
 $curso_data['fecha_fin'] = $curso_data['fecha_fin'] ?? '';
 $curso_data['profesor_id'] = $curso_data['profesor_id'] ?? null;
 $curso_data['estado'] = $curso_data['estado'] ?? 'activo';
+
 $fecha_inicio = ($curso_data['fecha_inicio'] == '0000-00-00' || empty($curso_data['fecha_inicio'])) ? date('Y-m-d') : $curso_data['fecha_inicio'];
 $fecha_fin = ($curso_data['fecha_fin'] == '0000-00-00' || empty($curso_data['fecha_fin'])) ? date('Y-m-d', strtotime('+1 month')) : $curso_data['fecha_fin'];
 $estado = $curso_data['estado'];
+
 $title = 'Editar Curso';
 ?>
 <div class="card">

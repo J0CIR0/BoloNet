@@ -3,10 +3,16 @@ if (!isset($curso) || empty($curso)) {
     echo '<div class="alert alert-danger">Curso no encontrado</div>';
     return;
 }
+if (is_object($curso)) {
+    $curso_data = (array) $curso;
+} else {
+    $curso_data = $curso;
+}
+
 $title = 'Gestionar Inscripciones';
 ?>
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Gestionar Inscripciones: <?php echo htmlspecialchars($curso['nombre']); ?></h2>
+    <h2>Gestionar Inscripciones: <?php echo htmlspecialchars($curso_data['nombre']); ?></h2>
     <a href="cursos.php" class="btn btn-secondary">Volver a Cursos</a>
 </div>
 <div class="card">

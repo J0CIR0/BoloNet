@@ -23,73 +23,84 @@ class CursoController {
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
     public function create() {
-    $this->checkPermission('crear_curso');
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $codigo = trim($_POST['codigo']);
-        $nombre = trim($_POST['nombre']);
-        $descripcion = trim($_POST['descripcion'] ?? '');
-        $duracion_horas = intval($_POST['duracion_horas']);
-        $fecha_inicio = $_POST['fecha_inicio'];
-        $fecha_fin = $_POST['fecha_fin'];
-        $profesor_id = !empty($_POST['profesor_id']) ? intval($_POST['profesor_id']) : null;
-        $estado = $_POST['estado'] ?? 'activo';
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_inicio)) {
-            $_SESSION['error'] = 'Formato de fecha de inicio inválido. Use YYYY-MM-DD';
-            header('Location: cursos.php?action=create');
-            exit();
+        $this->checkPermission('crear_curso');
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $codigo = trim($_POST['codigo']);
+            $nombre = trim($_POST['nombre']);
+            $descripcion = trim($_POST['descripcion'] ?? '');
+            $duracion_horas = intval($_POST['duracion_horas']);
+            $fecha_inicio = trim($_POST['fecha_inicio']);
+            $fecha_fin = trim($_POST['fecha_fin']);
+            $profesor_id = isset($_POST['profesor_id']) && $_POST['profesor_id'] !== '' ? intval($_POST['profesor_id']) : null;
+            $estado = $_POST['estado'] ?? 'activo';
+            $dateRegex = '/^\d{4}-\d{2}-\d{2}$/';
+            if (!preg_match($dateRegex, $fecha_inicio)) {
+                $_SESSION['error'] = 'Formato de Fecha Inicio incorrecto. Use AAAA-MM-DD (Ej: 2025-12-18)';
+                header('Location: cursos.php?action=create');
+                exit();
+            }
+            if (!preg_match($dateRegex, $fecha_fin)) {
+                $_SESSION['error'] = 'Formato de Fecha Fin incorrecto. Use AAAA-MM-DD (Ej: 2026-01-18)';
+                header('Location: cursos.php?action=create');
+                exit();
+            }
+            if (!strtotime($fecha_inicio)) {
+                $_SESSION['error'] = 'Fecha de inicio no válida';
+                header('Location: cursos.php?action=create');
+                exit();
+            }
+            if (!strtotime($fecha_fin)) {
+                $_SESSION['error'] = 'Fecha de fin no válida';
+                header('Location: cursos.php?action=create');
+                exit();
+            }
+            if (empty($codigo) || empty($nombre) || empty($fecha_inicio) || empty($fecha_fin)) {
+                $_SESSION['error'] = 'Todos los campos obligatorios deben estar completos';
+                header('Location: cursos.php?action=create');
+                exit();
+            }
+            if ($duracion_horas <= 0) {
+                $_SESSION['error'] = 'La duración debe ser mayor a 0';
+                header('Location: cursos.php?action=create');
+                exit();
+            }
+            if ($fecha_inicio >= $fecha_fin) {
+                $_SESSION['error'] = 'La fecha de inicio debe ser anterior a la fecha de fin';
+                header('Location: cursos.php?action=create');
+                exit();
+            }
+            $existente = $this->curso->getByCodigo($codigo);
+            if ($existente) {
+                $_SESSION['error'] = 'El código del curso ya existe';
+                header('Location: cursos.php?action=create');
+                exit();
+            }
+            $data = [
+                'codigo' => $codigo,
+                'nombre' => $nombre,
+                'descripcion' => $descripcion,
+                'duracion_horas' => $duracion_horas,
+                'fecha_inicio' => $fecha_inicio,
+                'fecha_fin' => $fecha_fin,
+                'profesor_id' => $profesor_id,
+                'estado' => $estado
+            ];
+            if ($this->curso->create($data)) {
+                $_SESSION['success'] = 'Curso creado exitosamente';
+                header('Location: cursos.php');
+                exit();
+            } else {
+                $_SESSION['error'] = 'Error al crear curso';
+                header('Location: cursos.php?action=create');
+                exit();
+            }
         }
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_fin)) {
-            $_SESSION['error'] = 'Formato de fecha de fin inválido. Use YYYY-MM-DD';
-            header('Location: cursos.php?action=create');
-            exit();
-        }
-        if (empty($codigo) || empty($nombre) || empty($fecha_inicio) || empty($fecha_fin)) {
-            $_SESSION['error'] = 'Todos los campos obligatorios deben estar completos';
-            header('Location: cursos.php?action=create');
-            exit();
-        }
-        if ($duracion_horas <= 0) {
-            $_SESSION['error'] = 'La duración debe ser mayor a 0';
-            header('Location: cursos.php?action=create');
-            exit();
-        }
-        if ($fecha_inicio >= $fecha_fin) {
-            $_SESSION['error'] = 'La fecha de inicio debe ser anterior a la fecha de fin';
-            header('Location: cursos.php?action=create');
-            exit();
-        }
-        $existente = $this->curso->getByCodigo($codigo);
-        if ($existente) {
-            $_SESSION['error'] = 'El código del curso ya existe';
-            header('Location: cursos.php?action=create');
-            exit();
-        }
-        $data = [
-            'codigo' => $codigo,
-            'nombre' => $nombre,
-            'descripcion' => $descripcion,
-            'duracion_horas' => $duracion_horas,
-            'fecha_inicio' => $fecha_inicio,
-            'fecha_fin' => $fecha_fin,
-            'profesor_id' => $profesor_id,
-            'estado' => $estado
-        ];
-        if ($this->curso->create($data)) {
-            $_SESSION['success'] = 'Curso creado exitosamente';
-            header('Location: cursos.php');
-            exit();
-        } else {
-            $_SESSION['error'] = 'Error al crear curso';
-            header('Location: cursos.php?action=create');
-            exit();
-        }
+        $profesores = $this->usuario->getProfesores();
+        $title = 'Nuevo Curso';
+        require_once __DIR__ . '/../views/layouts/header.php';
+        require_once __DIR__ . '/../views/cursos/create.php';
+        require_once __DIR__ . '/../views/layouts/footer.php';
     }
-    $profesores = $this->usuario->getProfesores();
-    $title = 'Nuevo Curso';
-    require_once __DIR__ . '/../views/layouts/header.php';
-    require_once __DIR__ . '/../views/cursos/create.php';
-    require_once __DIR__ . '/../views/layouts/footer.php';
-}
     public function edit($id) {
         $this->checkPermission('editar_curso');
         $curso = $this->curso->getById($id);
@@ -99,22 +110,25 @@ class CursoController {
             exit();
         }
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            error_log("Datos POST recibidos:");
-            error_log("codigo: " . $_POST['codigo']);
-            error_log("nombre: " . $_POST['nombre']);
-            error_log("fecha_inicio: " . $_POST['fecha_inicio']);
-            error_log("fecha_fin: " . $_POST['fecha_fin']);
-            error_log("estado: " . ($_POST['estado'] ?? 'activo'));
             $codigo = trim($_POST['codigo']);
             $nombre = trim($_POST['nombre']);
             $descripcion = trim($_POST['descripcion'] ?? '');
             $duracion_horas = intval($_POST['duracion_horas']);
-            $fecha_inicio = $_POST['fecha_inicio'];
-            $fecha_fin = $_POST['fecha_fin'];
-            $profesor_id = !empty($_POST['profesor_id']) ? intval($_POST['profesor_id']) : null;
+            $fecha_inicio = trim($_POST['fecha_inicio']);
+            $fecha_fin = trim($_POST['fecha_fin']);
+            $profesor_id = isset($_POST['profesor_id']) && $_POST['profesor_id'] !== '' ? intval($_POST['profesor_id']) : null;
             $estado = $_POST['estado'] ?? 'activo';
-            error_log("fecha_inicio procesada: $fecha_inicio");
-            error_log("fecha_fin procesada: $fecha_fin");
+            $dateRegex = '/^\d{4}-\d{2}-\d{2}$/';
+            if (!preg_match($dateRegex, $fecha_inicio)) {
+                $_SESSION['error'] = 'Formato de Fecha Inicio incorrecto. Use AAAA-MM-DD';
+                header("Location: cursos.php?action=edit&id=$id");
+                exit();
+            }
+            if (!preg_match($dateRegex, $fecha_fin)) {
+                $_SESSION['error'] = 'Formato de Fecha Fin incorrecto. Use AAAA-MM-DD';
+                header("Location: cursos.php?action=edit&id=$id");
+                exit();
+            }
             if (empty($codigo) || empty($nombre) || empty($fecha_inicio) || empty($fecha_fin)) {
                 $_SESSION['error'] = 'Todos los campos obligatorios deben estar completos';
                 header("Location: cursos.php?action=edit&id=$id");
@@ -148,8 +162,6 @@ class CursoController {
                 'profesor_id' => $profesor_id,
                 'estado' => $estado
             ];
-            error_log("Datos para update:");
-            error_log(print_r($data, true));
             if ($this->curso->update($id, $data)) {
                 $_SESSION['success'] = 'Curso actualizado exitosamente';
                 header('Location: cursos.php');

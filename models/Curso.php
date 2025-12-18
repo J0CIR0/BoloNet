@@ -38,48 +38,144 @@ class Curso {
         return $stmt->get_result()->fetch_assoc();
     }
     public function create($data) {
-        $sql = "INSERT INTO curso (codigo, nombre, descripcion, duracion_horas, fecha_inicio, fecha_fin, profesor_id, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        $stmt = $this->db->prepare($sql);
-        $profesor_id = !empty($data['profesor_id']) ? $data['profesor_id'] : NULL;
+        foreach ($data as $key => $value) {
+            error_log("$key: " . ($value === null ? 'NULL' : $value));
+        }
+        $codigo = isset($data['codigo']) ? trim($data['codigo']) : '';
+        $nombre = isset($data['nombre']) ? trim($data['nombre']) : '';
+        $descripcion = isset($data['descripcion']) ? trim($data['descripcion']) : '';
+        $duracion_horas = isset($data['duracion_horas']) ? intval($data['duracion_horas']) : 0;
+        $fecha_inicio = isset($data['fecha_inicio']) ? trim($data['fecha_inicio']) : '';
+        $fecha_fin = isset($data['fecha_fin']) ? trim($data['fecha_fin']) : '';
+        $profesor_id = isset($data['profesor_id']) && $data['profesor_id'] !== '' && $data['profesor_id'] !== null ? intval($data['profesor_id']) : null;
         $estado = isset($data['estado']) && !empty($data['estado']) ? $data['estado'] : 'activo';
-        $stmt->bind_param("sssiissi", 
-            $data['codigo'], 
-            $data['nombre'], 
-            $data['descripcion'],
-            $data['duracion_horas'],
-            $data['fecha_inicio'],
-            $data['fecha_fin'],
-            $profesor_id,
-            $estado
-        );
-        return $stmt->execute();
+        error_log("=== VALORES PROCESADOS ===");
+        error_log("codigo: $codigo");
+        error_log("nombre: $nombre");
+        error_log("fecha_inicio: $fecha_inicio");
+        error_log("fecha_fin: $fecha_fin");
+        error_log("estado: $estado");
+        error_log("profesor_id: " . ($profesor_id === null ? 'NULL' : $profesor_id));
+        if (empty($fecha_inicio) || $fecha_inicio == '0000-00-00') {
+            $fecha_inicio = date('Y-m-d');
+            error_log("Fecha inicio corregida a: $fecha_inicio");
+        }
+        if (empty($fecha_fin) || $fecha_fin == '0000-00-00') {
+            $fecha_fin = date('Y-m-d', strtotime('+1 month'));
+            error_log("Fecha fin corregida a: $fecha_fin");
+        }
+        if (empty($estado)) {
+            $estado = 'activo';
+            error_log("Estado corregido a: $estado");
+        }
+        $sql_directo = "INSERT INTO curso (codigo, nombre, descripcion, duracion_horas, fecha_inicio, fecha_fin, estado" . ($profesor_id !== null ? ", profesor_id" : "") . ") VALUES (";
+        $sql_directo .= "'" . $this->db->real_escape_string($codigo) . "', ";
+        $sql_directo .= "'" . $this->db->real_escape_string($nombre) . "', ";
+        $sql_directo .= "'" . $this->db->real_escape_string($descripcion) . "', ";
+        $sql_directo .= $duracion_horas . ", ";
+        $sql_directo .= "'" . $this->db->real_escape_string($fecha_inicio) . "', ";
+        $sql_directo .= "'" . $this->db->real_escape_string($fecha_fin) . "', ";
+        $sql_directo .= "'" . $this->db->real_escape_string($estado) . "'";
+        if ($profesor_id !== null) {
+            $sql_directo .= ", " . $profesor_id;
+        }
+        $sql_directo .= ")";
+        error_log("SQL DIRECTO: $sql_directo");
+        $result_directo = $this->db->query($sql_directo);
+        if ($result_directo) {
+            error_log("✓ Insert directo exitoso");
+            return true;
+        } else {
+            error_log("✗ Error en insert directo: " . $this->db->error);
+            if ($profesor_id !== null) {
+                $sql = "INSERT INTO curso (codigo, nombre, descripcion, duracion_horas, fecha_inicio, fecha_fin, profesor_id, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                $stmt = $this->db->prepare($sql);
+                if ($stmt) {
+                    $stmt->bind_param("sssiissi", 
+                        $codigo, 
+                        $nombre, 
+                        $descripcion,
+                        $duracion_horas,
+                        $fecha_inicio,
+                        $fecha_fin,
+                        $profesor_id,
+                        $estado
+                    );
+                    $result = $stmt->execute();
+                    $stmt->close();
+                    return $result;
+                }
+            } else {
+                $sql = "INSERT INTO curso (codigo, nombre, descripcion, duracion_horas, fecha_inicio, fecha_fin, estado) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $stmt = $this->db->prepare($sql);
+                if ($stmt) {
+                    $stmt->bind_param("sssiiss", 
+                        $codigo, 
+                        $nombre, 
+                        $descripcion,
+                        $duracion_horas,
+                        $fecha_inicio,
+                        $fecha_fin,
+                        $estado
+                    );
+                    $result = $stmt->execute();
+                    $stmt->close();
+                    return $result;
+                }
+            }
+            return false;
+        }
     }
     public function update($id, $data) {
-        $sql = "UPDATE curso SET codigo = ?, nombre = ?, descripcion = ?, duracion_horas = ?, fecha_inicio = ?, fecha_fin = ?, profesor_id = ?, estado = ? WHERE id = ?";
-        $stmt = $this->db->prepare($sql);
-        $profesor_id = !empty($data['profesor_id']) ? $data['profesor_id'] : NULL;
+        $codigo = isset($data['codigo']) ? trim($data['codigo']) : '';
+        $nombre = isset($data['nombre']) ? trim($data['nombre']) : '';
+        $descripcion = isset($data['descripcion']) ? trim($data['descripcion']) : '';
+        $duracion_horas = isset($data['duracion_horas']) ? intval($data['duracion_horas']) : 0;
+        $fecha_inicio = isset($data['fecha_inicio']) ? trim($data['fecha_inicio']) : '';
+        $fecha_fin = isset($data['fecha_fin']) ? trim($data['fecha_fin']) : '';
+        $profesor_id = isset($data['profesor_id']) && $data['profesor_id'] !== '' && $data['profesor_id'] !== null ? intval($data['profesor_id']) : null;
         $estado = isset($data['estado']) && !empty($data['estado']) ? $data['estado'] : 'activo';
-        error_log("Valores para update:");
-        error_log("codigo: " . $data['codigo']);
-        error_log("nombre: " . $data['nombre']);
-        error_log("fecha_inicio: " . $data['fecha_inicio']);
-        error_log("fecha_fin: " . $data['fecha_fin']);
-        error_log("estado: " . $estado);
-        error_log("profesor_id: " . ($profesor_id ?: 'NULL'));
-        $stmt->bind_param("sssiissi", 
-            $data['codigo'], 
-            $data['nombre'], 
-            $data['descripcion'],
-            $data['duracion_horas'],
-            $data['fecha_inicio'],
-            $data['fecha_fin'],
-            $profesor_id,
-            $estado,
-            $id
-        );
-        $result = $stmt->execute();
+        if (empty($fecha_inicio) || $fecha_inicio == '0000-00-00') {
+            $fecha_inicio = date('Y-m-d');
+        }
+        if (empty($fecha_fin) || $fecha_fin == '0000-00-00') {
+            $fecha_fin = date('Y-m-d', strtotime('+1 month'));
+        }
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_inicio)) {
+            if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $fecha_inicio, $matches)) {
+                $fecha_inicio = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
+            } else {
+                $fecha_inicio = date('Y-m-d');
+            }
+        }
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_fin)) {
+            if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $fecha_fin, $matches)) {
+                $fecha_fin = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
+            } else {
+                $fecha_fin = date('Y-m-d', strtotime('+1 month'));
+            }
+        }
+        if (empty($estado)) {
+            $estado = 'activo';
+        }
+        $sql = "UPDATE curso SET ";
+        $sql .= "codigo = '" . $this->db->real_escape_string($codigo) . "', ";
+        $sql .= "nombre = '" . $this->db->real_escape_string($nombre) . "', ";
+        $sql .= "descripcion = '" . $this->db->real_escape_string($descripcion) . "', ";
+        $sql .= "duracion_horas = " . intval($duracion_horas) . ", ";
+        $sql .= "fecha_inicio = '" . $this->db->real_escape_string($fecha_inicio) . "', ";
+        $sql .= "fecha_fin = '" . $this->db->real_escape_string($fecha_fin) . "', ";
+        $sql .= "estado = '" . $this->db->real_escape_string($estado) . "'";
+        if ($profesor_id !== null) {
+            $sql .= ", profesor_id = " . intval($profesor_id);
+        } else {
+            $sql .= ", profesor_id = NULL";
+        }
+        $sql .= " WHERE id = " . intval($id);
+        error_log("SQL UPDATE CURSO: " . $sql);
+        $result = $this->db->query($sql);
         if (!$result) {
-            error_log("Error en update: " . $stmt->error);
+            error_log("ERROR UPDATE CURSO: " . $this->db->error);
         }
         return $result;
     }

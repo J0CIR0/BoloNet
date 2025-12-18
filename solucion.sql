@@ -193,3 +193,7 @@ CREATE INDEX idx_curso_codigo ON curso(codigo);
 CREATE INDEX idx_curso_estado ON curso(estado);
 CREATE INDEX idx_inscripcion_estudiante ON inscripcion(estudiante_id);
 CREATE INDEX idx_inscripcion_curso ON inscripcion(curso_id);
+
+select * from curso;
+
+

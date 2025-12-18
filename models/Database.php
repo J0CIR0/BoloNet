@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/conexion.php';
+require_once __DIR__ . '/../config/conexion.php';
 class Database {
     private static $connection = null;
     public static function getConnection() {
