@@ -340,10 +340,10 @@
         </div>
     </div>
 
-    <!-- MODAL NUEVO CONTENIDO (Genérico para Video/URL) -->
+    <!-- MODAL NUEVO CONTENIDO (Genérico para Video/URL/Archivo) -->
     <div class="modal fade" id="modalNuevoContenido" tabindex="-1">
         <div class="modal-dialog">
-            <form class="modal-content" method="POST" action="index.php?controller=Aula&action=crear_contenido">
+            <form class="modal-content" method="POST" action="index.php?controller=Aula&action=crear_contenido" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title">Agregar Recurso</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -354,10 +354,10 @@
 
                     <div class="mb-3">
                         <label class="form-label">Tipo de Recurso</label>
-                        <select name="tipo" class="form-select">
+                        <select name="tipo" id="selectTipoRecurso" class="form-select" onchange="toggleRecursoInputs()">
                             <option value="enlace">Enlace Web / Link</option>
                             <option value="video">Video (YouTube/Vimeo)</option>
-                            <option value="archivo">Archivo PDF (Link Drive/Cloud)</option>
+                            <option value="archivo">Archivo PDF</option>
                         </select>
                     </div>
 
@@ -365,10 +365,19 @@
                         <label class="form-label">Título</label>
                         <input type="text" name="titulo" class="form-control" required>
                     </div>
-                    <div class="mb-3">
+
+                    <!-- Input URL -->
+                    <div class="mb-3" id="groupUrl">
                         <label class="form-label">URL / Enlace</label>
-                        <input type="url" name="url" class="form-control" required placeholder="https://...">
+                        <input type="url" name="url" id="inputUrl" class="form-control" placeholder="https://...">
                     </div>
+
+                    <!-- Input Archivo -->
+                    <div class="mb-3 d-none" id="groupArchivo">
+                        <label class="form-label">Seleccionar Archivo (PDF)</label>
+                        <input type="file" name="archivo_pdf" id="inputArchivo" class="form-control" accept=".pdf">
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Descripción</label>
                         <textarea name="descripcion" class="form-control" rows="2"></textarea>
@@ -424,12 +433,33 @@
             document.getElementById('inputModuloId').value = moduloId;
             var myModal = new bootstrap.Modal(document.getElementById('modalNuevoContenido'));
             myModal.show();
+            toggleRecursoInputs(); // Reset state
         }
 
         function prepararModalTarea(moduloId) {
             document.getElementById('inputModuloIdTarea').value = moduloId;
             var myModal = new bootstrap.Modal(document.getElementById('modalNuevaTarea'));
             myModal.show();
+        }
+
+        function toggleRecursoInputs() {
+            const tipo = document.getElementById('selectTipoRecurso').value;
+            const groupUrl = document.getElementById('groupUrl');
+            const groupArchivo = document.getElementById('groupArchivo');
+            const inputUrl = document.getElementById('inputUrl');
+            const inputArchivo = document.getElementById('inputArchivo');
+
+            if (tipo === 'archivo') {
+                groupUrl.classList.add('d-none');
+                groupArchivo.classList.remove('d-none');
+                inputUrl.removeAttribute('required');
+                inputArchivo.setAttribute('required', 'required');
+            } else {
+                groupUrl.classList.remove('d-none');
+                groupArchivo.classList.add('d-none');
+                inputUrl.setAttribute('required', 'required');
+                inputArchivo.removeAttribute('required');
+            }
         }
     </script>
 <?php endif; ?>

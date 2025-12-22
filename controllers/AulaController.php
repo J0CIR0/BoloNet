@@ -74,11 +74,33 @@ class AulaController
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             require_once __DIR__ . '/../models/Contenido.php';
+
+            $url_recurso = $_POST['url'] ?? '';
+            $tipo = $_POST['tipo'];
+
+            // Lógica de subida de archivos
+            if ($tipo === 'archivo' && isset($_FILES['archivo_pdf']) && $_FILES['archivo_pdf']['error'] === UPLOAD_ERR_OK) {
+                $uploadDir = __DIR__ . '/../uploads/cursos/materiales/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+
+                $fileTmpPath = $_FILES['archivo_pdf']['tmp_name'];
+                $fileName = time() . '_' . basename($_FILES['archivo_pdf']['name']);
+                $destPath = $uploadDir . $fileName;
+
+                if (move_uploaded_file($fileTmpPath, $destPath)) {
+                    // Guardar ruta relativa para acceso web
+                    $url_recurso = 'uploads/cursos/materiales/' . $fileName;
+                } else {
+                    die("Error al subir el archivo.");
+                }
+            }
+
             $contenidoModel = new Contenido();
-            $contenidoModel->crear($_POST['modulo_id'], $_POST['titulo'], $_POST['tipo'], $_POST['url'], $_POST['descripcion']);
+            $contenidoModel->crear($_POST['modulo_id'], $_POST['titulo'], $tipo, $url_recurso, $_POST['descripcion']);
+
             // Redirigir al curso
-            // Necesitamos el ID del curso, que debería venir en el POST o deducirse
-            // Hack rápido: enviar curso_id en form oculto
             header("Location: index.php?controller=Aula&action=index&id=" . $_POST['curso_id']);
         }
     }
