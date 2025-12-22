@@ -164,7 +164,7 @@ class UsuarioController
             exit();
         }
 
-        $usuario = $this->usuario->getById($userId);
+        $perfil_data = $this->usuario->getById($userId);
         $title = 'Mi Perfil';
         require_once __DIR__ . '/../views/layouts/header.php';
         require_once __DIR__ . '/../views/usuario/perfil.php';

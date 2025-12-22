@@ -249,7 +249,27 @@ class CursoController
         // --- LÓGICA DE SINCRONIZACIÓN SUSCRIPCIÓN ---
         $isSubscribed = isset($_SESSION['subscription_status']) && $_SESSION['subscription_status'] === 'active';
 
-        if ($isSubscribed) {
+        if ($this->usuario->hasPermission($estudiante_id, 'crear_curso')) {
+            // Es PROFESOR: Obtener cursos asignados
+            $cursosAsignados = $this->curso->getByProfesor($estudiante_id);
+            $inscripciones = [];
+            foreach ($cursosAsignados as $c) {
+                $inscripciones[] = [
+                    'id' => $c['id'],
+                    'nombre' => $c['nombre'],
+                    'codigo' => $c['codigo'],
+                    'descripcion' => $c['descripcion'],
+                    'estado_inscripcion' => 'asignado', // Estado especial para profesor
+                    'nota_final' => 0,
+                    'fecha_inscripcion' => $c['fecha_inicio'],
+                    'estado' => $c['estado'],
+                    'modalidad' => 'Presencial',
+                    'hora_inicio' => '08:00',
+                    'hora_fin' => '10:00',
+                    'progreso' => 0
+                ];
+            }
+        } elseif ($isSubscribed) {
             // Si tiene suscripción, ve TODOS los cursos como si estuviera inscrito
             $todosLosCursos = $this->curso->getAll();
             $inscripciones = [];
@@ -263,12 +283,24 @@ class CursoController
                     'descripcion' => $c['descripcion'],
                     'estado_inscripcion' => 'inscrito', // Por defecto
                     'nota_final' => 0,
-                    'fecha_inscripcion' => $c['fecha_inicio'] // Usamos inicio curso como fecha ref
+                    'fecha_inscripcion' => $c['fecha_inicio'], // Usamos inicio curso como fecha ref
+                    'estado' => $c['estado'],
+                    'modalidad' => 'Presencial',
+                    'hora_inicio' => '09:00',
+                    'hora_fin' => '11:00'
                 ];
             }
         } else {
             // Si no es suscriptor, ve solo lo que compró individualmente
             $inscripciones = $this->inscripcion->obtenerCursosPorEstudiante($estudiante_id);
+            foreach ($inscripciones as &$ins) {
+                if (!isset($ins['nombre']))
+                    $ins['nombre'] = $ins['curso_nombre'] ?? 'Curso';
+                if (!isset($ins['descripcion']))
+                    $ins['descripcion'] = '';
+                if (!isset($ins['estado']))
+                    $ins['estado'] = $ins['curso_estado'] ?? 'activo';
+            }
         }
 
         $title = 'Mis Cursos';

@@ -4,7 +4,7 @@
             <div
                 class="card-header bg-dark border-bottom border-success d-flex justify-content-between align-items-center">
                 <h4 class="mb-0 text-success"><i class="fas fa-user-circle me-2"></i>Mi Perfil</h4>
-                <span class="badge bg-secondary"><?php echo htmlspecialchars($usuario['rol_nombre']); ?></span>
+                <span class="badge bg-secondary"><?php echo htmlspecialchars($perfil_data['rol_nombre']); ?></span>
             </div>
             <div class="card-body bg-dark text-white">
 
@@ -16,13 +16,13 @@
                         <div class="col-md-6">
                             <label class="form-label text-muted">Nombre Completo</label>
                             <input type="text" class="form-control bg-secondary text-white border-0"
-                                value="<?php echo htmlspecialchars($usuario['persona_nombre'] . ' ' . $usuario['persona_apellido']); ?>"
+                                value="<?php echo htmlspecialchars($perfil_data['persona_nombre'] . ' ' . $perfil_data['persona_apellido']); ?>"
                                 readonly>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-muted">Cédula de Identidad</label>
                             <input type="text" class="form-control bg-secondary text-white border-0"
-                                value="<?php echo htmlspecialchars($usuario['ci']); ?>" readonly>
+                                value="<?php echo htmlspecialchars($perfil_data['ci']); ?>" readonly>
                         </div>
                     </div>
 
@@ -32,12 +32,12 @@
                         <div class="col-md-6">
                             <label class="form-label">Correo Electrónico</label>
                             <input type="email" name="email" class="form-control bg-dark text-white border-secondary"
-                                value="<?php echo htmlspecialchars($usuario['email']); ?>" required>
+                                value="<?php echo htmlspecialchars($perfil_data['email']); ?>" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Teléfono / WhatsApp</label>
                             <input type="text" name="telefono" class="form-control bg-dark text-white border-secondary"
-                                value="<?php echo isset($usuario['telefono']) ? htmlspecialchars($usuario['telefono']) : ''; ?>">
+                                value="<?php echo isset($perfil_data['telefono']) ? htmlspecialchars($perfil_data['telefono']) : ''; ?>">
                         </div>
                     </div>
 
@@ -71,22 +71,23 @@
             </div>
         </div>
 
-        <?php if ($usuario['plan_type']): ?>
+        <?php if ($perfil_data['plan_type']): ?>
             <div class="card card-dark shadow-sm border-secondary mt-4">
                 <div class="card-body">
                     <h6 class="text-muted mb-3">Suscripción Actual</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h4 class="text-success fw-bold text-uppercase mb-0">
-                                <?php echo htmlspecialchars($usuario['plan_type']); ?></h4>
+                                <?php echo htmlspecialchars($perfil_data['plan_type']); ?>
+                            </h4>
                             <small class="text-white-50">Estado:
-                                <?php echo htmlspecialchars($usuario['subscription_status']); ?></small>
+                                <?php echo htmlspecialchars($perfil_data['subscription_status']); ?></small>
                         </div>
-                        <?php if ($usuario['subscription_end']): ?>
+                        <?php if ($perfil_data['subscription_end']): ?>
                             <div class="text-end">
                                 <span class="d-block text-white-50 small">Válido hasta</span>
                                 <span
-                                    class="fw-bold"><?php echo date('d/m/Y', strtotime($usuario['subscription_end'])); ?></span>
+                                    class="fw-bold"><?php echo date('d/m/Y', strtotime($perfil_data['subscription_end'])); ?></span>
                             </div>
                         <?php endif; ?>
                     </div>
