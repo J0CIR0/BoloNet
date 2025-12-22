@@ -183,15 +183,17 @@
             <?php if (isset($puedeInscribirse) && $puedeInscribirse && !$esProfesor && empty($estaInscrito)): ?>
                 <div class="alert alert-success border-0 shadow-sm mb-4">
                     <div class="row align-items-center">
-                        <div class="col-md-8">
+                        <div class="col-md-7">
                             <h5 class="alert-heading mb-1"><i class="fas fa-user-plus me-2"></i>¡Únete al Curso!</h5>
-                            <p class="mb-0 small">Al participar, aparecerás en la lista del profesor y podrás entregar tareas para ser calificado.</p>
+                            <p class="mb-1 small">Al participar, aparecerás en la lista del profesor y podrás entregar tareas para ser calificado.</p>
+                            <p class="mb-0 small text-muted">
+                                <i class="far fa-calendar-alt"></i> El curso finaliza el: <strong><?php echo date('d/m/Y', strtotime($cursoData['fecha_fin'])); ?></strong>
+                            </p>
                         </div>
-                        <div class="col-md-4 text-end">
-                            <form action="index.php?controller=Aula&action=participar" method="POST">
-                                <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
-                                <button type="submit" class="btn btn-success fw-bold px-4">Participar en el Curso</button>
-                            </form>
+                        <div class="col-md-5 text-end">
+                            <button type="button" class="btn btn-success fw-bold px-4" data-bs-toggle="modal" data-bs-target="#modalConfirmarParticipacion">
+                                Participar en el Curso
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -520,6 +522,34 @@
         }
     </script>
 <?php endif; ?>
+
+<!-- MODAL CONFIRMAR PARTICIPACIÓN (Estudiantes) -->
+<div class="modal fade" id="modalConfirmarParticipacion" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-user-check"></i> Confirmar Inscripción</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas participar en este curso?</p>
+                <ul class="text-muted small">
+                    <li>Aparecerás en la lista de estudiantes del profesor.</li>
+                    <li>Podrás enviar tareas y recibir calificaciones.</li>
+                    <li>Debes cumplir con las fechas de entrega establecidas.</li>
+                </ul>
+                <p class="mb-0"><strong>Nota:</strong> Esta acción no tiene costo adicional a tu suscripción.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form action="index.php?controller=Aula&action=participar" method="POST">
+                    <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
+                    <button type="submit" class="btn btn-success fw-bold">Sí, Participar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
