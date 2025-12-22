@@ -18,15 +18,11 @@ class UserSession
         $limit = $this->getSessionLimit($plan);
         $activeSessions = $this->getActiveSessions($userId);
 
-        if (count($activeSessions) >= $limit) {
-            if ($plan === 'basic') {
-                // Plan Básico: Eliminar la más antigua
-                $this->invalidateOldestSession($userId);
-            } else {
-                // Plan Pro/Premium: Bloquear nueva conexión si está lleno
-                // (Opcionalmente, el controlador puede manejar esto lanzando excepción antes)
-                return ['success' => false, 'error' => "Límite de sesiones alcanzado ($limit). Cierra sesión en otro dispositivo."];
-            }
+        // Si alcanzamos (o superamos) el límite, rotamos sesiones (FIFO)
+        // Eliminamos las más antiguas hasta tener espacio para la nueva
+        while (count($activeSessions) >= $limit) {
+            $this->invalidateOldestSession($userId);
+            array_shift($activeSessions); // Actualizamos conteo local
         }
 
         // Registrar nueva sesión
