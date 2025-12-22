@@ -196,4 +196,28 @@ CREATE INDEX idx_inscripcion_curso ON inscripcion(curso_id);
 
 select * from curso;
 
+-- ==========================================
+-- ACTUALIZACIÓN PARA SUSCRIPCIONES (SaaS)
+-- ==========================================
+
+-- 1. Actualizar tabla USUARIO
+ALTER TABLE usuario ADD COLUMN plan_type ENUM('basic', 'pro', 'premium') DEFAULT 'basic';
+ALTER TABLE usuario ADD COLUMN subscription_status ENUM('active', 'inactive', 'cancelled') DEFAULT 'inactive';
+ALTER TABLE usuario ADD COLUMN subscription_end TIMESTAMP NULL;
+
+-- 2. Tabla para Control de Sesiones Concurrentes
+CREATE TABLE IF NOT EXISTS user_sessions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    session_id VARCHAR(255) NOT NULL,
+    user_agent VARCHAR(255) NULL,
+    ip_address VARCHAR(45) NULL,
+    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES usuario(id) ON DELETE CASCADE,
+    INDEX idx_session_id (session_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 3. Índices nuevos
+CREATE INDEX idx_user_subscription ON usuario(subscription_status, plan_type);
+
 
