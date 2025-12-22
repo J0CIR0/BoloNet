@@ -138,7 +138,10 @@ class AulaController
                     // Verificar si finalizó
                     if ($hoy > $fechaFin) {
                         $cursoFinalizado = true;
-                        $gradingEnabled = false; // Nadie puede ser calificado si ya terminó, o quizás sí si entregó antes, pero por ahora simple
+                        // Los profesores siempre pueden calificar, incluso si el curso terminó
+                        // Esta lógica está dentro del 'else' de !esProfesor, por lo que $esProfesor es false aquí.
+                        // Por lo tanto, $gradingEnabled siempre se establecerá en false para no-profesores si el curso finalizó.
+                        $gradingEnabled = false;
                     } elseif ($progresoTemporal <= 0.5) {
                         // Puede participar
                         $puedeInscribirse = true;
