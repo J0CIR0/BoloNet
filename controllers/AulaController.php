@@ -171,10 +171,11 @@ class AulaController
             // Obtener entregas del estudiante
             // Necesitamos un modelo para esto, o usar TareaModel si tiene método.
             // Por ahora usaremos una consulta directa rapida o via model si existe.
-            // Asumimos que TareaModel tiene 'getEntrega($tarea_id, $usuario_id)'
+            // Usamos getEntregaEstudiante que ya existe en el modelo
 
             foreach ($todasLasTareas as &$tarea) {
-                $entrega = $this->tareaModel->obtenerEntrega($tarea['id'], $_SESSION['user_id']);
+                // Usamos getEntregaEstudiante que ya existe en el modelo
+                $entrega = $this->tareaModel->getEntregaEstudiante($tarea['id'], $_SESSION['user_id']);
                 $tarea['entrega'] = $entrega; // Si es null, no entregó
             }
             unset($tarea); // romper referencia

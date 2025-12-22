@@ -331,9 +331,9 @@
                                                         data-bs-toggle="modal" data-bs-target="#modalVerTarea"
                                                         data-id="<?php echo $tarea['id']; ?>"
                                                         data-titulo="<?php echo htmlspecialchars($tarea['titulo']); ?>"
-                                                        data-descripcion="<?php echo htmlspecialchars($tarea['descripcion']); ?>"
+                                                        data-descripcion="<?php echo htmlspecialchars($tarea['descripcion'] ?? ''); ?>"
                                                         data-fecha="<?php echo $tarea['fecha_entrega']; ?>"
-                                                        data-puntaje="<?php echo $tarea['puntaje']; ?>"
+                                                        data-puntaje="<?php echo $tarea['puntaje_maximo'] ?? 0; ?>"
                                                         onclick="verTareaFromButton(this)">
                                                     Ver Tarea
                                                 </button>
@@ -399,7 +399,7 @@
                                             if (isset($cal['entrega']) && $cal['entrega']) {
                                                 if ($cal['entrega']['calificacion'] !== null) {
                                                     $estado = '<span class="badge bg-success">Calificado</span>';
-                                                    $nota = $cal['entrega']['calificacion'] . ' / ' . $cal['puntaje'];
+                                                    $nota = $cal['entrega']['calificacion'] . ' / ' . ($cal['puntaje_maximo'] ?? 0);
                                                     $feedback = $cal['entrega']['retroalimentacion'] ? $cal['entrega']['retroalimentacion'] : 'Sin comentarios';
                                                 } else {
                                                     $estado = '<span class="badge bg-info text-dark">Entregado</span>';
