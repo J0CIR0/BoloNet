@@ -329,7 +329,12 @@
                                             <?php if ($gradingEnabled): ?>
                                                 <button class="btn btn-outline-light btn-sm" 
                                                         data-bs-toggle="modal" data-bs-target="#modalVerTarea"
-                                                        onclick="verTarea(<?php echo $tarea['id']; ?>, '<?php echo addslashes($tarea['titulo']); ?>', '<?php echo addslashes($tarea['descripcion']); ?>', '<?php echo $tarea['fecha_entrega']; ?>', <?php echo $tarea['puntaje']; ?>)">
+                                                        data-id="<?php echo $tarea['id']; ?>"
+                                                        data-titulo="<?php echo htmlspecialchars($tarea['titulo']); ?>"
+                                                        data-descripcion="<?php echo htmlspecialchars($tarea['descripcion']); ?>"
+                                                        data-fecha="<?php echo $tarea['fecha_entrega']; ?>"
+                                                        data-puntaje="<?php echo $tarea['puntaje']; ?>"
+                                                        onclick="verTareaFromButton(this)">
                                                     Ver Tarea
                                                 </button>
                                             <?php else: ?>
@@ -659,17 +664,34 @@
     }
 
     function verTarea(id, titulo, descripcion, fecha, puntaje) {
+        // Fallback for old calls if any
+        document.getElementById('tarea_titulo').innerText = titulo;
+        document.getElementById('tarea_descripcion').innerText = descripcion;
+        document.getElementById('tarea_fecha').innerText = fecha;
+        document.getElementById('tarea_puntaje').innerText = puntaje + ' pts';
+        var inputId = document.getElementById('tarea_id_input');
+        if(inputId) inputId.value = id;
+        var myModal = new bootstrap.Modal(document.getElementById('modalVerTarea'));
+        myModal.show();
+    }
+
+    function verTareaFromButton(btn) {
+        var id = btn.getAttribute('data-id');
+        var titulo = btn.getAttribute('data-titulo');
+        var descripcion = btn.getAttribute('data-descripcion');
+        var fecha = btn.getAttribute('data-fecha');
+        var puntaje = btn.getAttribute('data-puntaje');
+
         document.getElementById('tarea_titulo').innerText = titulo;
         document.getElementById('tarea_descripcion').innerText = descripcion;
         document.getElementById('tarea_fecha').innerText = fecha;
         document.getElementById('tarea_puntaje').innerText = puntaje + ' pts';
         
-        // Asignar ID al form si existe
         var inputId = document.getElementById('tarea_id_input');
         if(inputId) inputId.value = id;
-
-        var myModal = new bootstrap.Modal(document.getElementById('modalVerTarea'));
-        myModal.show();
+        
+        // Modal is toggled by data-bs-toggle, but we can ensure it's updated. 
+        // Logic handled by BS5 automatically for toggle, but we populated fields first.
     }
 
     function toggleRecursoInputs() {

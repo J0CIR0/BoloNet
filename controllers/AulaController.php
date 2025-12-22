@@ -14,6 +14,8 @@ class AulaController
 
     public function __construct()
     {
+        require_once __DIR__ . '/../config/conexion.php'; // Ensure DB class is loaded
+        $this->db = (new Database())->connect();
         $this->moduloModel = new Modulo();
         $this->cursoModel = new Curso();
         $this->usuarioModel = new Usuario();
