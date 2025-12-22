@@ -157,6 +157,14 @@
         <!-- PESTAÑA 1: CONTENIDO DEL CURSO -->
         <div class="tab-pane fade show active" id="curso-content" role="tabpanel">
 
+            <!-- ALERT PARA OYENTES -->
+            <?php if (isset($auditorMessage) && !empty($auditorMessage)): ?>
+                <div class="alert alert-warning border-0 shadow-sm mb-4">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Atención:</strong> <?php echo $auditorMessage; ?>
+                </div>
+            <?php endif; ?>
+
             <!-- Botón Agregar Módulo (Solo Profesor) -->
             <?php if ($esProfesor): ?>
                 <div class="mb-4 text-end">
@@ -169,7 +177,7 @@
 
             <!-- LISTADO DE MÓDULOS -->
             <?php if (empty($modulos)): ?>
-                <div class="alert alert-info text-center">
+                <div class="alert alert-info text-center bg-dark text-white border-secondary">
                     <i class="fas fa-info-circle fa-2x mb-3"></i><br>
                     Este curso aún no tiene contenido publicado.
                 </div>
@@ -190,7 +198,7 @@
                                 data-bs-parent="#accordionModulos">
                                 <div class="bg-dark">
                                     <?php if (!empty($mod['descripcion'])): ?>
-                                        <div class="p-3 text-muted small bg-light border-bottom">
+                                        <div class="p-3 text-muted small bg-dark border-bottom border-secondary">
                                             <?php echo htmlspecialchars($mod['descripcion']); ?>
                                         </div>
                                     <?php endif; ?>
@@ -243,12 +251,12 @@
 
                                     <!-- TAREAS -->
                                     <?php foreach ($mod['tareas'] as $tarea): ?>
-                                        <div class="recurso-item bg-light border-start border-4 border-warning">
-                                            <div class="recurso-icon bg-warning bg-opacity-25 text-warning">
+                                        <div class="recurso-item bg-dark border-start border-4 border-warning">
+                                            <div class="recurso-icon bg-warning bg-opacity-10 text-warning">
                                                 <i class="fas fa-tasks"></i>
                                             </div>
                                             <div class="flex-grow-1">
-                                                <a href="#" class="text-decoration-none text-dark fw-bold">
+                                                <a href="#" class="text-decoration-none text-white fw-bold">
                                                     <?php echo htmlspecialchars($tarea['titulo']); ?>
                                                 </a>
                                                 <p class="mb-0 text-muted small">
@@ -259,7 +267,11 @@
                                                 </p>
                                             </div>
                                             <div>
-                                                <button class="btn btn-sm btn-outline-dark">Ver Tarea</button>
+                                                <?php if ($gradingEnabled): ?>
+                                                    <button class="btn btn-sm btn-outline-light">Ver Tarea</button>
+                                                <?php else: ?>
+                                                    <button class="btn btn-sm btn-secondary" disabled>Modo Oyente</button>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     <?php endforeach; ?>

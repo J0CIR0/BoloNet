@@ -54,6 +54,58 @@ class AulaController
         $user_role = $_SESSION['user_role'] ?? '';
         $esProfesor = ($user_role === 'profesor') || $this->usuarioModel->hasPermission($user_id, 'crear_curso');
 
+        // --- LÓGICA DE AUDITORÍA vs ESTUDIANTE (Suscripciones) ---
+        $gradingEnabled = false; // Por defecto desactivado
+        $auditorMessage = "";
+
+        if ($esProfesor) {
+            $gradingEnabled = true; // Profesores siempre pueden "calificar/editar"
+        } else {
+            // Verificar si YA está inscrito realmente
+            require_once __DIR__ . '/../models/Inscripcion.php';
+            $inscripcionModel = new Inscripcion();
+            $estaInscrito = $inscripcionModel->verificarInscripcion($user_id, $id_curso);
+
+            if ($estaInscrito) {
+                // Si ya está inscrito en BD, es alumno regular
+                $gradingEnabled = true;
+            } else {
+                // Es Suscriptor entrando por primera vez o revisitando sin inscripción
+                $isSubscribed = isset($_SESSION['subscription_status']) && $_SESSION['subscription_status'] === 'active';
+
+                if ($isSubscribed) {
+                    // Calcular progreso del curso
+                    // Suponiendo que $cursoData tiene 'fecha_inicio' y 'fecha_fin'
+                    $fechaInicio = strtotime($cursoData['fecha_inicio']);
+                    $fechaFin = strtotime($cursoData['fecha_fin']);
+                    $hoy = time();
+
+                    if ($fechaFin > $fechaInicio) {
+                        $duracionTotal = $fechaFin - $fechaInicio;
+                        $tiempoTranscurrido = $hoy - $fechaInicio;
+                        $progresoTemporal = $tiempoTranscurrido / $duracionTotal;
+                    } else {
+                        $progresoTemporal = 0; // Evitar división por cero
+                    }
+
+                    // REGLA: Si va por menos de la mitad (0.5), se inscribe automáticamente.
+                    // Si va por más de la mitad, es OYENTE (Auditor)
+                    if ($progresoTemporal <= 0.5) {
+                        // Inscribir automáticamente
+                        $inscripcionModel->registrar($user_id, $id_curso);
+                        $gradingEnabled = true;
+                    } else {
+                        // Modo Auditor
+                        $gradingEnabled = false;
+                        $auditorMessage = "Estás participando como OYENTE. El curso ya ha avanzado más del 50%, por lo que puedes ver el contenido pero no recibirás calificaciones.";
+                    }
+                } else {
+                    // Ni inscrito ni suscrito (no debería llegar aquí por validaciones previas, pero por seguridad)
+                    $gradingEnabled = false;
+                }
+            }
+        }
+
         // 4. Renderizar Vista
         // La vista tendrá pestañas: Contenido, Calificaciones, etc.
         $title = "Aula Virtual: " . $cursoData['nombre'];
