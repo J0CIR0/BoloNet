@@ -1,17 +1,51 @@
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
 <style>
+    /* Dark Theme for Modals */
     .aula-header {
-        background-color: #fff;
-        border-bottom: 1px solid #e0e0e0;
+        background-color: #1a1d20; /* Darker header */
+        border-bottom: 1px solid #2c3034;
         padding-top: 2rem;
         padding-bottom: 0;
         margin-bottom: 2rem;
+        color: #e0e0e0;
     }
 
-    .nav-tabs .nav-link {
+    .modal-content {
+        background-color: #212529; /* Dark bg */
+        color: #fff;
+        border: 1px solid #495057;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #495057;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #495057;
+    }
+
+    .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+    .form-control, .form-select {
+        background-color: #2c3034;
+        border: 1px solid #495057;
+        color: #e0e0e0;
+    }
+
+    .form-control:focus, .form-select:focus {
+        background-color: #2c3034;
+        border-color: #198754; /* Green focus */
+        color: #fff;
+        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+    }
+    
+    /* General Styles */
+    .nav-tabs .nav-link { /* Unchanged but context needed */
         border: none;
-        color: #6c757d;
+        color: #adb5bd; /* Lighter grey */
         padding-bottom: 1rem;
         font-weight: 500;
     }
@@ -23,25 +57,36 @@
     }
 
     .modulo-card {
-        border: 1px solid #e0e0e0;
+        border: 1px solid #2c3034;
+        background-color: #212529;
         border-radius: 8px;
         margin-bottom: 1.5rem;
         overflow: hidden;
     }
 
     .modulo-header {
-        background-color: #f8f9fa;
+        background-color: #1a1d20;
         padding: 1rem;
-        border-bottom: 1px solid #e0e0e0;
+        border-bottom: 1px solid #2c3034;
         cursor: pointer;
+    }
+    
+    .modulo-header:hover {
+        background-color: #2c3034;
+    }
+
+    .modulo-header h5 {
+        color: #f8f9fa !important;
     }
 
     .recurso-item {
         padding: 1rem;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid #2c3034;
         display: flex;
         align-items: center;
         transition: background 0.2s;
+        background-color: #212529;
+        color: #e0e0e0;
     }
 
     .recurso-item:last-child {
@@ -49,19 +94,27 @@
     }
 
     .recurso-item:hover {
-        background-color: #fcfcfc;
+        background-color: #2c3034;
     }
 
     .recurso-icon {
         width: 40px;
         height: 40px;
-        background-color: #e9ecef;
+        background-color: #343a40;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin-right: 1rem;
-        color: #495057;
+        color: #e0e0e0;
+    }
+
+    /* Links inside content */
+    .recurso-item a.text-dark {
+        color: #f8f9fa !important;
+    }
+    .recurso-item .text-muted {
+        color: #adb5bd !important;
     }
 </style>
 
@@ -135,7 +188,7 @@
 
                             <div id="collapse<?php echo $mod['id']; ?>" class="collapse show"
                                 data-bs-parent="#accordionModulos">
-                                <div class="bg-white">
+                                <div class="bg-dark">
                                     <?php if (!empty($mod['descripcion'])): ?>
                                         <div class="p-3 text-muted small bg-light border-bottom">
                                             <?php echo htmlspecialchars($mod['descripcion']); ?>
@@ -257,7 +310,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Crear Módulo</button>
+                    <button type="submit" class="btn btn-success">Crear Módulo</button>
                 </div>
             </form>
         </div>
@@ -298,7 +351,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Guardar Recurso</button>
+                    <button type="submit" class="btn btn-success">Guardar Recurso</button>
                 </div>
             </form>
         </div>
