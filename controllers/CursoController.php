@@ -258,8 +258,23 @@ class CursoController
         $interruptionCount = $userData['conteo_interrupciones'] ?? 0;
         $planType = $userData['plan_type'] ?? 'basic'; // Default to basic if null
 
-        // Show upsell if plan is basic (or null) and interruptions >= 3
-        $showUpsellBanner = ($planType === 'basic' || !$planType) && $interruptionCount >= 3;
+        $showUpsellBanner = false;
+        $upsellMessage = '';
+        $upsellTarget = ''; // 'pro' or 'premium'
+
+        if ($interruptionCount >= 3) {
+            if ($planType === 'basic' || !$planType) {
+                // Basic -> Suggest Pro or Premium
+                $showUpsellBanner = true;
+                $upsellMessage = 'Con el <strong>Plan Básico</strong> solo tienes 1 sesión activa. Actualiza a <strong>Pro (3 sesiones)</strong> o <strong>Premium (5 sesiones)</strong>.';
+                $upsellTarget = 'pro';
+            } elseif ($planType === 'pro') {
+                // Pro -> Suggest Premium
+                $showUpsellBanner = true;
+                $upsellMessage = 'Tu <strong>Plan Pro</strong> permite 3 sesiones. Si necesitas más, actualiza a <strong>Premium (5 sesiones)</strong>.';
+                $upsellTarget = 'premium';
+            }
+        }
 
         if ((isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'profesor') || $this->usuario->hasPermission($estudiante_id, 'crear_curso')) {
             // Es PROFESOR: Obtener cursos asignados

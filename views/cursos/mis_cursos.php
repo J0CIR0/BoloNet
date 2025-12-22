@@ -110,15 +110,14 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
                 <div class="flex-grow-1 ms-3">
                     <h4 class="alert-heading fw-bold mb-1">¡Mejora tu experiencia!</h4>
-                    <p class="mb-0">Hemos notado que has tenido interrupciones en tu sesión. Con el <strong>Plan
-                            Básico</strong>, las sesiones simultáneas son limitadas.</p>
-                    <hr>
-                    <p class="mb-0">Actualiza a un plan <strong>Pro</strong> o <strong>Premium</strong> para disfrutar de
-                        múltiples dispositivos simultáneos y evitar desconexiones.</p>
+                    <p class="mb-0">Hemos notado que has tenido <?php echo $interruptionCount; ?> interrupciones en tu
+                        sesión recientemente.</p>
+                    <hr class="my-2">
+                    <p class="mb-0"><?php echo $upsellMessage; ?></p>
                 </div>
                 <div class="flex-shrink-0 ms-3">
                     <a href="index.php?controller=Pago&action=planes" class="btn btn-warning fw-bold text-dark">
-                        <i class="fas fa-arrow-circle-up me-1"></i> Mejorar Plan
+                        <i class="fas fa-arrow-circle-up me-1"></i> Ver Planes
                     </a>
                 </div>
             </div>
