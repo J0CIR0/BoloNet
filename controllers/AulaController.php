@@ -50,7 +50,9 @@ class AulaController
         $modulos = $this->moduloModel->getByCurso($id_curso);
 
         // 3. Determinar rol en el contexto del aula
-        $esProfesor = $this->usuarioModel->hasPermission($user_id, 'crear_curso'); // Simplificación
+        // Permitir edición si es rol 'profesor' o tiene permiso 'crear_curso'
+        $user_role = $_SESSION['user_role'] ?? '';
+        $esProfesor = ($user_role === 'profesor') || $this->usuarioModel->hasPermission($user_id, 'crear_curso');
 
         // 4. Renderizar Vista
         // La vista tendrá pestañas: Contenido, Calificaciones, etc.

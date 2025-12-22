@@ -249,7 +249,7 @@ class CursoController
         // --- LÓGICA DE SINCRONIZACIÓN SUSCRIPCIÓN ---
         $isSubscribed = isset($_SESSION['subscription_status']) && $_SESSION['subscription_status'] === 'active';
 
-        if ($this->usuario->hasPermission($estudiante_id, 'crear_curso')) {
+        if ((isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'profesor') || $this->usuario->hasPermission($estudiante_id, 'crear_curso')) {
             // Es PROFESOR: Obtener cursos asignados
             $cursosAsignados = $this->curso->getByProfesor($estudiante_id);
             $inscripciones = [];
