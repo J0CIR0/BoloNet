@@ -418,7 +418,8 @@
                                     <tr>
                                         <td>
                                             <div class="fw-bold text-white">
-                                                <?php echo htmlspecialchars($est['nombre'] . ' ' . $est['apellido']); ?></div>
+                                                <?php echo htmlspecialchars($est['nombre'] . ' ' . $est['apellido']); ?>
+                                            </div>
                                             <div class="small text-muted"><?php echo htmlspecialchars($est['ci']); ?></div>
                                         </td>
                                         <td><?php echo htmlspecialchars($est['email']); ?></td>
@@ -576,7 +577,8 @@
 <?php if ($esProfesor): ?>
     <div class="modal fade" id="modalNuevoModulo" tabindex="-1">
         <div class="modal-dialog">
-            <form class="modal-content" method="POST" action="index.php?controller=Aula&action=crear_modulo">
+            <form class="modal-content" method="POST" action="index.php?controller=Aula&action=crear_modulo"
+                onsubmit="this.querySelector('button[type=submit]').disabled = true; this.querySelector('button[type=submit]').innerHTML = 'Creando...';">
                 <div class="modal-header">
                     <h5 class="modal-title">Nuevo Módulo / Tema</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
