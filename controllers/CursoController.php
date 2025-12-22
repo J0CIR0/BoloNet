@@ -48,7 +48,7 @@ class CursoController
 
         $cursos = $this->curso->getAll();
 
-        $cursos = $this->curso->getAll();
+
 
         $cursos_inscritos = [];
         $isSubscribed = false;

@@ -20,7 +20,7 @@ $title = 'Cursos';
             Mis Cursos</a>
     <?php endif; ?>
 </div>
-</div>
+
 
 <?php if (isset($showUpsellBanner) && $showUpsellBanner): ?>
     <div class="row mb-4">
