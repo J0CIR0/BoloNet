@@ -465,5 +465,36 @@ class AulaController
             exit();
         }
     }
+    public function ver_tarea()
+    {
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+
+        if (!isset($_GET['id']) || !isset($_SESSION['user_id'])) {
+            die("Acceso denegado o ID inválido");
+        }
+
+        $tarea_id = (int) $_GET['id'];
+        $user_id = $_SESSION['user_id'];
+
+        // Obtener datos de la tarea
+        $tarea = $this->tareaModel->obtenerPorId($tarea_id);
+        if (!$tarea) {
+            die("Tarea no encontrada");
+        }
+
+        // Obtener ID del curso a través del módulo
+        $stmt = $this->db->prepare("SELECT curso_id FROM curso_modulo WHERE id = ?");
+        $stmt->bind_param("i", $tarea['modulo_id']);
+        $stmt->execute();
+        $res = $stmt->get_result()->fetch_assoc();
+
+        $curso_id = $res['curso_id'] ?? 0;
+
+        // Obtener entrega del estudiante
+        $entrega = $this->tareaModel->getEntregaEstudiante($tarea_id, $user_id);
+
+        require_once __DIR__ . '/../views/aula/ver_tarea.php';
+    }
 }
 ?>
