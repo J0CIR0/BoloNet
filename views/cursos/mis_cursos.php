@@ -16,31 +16,34 @@ require_once __DIR__ . '/../layouts/header.php';
         border: 1px solid #333;
         color: #e0e0e0;
     }
+
     .form-control-dark:focus {
         background-color: #121212;
         border-color: #198754;
         color: #fff;
         box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
     }
-    
+
     .card-dark {
         background-color: #1a1a1a;
         border: 1px solid #333;
         color: #e0e0e0;
         transition: transform 0.3s ease;
     }
+
     .card-dark:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 20px rgba(25, 135, 84, 0.15);
         border-color: #198754;
     }
-    
+
     /* Botones de filtro */
     .btn-filter.active {
         background-color: #198754;
         color: white;
         border-color: #198754;
     }
+
     .btn-filter {
         background-color: #121212;
         color: #aaa;
@@ -54,22 +57,27 @@ require_once __DIR__ . '/../layouts/header.php';
             padding-top: 2rem !important;
             padding-bottom: 2rem !important;
         }
+
         .hero-actions {
             margin-top: 1rem;
             display: block;
             width: 100%;
         }
+
         .hero-actions .btn {
-            width: 100%; /* Botón "Explorar" ancho completo */
+            width: 100%;
+            /* Botón "Explorar" ancho completo */
         }
-        
+
         /* Filtros en celular ocupan todo el ancho y son más altos */
         .btn-group-mobile {
             display: flex;
             width: 100%;
         }
+
         .btn-group-mobile .btn {
-            flex: 1; /* Distribuye espacio igual */
+            flex: 1;
+            /* Distribuye espacio igual */
             padding: 10px 5px;
             font-size: 0.9rem;
         }
@@ -97,21 +105,24 @@ require_once __DIR__ . '/../layouts/header.php';
     <div class="row mb-4 g-3 align-items-center">
         <div class="col-md-6">
             <div class="input-group shadow-sm">
-                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-search"></i></span>
-                <input type="text" id="inputBuscador" class="form-control form-control-dark" placeholder="Buscar curso...">
+                <span class="input-group-text bg-dark border-secondary text-secondary"><i
+                        class="fas fa-search"></i></span>
+                <input type="text" id="inputBuscador" class="form-control form-control-dark"
+                    placeholder="Buscar curso...">
             </div>
         </div>
-        
+
         <div class="col-md-6 text-md-end">
             <div class="btn-group shadow-sm btn-group-mobile" role="group">
-                <button type="button" class="btn btn-filter active" onclick="filtrarCursos('todos', this)">Todos</button>
+                <button type="button" class="btn btn-filter active"
+                    onclick="filtrarCursos('todos', this)">Todos</button>
                 <button type="button" class="btn btn-filter" onclick="filtrarCursos('inscrito', this)">En Curso</button>
                 <button type="button" class="btn btn-filter" onclick="filtrarCursos('aprobado', this)">Listos</button>
             </div>
         </div>
     </div>
 
-    <?php if(empty($inscripciones)): ?>
+    <?php if (empty($inscripciones)): ?>
         <div class="text-center py-5 rounded-3 border border-secondary border-dashed bg-dark mt-4 mx-2">
             <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
             <h3 class="fw-bold text-white">No tienes cursos</h3>
@@ -120,100 +131,87 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     <?php else: ?>
 
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="contenedorCursos">
-            <?php foreach($inscripciones as $fila): ?>
-                <?php 
-                    $est = $fila['estado_inscripcion'];
-                    $nombreCurso = strtolower($fila['nombre']);
+        <?php foreach ($inscripciones as $fila): ?>
+            <?php
+            $est = $fila['estado_inscripcion'];
+            $nombreCurso = isset($fila['nombre']) ? $fila['nombre'] : 'Curso sin nombre';
+            $codigo = isset($fila['codigo']) ? $fila['codigo'] : '---';
 
-                    $progreso = rand(10, 80);
-                    $badgeClass = 'bg-primary bg-opacity-75';
-                    $btnTexto = 'Continuar';
-                    $btnClass = 'btn-success';
-                    $iconoBtn = 'fa-play';
-                    $colorBarra = 'bg-success';
+            // Simulación de datos para diseño (adaptar con datos reales si existen)
+            $progreso = rand(0, 100);
+            $fecha = isset($fila['fecha_inscripcion']) ? date('Y / n / j', strtotime($fila['fecha_inscripcion'])) : '2025 / 1 / 1';
+            $modalidad = "Presencial/Mañana"; // Placeholder
+    
+            // Colores de tarjeta según el índice para variar (opcional)
+            $cardColors = ['#1a1a1a', '#0f2e1b', '#1c1c1c'];
+            $bgColor = $cardColors[rand(0, 2)];
 
-                    if ($est == 'aprobado') {
-                        $progreso = 100;
-                        $badgeClass = 'bg-success';
-                        $btnTexto = 'Certificado';
-                        $iconoBtn = 'fa-certificate';
-                        $btnClass = 'btn-outline-success';
-                    } elseif ($est == 'reprobado') {
-                        $progreso = 100;
-                        $badgeClass = 'bg-danger';
-                        $btnTexto = 'Repasar';
-                        $iconoBtn = 'fa-redo';
-                        $btnClass = 'btn-outline-danger';
-                        $colorBarra = 'bg-danger';
-                    }
+            // Determinamos color de fondo específico si es que queremos variar por curso
+            // Usando hash del nombre para mantener consistencia
+            $hash = crc32($nombreCurso);
+            $hue = $hash % 360;
+            // Generar un color oscuro basado en el nombre
+            $dynamicBg = "hsl($hue, 40%, 15%)";
+            ?>
 
-                    $imgSeed = $fila['id'] ?? rand(1, 1000);
-                    $imgUrl = "https://picsum.photos/seed/{$imgSeed}/400/220";
-                ?>
+            <div class="col curso-item" data-nombre="<?php echo strtolower($nombreCurso); ?>" data-estado="<?php echo $est; ?>">
+                <!-- Card con diseño Overlay -->
+                <div class="card h-100 border-0 shadow-lg position-relative overflow-hidden text-white"
+                    style="background-color: <?php echo $dynamicBg; ?>; border-radius: 12px; min-height: 350px;">
 
-                <div class="col curso-item" data-nombre="<?php echo htmlspecialchars($nombreCurso); ?>" data-estado="<?php echo $est; ?>">
-                    <div class="card card-dark h-100 shadow-sm">
-                        <div class="position-relative">
-                            <img src="<?php echo $imgUrl; ?>" class="card-img-top" alt="Portada" style="height: 180px; object-fit: cover; opacity: 0.8;">
-                            <span class="position-absolute top-0 end-0 m-3 badge <?php echo $badgeClass; ?> shadow">
-                                <?php echo ucfirst($est); ?>
-                            </span>
+                    <!-- Fondo Semi-transparente o patrón -->
+                    <div class="position-absolute w-100 h-100"
+                        style="background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.8) 100%); z-index: 1;">
+                    </div>
+
+                    <!-- Menú de opciones (tres puntos) -->
+                    <div class="position-absolute top-0 end-0 m-3" style="z-index: 2;">
+                        <button class="btn btn-sm btn-dark rounded-circle bg-opacity-50 border-0">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                    </div>
+
+                    <!-- Contenido Principal -->
+                    <div class="card-body d-flex flex-column justify-content-center position-relative"
+                        style="z-index: 2; margin-top: 40px;">
+
+                        <h4 class="fw-bold mb-1" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                            <?php echo htmlspecialchars($nombreCurso); ?>
+                        </h4>
+
+                        <p class="mb-3 text-light opacity-75 fw-bold" style="font-size: 0.9rem;">
+                            (<?php echo $modalidad; ?>/<?php echo htmlspecialchars($codigo); ?>)
+                        </p>
+
+                        <p class="text-white-50 mb-0" style="font-size: 0.85rem;">
+                            <?php echo $fecha; ?>
+                        </p>
+
+                    </div>
+
+                    <!-- Footer con Barra de Progreso -->
+                    <div class="card-footer bg-transparent border-0 position-relative pb-4" style="z-index: 2;">
+                        <div class="d-flex justify-content-between align-items-end mb-2">
+                            <span class="small fw-bold text-white"><?php echo $progreso; ?>% completado</span>
                         </div>
-
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title fw-bold text-light mb-1 text-truncate">
-                                <?php echo htmlspecialchars($fila['nombre']); ?>
-                            </h5>
-                            
-                            <p class="text-muted small mb-3">
-                                <i class="fas fa-barcode me-1 text-success"></i> <?php echo htmlspecialchars($fila['codigo']); ?>
-                            </p>
-
-                            <p class="card-text text-secondary small flex-grow-1">
-                                <?php 
-                                    $desc = strip_tags($fila['descripcion']);
-                                    echo strlen($desc) > 80 ? substr($desc, 0, 80) . '...' : $desc;
-                                ?>
-                            </p>
-
-                            <div class="mt-3">
-                                <div class="d-flex justify-content-between small mb-1">
-                                    <span class="text-muted">Progreso</span>
-                                    <span class="text-white fw-bold"><?php echo $progreso; ?>%</span>
-                                </div>
-                                <div class="progress bg-secondary" style="height: 6px;">
-                                    <div class="progress-bar <?php echo $colorBarra; ?>" role="progressbar" style="width: <?php echo $progreso; ?>%"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card-footer bg-transparent border-top border-secondary p-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <?php if($fila['nota_final'] > 0): ?>
-                                    <span class="badge bg-dark border border-secondary text-light">Nota: <?php echo $fila['nota_final']; ?></span>
-                                <?php else: ?>
-                                    <small class="text-muted">--</small>
-                                <?php endif; ?>
-
-                                <a href="#" class="btn btn-sm <?php echo $btnClass; ?> px-3 rounded-pill fw-bold">
-                                    <i class="fas <?php echo $iconoBtn; ?> me-1"></i> <?php echo $btnTexto; ?>
-                                </a>
-                            </div>
+                        <div class="progress bg-secondary bg-opacity-25" style="height: 8px; border-radius: 4px;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                style="width: <?php echo $progreso; ?>%; border-radius: 4px;"></div>
                         </div>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
 
-    <?php endif; ?>
+<?php endif; ?>
 </div>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
 
 <script>
     // Buscador
-    document.getElementById('inputBuscador').addEventListener('keyup', function() {
+    document.getElementById('inputBuscador').addEventListener('keyup', function () {
         let texto = this.value.toLowerCase();
         let cursos = document.querySelectorAll('.curso-item');
         cursos.forEach(curso => {

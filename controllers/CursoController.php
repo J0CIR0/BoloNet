@@ -246,7 +246,30 @@ class CursoController
         }
         $estudiante_id = $_SESSION['user_id'];
 
-        $inscripciones = $this->inscripcion->obtenerCursosPorEstudiante($estudiante_id);
+        // --- LÓGICA DE SINCRONIZACIÓN SUSCRIPCIÓN ---
+        $isSubscribed = isset($_SESSION['subscription_status']) && $_SESSION['subscription_status'] === 'active';
+
+        if ($isSubscribed) {
+            // Si tiene suscripción, ve TODOS los cursos como si estuviera inscrito
+            $todosLosCursos = $this->curso->getAll();
+            $inscripciones = [];
+
+            // Transformamos formato curso -> inscripcion para la vista
+            foreach ($todosLosCursos as $c) {
+                $inscripciones[] = [
+                    'id' => $c['id'], // ID para seed de imagen
+                    'nombre' => $c['nombre'],
+                    'codigo' => $c['codigo'],
+                    'descripcion' => $c['descripcion'],
+                    'estado_inscripcion' => 'inscrito', // Por defecto
+                    'nota_final' => 0,
+                    'fecha_inscripcion' => $c['fecha_inicio'] // Usamos inicio curso como fecha ref
+                ];
+            }
+        } else {
+            // Si no es suscriptor, ve solo lo que compró individualmente
+            $inscripciones = $this->inscripcion->obtenerCursosPorEstudiante($estudiante_id);
+        }
 
         $title = 'Mis Cursos';
         require_once __DIR__ . '/../views/layouts/header.php';
