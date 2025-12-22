@@ -174,10 +174,10 @@ INSERT INTO persona (ci, nombre, apellido, fecha_nacimiento, genero, telefono, d
 ('5555555', 'Carlos', 'Mendoza', '1980-08-25', 'M', '77755555', 'Av. Universitaria 123');
 
 INSERT INTO usuario (persona_id, email, password, rol_id, estado) VALUES 
-(1, 'registro@bolonet.com', '123456', 1, 1),
-(2, 'adm@bolonet.com', '123456', 2, 1),
-(3, 'estudiante@bolonet.com', '123456', 3, 1),
-(4, 'profesor@bolonet.com', '123456', 4, 1);
+(1, 'registro@bolonet.com', SHA2('123456', 256), 1, 1),
+(2, 'adm@bolonet.com', SHA2('123456', 256), 2, 1),
+(3, 'estudiante@bolonet.com', SHA2('123456', 256), 3, 1),
+(4, 'profesor@bolonet.com', SHA2('123456', 256), 4, 1);
 
 INSERT INTO curso (codigo, nombre, descripcion, duracion_horas, fecha_inicio, fecha_fin, estado, profesor_id) VALUES 
 ('PROG101', 'Programación Básica', 'Introducción a la programación con Python', 60, '2024-01-15', '2024-03-15', 'activo', 4),

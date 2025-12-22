@@ -63,31 +63,23 @@ class AulaController
 
         $modulos = $this->moduloModel->getByCurso($id_curso);
 
-        // 3. Determinar rol en el contexto del aula (Ya calculado arriba)
 
-        // --- LÓGICA DE AUDITORÍA vs ESTUDIANTE (Suscripciones) ---
-        $gradingEnabled = false; // Por defecto desactivado
+        $gradingEnabled = false;
         $auditorMessage = "";
 
         if ($esProfesor) {
-            $gradingEnabled = true; // Profesores siempre pueden "calificar/editar"
-            // Obtener lista de estudiantes inscritos para calificar/aprobar
+            $gradingEnabled = true;
             $inscritos = $this->inscripcionModel->obtenerInscritosPorCurso($id_curso);
         } else {
-            // Verificar si YA está inscrito realmente
             require_once __DIR__ . '/../models/Inscripcion.php';
             $inscripcionModel = new Inscripcion();
             $estaInscrito = $inscripcionModel->verificarInscripcion($user_id, $id_curso);
 
-            // Variables para certificado
             $isAprobado = false;
             $datosInscripcion = null;
 
             if ($estaInscrito) {
-                // Obtenemos los datos completos para saber si está aprobado
-                // Usamos una función ad-hoc o reutilizamos obtenerCursosPorEstudiante filtrado
-                // Por eficiencia, crearemos un método rápido en Inscripcion o hacemos query directa aquí
-                // O mejor, obtengamos todos y filtremos (no es lo más óptimo pero funciona rápido con pocos cursos)
+
                 $misCursos = $inscripcionModel->obtenerCursosPorEstudiante($user_id);
                 foreach ($misCursos as $mc) {
                     if ($mc['id'] == $id_curso) {
@@ -100,15 +92,12 @@ class AulaController
                     $isAprobado = true;
                 }
 
-                // Si ya está inscrito en BD, es alumno regular
                 $gradingEnabled = true;
             } else {
-                // Es Suscriptor entrando por primera vez o revisitando sin inscripción
                 $isSubscribed = isset($_SESSION['subscription_status']) && $_SESSION['subscription_status'] === 'active';
 
                 if ($isSubscribed) {
-                    // Calcular progreso del curso
-                    // Suponiendo que $cursoData tiene 'fecha_inicio' y 'fecha_fin'
+
                     $fechaInicio = strtotime($cursoData['fecha_inicio']);
                     $fechaFin = strtotime($cursoData['fecha_fin']);
                     $hoy = time();
@@ -118,31 +107,23 @@ class AulaController
                         $tiempoTranscurrido = $hoy - $fechaInicio;
                         $progresoTemporal = $tiempoTranscurrido / $duracionTotal;
                     } else {
-                        $progresoTemporal = 0; // Evitar división por cero
+                        $progresoTemporal = 0;
                     }
 
-                    // REGLA: Si va por menos de la mitad (0.5), se inscribe automáticamente.
-                    // Si va por más de la mitad, es OYENTE (Auditor)
-                    // REGLA: Si va por menos de la mitad (0.5), PUEDE inscribirse manualmente.
-                    // Si va por más de la mitad, es OYENTE (Auditor) permanente.
+
 
                     $puedeInscribirse = false;
                     $inscripcionesCerradas = false;
                     $cursoFinalizado = false;
 
-                    // Verificar si finalizó
                     if ($hoy > $fechaFin) {
                         $cursoFinalizado = true;
-                        // Los profesores siempre pueden calificar, incluso si el curso terminó
-                        // Esta lógica está dentro del 'else' de !esProfesor, por lo que $esProfesor es false aquí.
-                        // Por lo tanto, $gradingEnabled siempre se establecerá en false para no-profesores si el curso finalizó.
+
                         $gradingEnabled = false;
                     } elseif ($progresoTemporal <= 0.5) {
-                        // Puede participar
                         $puedeInscribirse = true;
-                        $gradingEnabled = false; // Aún no es alumno, debe darle clic a participar
+                        $gradingEnabled = false;
                     } else {
-                        // Pasó el 50%
                         $inscripcionesCerradas = true;
                         $gradingEnabled = false;
                         $auditorMessage = "Inscripciones cerradas (Curso > 50%). Estás en modo OYENTE: puedes ver el contenido pero no serás calificado.";
@@ -153,12 +134,9 @@ class AulaController
             }
         }
 
-        // 3. Obtener Datos para Pestaña Calificaciones
         $calificacionesData = [];
-        // Si es profesor, quizás quiera ver listado de alumnos y sus notas (complejo, dejaremos placeholder o lista de tareas)
-        // Si es estudiante, quiere ver SUS notas.
 
-        // Aplanamos todas las tareas del curso para mostrarlas en la tabla
+
         $todasLasTareas = [];
         if (!empty($modulos)) {
             foreach ($modulos as $mod) {
@@ -172,26 +150,18 @@ class AulaController
         }
 
         if (!$esProfesor && ($yaInscrito || ($isSubscribed && $puedeInscribirse))) {
-            // Obtener entregas del estudiante
-            // Necesitamos un modelo para esto, o usar TareaModel si tiene método.
-            // Por ahora usaremos una consulta directa rapida o via model si existe.
-            // Usamos getEntregaEstudiante que ya existe en el modelo
 
             foreach ($todasLasTareas as &$tarea) {
-                // Usamos getEntregaEstudiante que ya existe en el modelo
                 $entrega = $this->tareaModel->getEntregaEstudiante($tarea['id'], $_SESSION['user_id']);
-                $tarea['entrega'] = $entrega; // Si es null, no entregó
+                $tarea['entrega'] = $entrega;
             }
-            unset($tarea); // romper referencia
+            unset($tarea);
             $calificacionesData = $todasLasTareas;
         } elseif ($esProfesor) {
-            // Para el profesor, mostramos las tareas y cuantos han entregado (Resumen)
-            // Ojo: El usuario pidió "ver calificaciones", para profesor sería tabla de alumnos.
-            // Por simplicidad del fix, mostramos listado de tareas pendientes de calificar.
+
             $calificacionesData = $todasLasTareas;
         }
 
-        // 4. Renderizar Vista
         $title = "Aula Virtual: " . $cursoData['nombre'];
         require_once __DIR__ . '/../views/aula/index.php';
     }
@@ -210,7 +180,6 @@ class AulaController
         $curso_id = (int) $_POST['curso_id'];
         $user_id = $_SESSION['user_id'];
 
-        // Validar de nuevo las reglas por seguridad
         require_once __DIR__ . '/../models/Curso.php';
         require_once __DIR__ . '/../models/Inscripcion.php';
 
@@ -253,7 +222,7 @@ class AulaController
     {
         if (session_status() == PHP_SESSION_NONE)
             session_start();
-        $this->verificarPermisosProfesor(); // Helper o check manual
+        $this->verificarPermisosProfesor();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = (int) $_POST['id'];
@@ -261,7 +230,6 @@ class AulaController
             $descripcion = $_POST['descripcion'];
             $curso_id = (int) $_POST['curso_id'];
 
-            // Actualizar
             $sql = "UPDATE curso_modulo SET titulo = ?, descripcion = ? WHERE id = ?";
             $stmt = $this->db->prepare($sql);
             if ($stmt) {
@@ -291,8 +259,6 @@ class AulaController
             $url = $_POST['url_recurso'] ?? '';
             $curso_id = (int) $_POST['curso_id'];
 
-            // Si es archivo, la lógica de subida es más compleja, por ahora solo editamos texto/url simple
-            // Ojo: Si suben otro archivo, habría que manejarlo. Por simplicidad en este "Fix", actualizamos textos.
 
             $sql = "UPDATE curso_contenido SET titulo = ?, descripcion = ?, url_recurso = ? WHERE id = ?";
             $stmt = $this->db->prepare($sql);
@@ -335,7 +301,6 @@ class AulaController
             $url_recurso = $_POST['url'] ?? '';
             $tipo = $_POST['tipo'];
 
-            // Lógica de subida de archivos
             if ($tipo === 'archivo' && isset($_FILES['archivo_pdf']) && $_FILES['archivo_pdf']['error'] === UPLOAD_ERR_OK) {
                 $uploadDir = __DIR__ . '/../uploads/cursos/materiales/';
                 if (!is_dir($uploadDir)) {
@@ -347,7 +312,6 @@ class AulaController
                 $destPath = $uploadDir . $fileName;
 
                 if (move_uploaded_file($fileTmpPath, $destPath)) {
-                    // Guardar ruta relativa para acceso web
                     $url_recurso = 'uploads/cursos/materiales/' . $fileName;
                 } else {
                     die("Error al subir el archivo.");
@@ -357,7 +321,6 @@ class AulaController
             $contenidoModel = new Contenido();
             $contenidoModel->crear($_POST['modulo_id'], $_POST['titulo'], $tipo, $url_recurso, $_POST['descripcion']);
 
-            // Redirigir al curso
             header("Location: index.php?controller=Aula&action=index&id=" . $_POST['curso_id']);
         }
     }
@@ -385,18 +348,15 @@ class AulaController
             $comentario = $_POST['comentario'] ?? '';
             $user_id = $_SESSION['user_id'];
 
-            // Manejo de archivo
             $entregaExistente = $this->tareaModel->getEntregaEstudiante($tarea_id, $user_id);
             $url_archivo = $entregaExistente ? $entregaExistente['archivo_url'] : '';
 
             if (isset($_FILES['archivo_tarea']) && $_FILES['archivo_tarea']['error'] === UPLOAD_ERR_OK) {
-                // Crear directorio si no existe
                 $uploadDir = __DIR__ . '/../uploads/cursos/tareas/';
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
 
-                // Generar nombre único: timestamp_userid_filename
                 $fileName = time() . '_' . $user_id . '_' . basename($_FILES['archivo_tarea']['name']);
                 $destPath = $uploadDir . $fileName;
 
@@ -408,10 +368,7 @@ class AulaController
                     exit();
                 }
             }
-            // Validacion: Si no hay archivo nuevo NI viejo, y se requiere archivo, error.
-            // (Asumimos por ahora que si es edit solo comentario, vale).
 
-            // Guardar en BD
             if ($this->tareaModel->entregar($tarea_id, $user_id, $url_archivo, $comentario)) {
                 $_SESSION['success'] = "Entrega guardada correctamente.";
             } else {
@@ -436,7 +393,6 @@ class AulaController
             $archivoEliminado = $this->tareaModel->eliminarEntrega($tarea_id, $user_id);
 
             if ($archivoEliminado !== false) {
-                // Intentar borrar archivo fisico
                 if ($archivoEliminado && file_exists(__DIR__ . '/../' . $archivoEliminado)) {
                     unlink(__DIR__ . '/../' . $archivoEliminado);
                 }
@@ -461,13 +417,11 @@ class AulaController
         $tarea_id = (int) $_GET['id'];
         $user_id = $_SESSION['user_id'];
 
-        // Obtener datos de la tarea
         $tarea = $this->tareaModel->obtenerPorId($tarea_id);
         if (!$tarea) {
             die("Tarea no encontrada");
         }
 
-        // Obtener ID del curso a través del módulo
         $stmt = $this->db->prepare("SELECT curso_id FROM curso_modulo WHERE id = ?");
         $stmt->bind_param("i", $tarea['modulo_id']);
         $stmt->execute();
@@ -475,18 +429,15 @@ class AulaController
 
         $curso_id = $res['curso_id'] ?? 0;
 
-        // Verificar rol
-        require_once __DIR__ . '/../models/Usuario.php'; // Asegurarnos de tener acceso a roles si es necesario o usar session
+        require_once __DIR__ . '/../models/Usuario.php';
         $esProfesor = (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'profesor');
 
         $entregas = [];
         $entrega = null;
 
         if ($esProfesor) {
-            // Profesor: Ver todas las entregas
             $entregas = $this->tareaModel->getEntregasPorTarea($tarea_id);
         } else {
-            // Estudiante: Ver su propia entrega
             $entrega = $this->tareaModel->getEntregaEstudiante($tarea_id, $user_id);
         }
 
@@ -540,13 +491,11 @@ class AulaController
 
         $tarea_id = (int) $_GET['id'];
 
-        // Cargar modelos si no están cargados
         require_once __DIR__ . '/../models/Tarea.php';
         require_once __DIR__ . '/../models/Modulo.php';
 
         if (!isset($this->tareaModel))
             $this->tareaModel = new Tarea();
-        // Necesitamos el modulo para saber el curso_id
         $moduloModel = new Modulo();
 
         $tarea = $this->tareaModel->obtenerPorId($tarea_id);
@@ -561,13 +510,11 @@ class AulaController
 
         $entregas = $this->tareaModel->getEntregasPorTarea($tarea_id);
 
-        // Título para la vista
         $title = "Calificar: " . $tarea['titulo'];
 
         require_once __DIR__ . '/../views/aula/calificar_tarea.php';
     }
 
-    // Aprobar estudiante y emitir certificado
     public function aprobar_estudiante()
     {
         if (session_status() == PHP_SESSION_NONE)
@@ -588,15 +535,13 @@ class AulaController
                         require_once __DIR__ . '/../vendor/PHPMailer/src/Exception.php';
                         require_once __DIR__ . '/../vendor/PHPMailer/src/PHPMailer.php';
                         require_once __DIR__ . '/../vendor/PHPMailer/src/SMTP.php';
-                        // La configuración SMTP ya debería estar cargada por index.php o config/conexion.php, 
-                        // pero por si acaso cargamos smtp.php si no está definida
                         if (!defined('SMTP_HOST')) {
                             require_once __DIR__ . '/../config/smtp.php';
                         }
 
                         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
                         $host = $_SERVER['HTTP_HOST'];
-                        $path = dirname($_SERVER['PHP_SELF']); // Ojo: esto puede variar dependiendo de donde se ejecute
+                        $path = dirname($_SERVER['PHP_SELF']);
                         $certLink = $protocol . "://" . $host . "/BoloNet/index.php?controller=Aula&action=certificado&id=" . $curso_id;
 
                         $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
