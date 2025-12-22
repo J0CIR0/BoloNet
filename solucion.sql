@@ -233,4 +233,59 @@ CREATE TABLE IF NOT EXISTS pago (
     FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ==========================================
+-- ACTUALIZACIÓN PARA AULA VIRTUAL (LMS)
+-- ==========================================
+
+-- 5. Módulos/Temas del Curso
+CREATE TABLE IF NOT EXISTS curso_modulo (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    curso_id INT NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    descripcion TEXT,
+    orden INT DEFAULT 0,
+    estado ENUM('activo', 'inactivo') DEFAULT 'activo',
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (curso_id) REFERENCES curso(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 6. Tareas/Actividades
+CREATE TABLE IF NOT EXISTS curso_tarea (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    modulo_id INT NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    descripcion TEXT,
+    fecha_entrega DATETIME NULL,
+    puntaje_maximo DECIMAL(5,2) DEFAULT 100.00,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (modulo_id) REFERENCES curso_modulo(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 7. Contenidos/Recursos (Videos, PDF, Links)
+CREATE TABLE IF NOT EXISTS curso_contenido (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    modulo_id INT NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    tipo ENUM('video', 'archivo', 'enlace') NOT NULL,
+    url_recurso TEXT NOT NULL,
+    descripcion TEXT,
+    orden INT DEFAULT 0,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (modulo_id) REFERENCES curso_modulo(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 8. Entregas de Tareas
+CREATE TABLE IF NOT EXISTS curso_entrega (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    tarea_id INT NOT NULL,
+    estudiante_id INT NOT NULL,
+    archivo_url TEXT,
+    comentario TEXT,
+    fecha_entrega TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    calificacion DECIMAL(5,2) NULL,
+    retroalimentacion TEXT,
+    FOREIGN KEY (tarea_id) REFERENCES curso_tarea(id) ON DELETE CASCADE,
+    FOREIGN KEY (estudiante_id) REFERENCES usuario(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
