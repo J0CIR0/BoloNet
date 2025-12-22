@@ -289,23 +289,36 @@
 
                                             <!-- Reproductor de Video Embebido -->
                                             <?php if ($rec['tipo'] == 'video' && !empty($rec['url_recurso'])): 
-                                                // Función helper simple para extraer ID de YouTube (básico)
-                                                // Formatos soportados: youtube.com/watch?v=ID, youtu.be/ID
                                                 $video_url = $rec['url_recurso'];
-                                                $embed_url = '';
-                                                
+                                                $embed_code = ''; // HTML final del player
+
+                                                // 1. YouTube
                                                 if (strpos($video_url, 'youtube.com') !== false || strpos($video_url, 'youtu.be') !== false) {
                                                     preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video_url, $match);
                                                     if (isset($match[1])) {
                                                         $embed_url = 'https://www.youtube.com/embed/' . $match[1];
+                                                        $embed_code = '<div class="ratio ratio-16x9 mt-3 rounded overflow-hidden shadow-lg"><iframe src="' . $embed_url . '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
                                                     }
+                                                // 2. Vimeo
+                                                } elseif (strpos($video_url, 'vimeo.com') !== false) {
+                                                    preg_match('/vimeo\.com\/([0-9]+)/', $video_url, $match);
+                                                    if (isset($match[1])) {
+                                                        $embed_url = 'https://player.vimeo.com/video/' . $match[1];
+                                                        $embed_code = '<div class="ratio ratio-16x9 mt-3 rounded overflow-hidden shadow-lg"><iframe src="' . $embed_url . '" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>';
+                                                    }
+                                                // 3. Archivo Directo (MP4, WEBM, OGG)
+                                                } elseif (preg_match('/\.(mp4|webm|ogg)$/i', $video_url)) {
+                                                    $embed_code = '<div class="mt-3"><video controls class="w-100 rounded shadow-lg" style="max-height: 500px;"><source src="' . htmlspecialchars($video_url) . '">Tu navegador no soporta el elemento de video.</video></div>';
+                                                }
+                                                
+                                                // Renderizar si se generó código
+                                                if ($embed_code) {
+                                                    echo $embed_code;
+                                                } else {
+                                                    // Fallback link si no se reconoció
+                                                    echo '<div class="mt-2"><a href="' . htmlspecialchars($video_url) . '" target="_blank" class="btn btn-outline-danger btn-sm"><i class="fas fa-external-link-alt"></i> Ver Video Original</a></div>';
                                                 }
                                             ?>
-                                                <?php if($embed_url): ?>
-                                                    <div class="ratio ratio-16x9 mt-3 mb-3 border border-secondary rounded overflow-hidden">
-                                                        <iframe src="<?php echo $embed_url; ?>" title="YouTube video player" allowfullscreen></iframe>
-                                                    </div>
-                                                <?php endif; ?>
                                             <?php endif; ?>
 
                                         </div>
