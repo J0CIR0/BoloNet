@@ -3,7 +3,6 @@ require_once __DIR__ . '/../models/Modulo.php';
 require_once __DIR__ . '/../models/Curso.php';
 require_once __DIR__ . '/../models/Usuario.php';
 require_once __DIR__ . '/../models/Tarea.php';
-// require_once __DIR__ . '/../models/Contenido.php'; // Lo cargaremos on-demand
 
 class AulaController
 {
@@ -26,7 +25,6 @@ class AulaController
         $this->inscripcionModel = new Inscripcion();
     }
 
-    // VISTA PRINCIPAL DEL AULA
     public function index()
     {
         if (session_status() == PHP_SESSION_NONE) {
@@ -41,7 +39,6 @@ class AulaController
         $id_curso = (int) $_GET['id'];
         $user_id = $_SESSION['user_id'] ?? 0;
 
-        // 1. Validar Acceso (Suscripción o Inscripción)
         $user_role = $_SESSION['user_role'] ?? '';
         $esProfesor = ($user_role === 'profesor') || $this->usuarioModel->hasPermission($user_id, 'crear_curso');
 
@@ -58,14 +55,12 @@ class AulaController
             }
         }
 
-        $curso = $this->cursoModel->obtenerPorId($id_curso); // Devuelve objeto u array
+        $curso = $this->cursoModel->obtenerPorId($id_curso);
         if (!$curso) {
             die("Curso no encontrado");
         }
-        // Convertir a array si es objeto para consistencia
         $cursoData = is_object($curso) ? (array) $curso : $curso;
 
-        // 2. Cargar contenido del aula
         $modulos = $this->moduloModel->getByCurso($id_curso);
 
         // 3. Determinar rol en el contexto del aula (Ya calculado arriba)
@@ -587,7 +582,6 @@ class AulaController
             if ($this->inscripcionModel->aprobarEstudiante($curso_id, $estudiante_id, $nota_final)) {
                 $_SESSION['success'] = "Estudiante aprobado y certificado generado.";
 
-                // --- ENVIAR CORREO CON ENLACE AL CERTIFICADO ---
                 try {
                     $estudiante = $this->inscripcionModel->getDetalleInscripcion($curso_id, $estudiante_id);
                     if ($estudiante && !empty($estudiante['email'])) {
@@ -600,13 +594,10 @@ class AulaController
                             require_once __DIR__ . '/../config/smtp.php';
                         }
 
-                        // Determinar la URL base del sistema dinámicamente o hardcodeada si es necesario
                         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
                         $host = $_SERVER['HTTP_HOST'];
                         $path = dirname($_SERVER['PHP_SELF']); // Ojo: esto puede variar dependiendo de donde se ejecute
-                        // Mejor construcción manual basada en index.php
                         $certLink = $protocol . "://" . $host . "/BoloNet/index.php?controller=Aula&action=certificado&id=" . $curso_id;
-                        // NOTA: Ajustar /BoloNet/ si el nombre de carpeta cambia.
 
                         $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
                         $mail->isSMTP();
@@ -617,11 +608,9 @@ class AulaController
                         $mail->SMTPSecure = SMTP_SECURE;
                         $mail->Port = SMTP_PORT;
 
-                        // Remitente y Destinatario
                         $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
                         $mail->addAddress($estudiante['email'], $estudiante['nombre'] . ' ' . $estudiante['apellido']);
 
-                        // Contenido
                         $mail->isHTML(true);
                         $mail->Subject = '¡Felicidades! Has aprobado el curso';
                         $mail->Body = "
@@ -639,9 +628,7 @@ class AulaController
                         $_SESSION['success'] .= " Notificación enviada al correo.";
                     }
                 } catch (Throwable $e) {
-                    // No detener el flujo si falla el correo, solo advertir
-                    // $_SESSION['error'] = "Aprobado, pero error al enviar correo: " . $mail->ErrorInfo;
-                    // Mejor solo logear o ignorar para no asustar al profe si el SMTP falla en local
+
                     error_log("Error enviando certificado: " . $mail->ErrorInfo);
                 }
 
@@ -654,7 +641,6 @@ class AulaController
         }
     }
 
-    // Ver certificado
     public function certificado()
     {
         if (session_status() == PHP_SESSION_NONE)
@@ -668,16 +654,13 @@ class AulaController
         $curso_id = (int) $_GET['id'];
         $usuario_id = $_SESSION['user_id'];
 
-        // Verificar si está aprobado
         if (!$this->inscripcionModel->verificarInscripcion($usuario_id, $curso_id)) {
             die("No estás inscrito en este curso.");
         }
 
-        // Obtener datos
         $cursoObj = $this->cursoModel->obtenerPorId($curso_id);
         $curso = is_object($cursoObj) ? (array) $cursoObj : $cursoObj;
 
-        // Usamos una consulta directa para obtener datos de usuario y nota
         $stmt = $this->db->prepare("SELECT i.*, p.nombre, p.apellido, p.ci 
                                     FROM inscripcion i 
                                     JOIN usuario u ON i.estudiante_id = u.id 

@@ -10,7 +10,6 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 
     <?php
-    // Definir jerarquía de planes
     $plans = [
         'basic' => ['level' => 1, 'name' => 'Básico', 'price' => '$9.99', 'btn_class' => 'btn-outline-primary', 'header_class' => '', 'border_class' => ''],
         'pro' => ['level' => 2, 'name' => 'Pro', 'price' => '$19.99', 'btn_class' => 'btn-primary', 'header_class' => 'text-white bg-primary border-primary', 'border_class' => 'border-primary'],
@@ -27,7 +26,6 @@ require_once __DIR__ . '/../layouts/header.php';
     ?>
 
     <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
-        <!-- PLAN BÁSICO -->
         <div class="col">
             <div class="card mb-4 rounded-3 shadow-sm <?php echo $plans['basic']['border_class']; ?>">
                 <div class="card-header py-3 <?php echo $plans['basic']['header_class']; ?>">
@@ -53,7 +51,6 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
         </div>
 
-        <!-- PLAN PRO -->
         <div class="col">
             <div class="card mb-4 rounded-3 shadow-sm <?php echo $plans['pro']['border_class']; ?>">
                 <div class="card-header py-3 <?php echo $plans['pro']['header_class']; ?>">
@@ -80,7 +77,6 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
         </div>
 
-        <!-- PLAN PREMIUM -->
         <div class="col">
             <div class="card mb-4 rounded-3 shadow-sm <?php echo $plans['premium']['border_class']; ?>">
                 <div class="card-header py-3 <?php echo $plans['premium']['header_class']; ?>">

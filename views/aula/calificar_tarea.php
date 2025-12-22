@@ -1,6 +1,5 @@
 <?php require_once __DIR__ . '/../layouts/header.php';
 
-// Helper function for date formatting (copied to ensure availability)
 if (!function_exists('format_date_grading')) {
     function format_date_grading($date_str)
     {
@@ -49,7 +48,8 @@ if (!function_exists('format_date_grading')) {
                                 <th>Archivo</th>
                                 <th>Comentario Estudiante</th>
                                 <th style="min-width: 150px;">Calificación (Max:
-                                    <?php echo $tarea['puntaje_maximo']; ?>)</th>
+                                    <?php echo $tarea['puntaje_maximo']; ?>)
+                                </th>
                                 <th style="min-width: 200px;">Feedback</th>
                                 <th>Acción</th>
                             </tr>
@@ -90,7 +90,6 @@ if (!function_exists('format_date_grading')) {
                                             <input type="hidden" name="entrega_id" value="<?php echo $ent['id']; ?>">
                                             <input type="hidden" name="tarea_id" value="<?php echo $tarea['id']; ?>">
 
-                                            <!-- Field to redirect back to this specific view instead of ver_tarea -->
                                             <input type="hidden" name="redirect_view" value="calificar_tarea">
 
                                             <td>

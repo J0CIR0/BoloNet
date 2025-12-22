@@ -4,11 +4,9 @@ $title = 'Cursos';
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="text-white">Cursos Disponibles</h2>
     <?php
-    // Instanciamos el modelo Usuario para verificar permisos visuales
     require_once __DIR__ . '/../../models/Usuario.php';
     $usuarioModel = new Usuario();
 
-    // Botón para crear cursos (solo admin/profesor)
     if ($usuarioModel->hasPermission($_SESSION['user_id'], 'crear_curso')):
         ?>
         <a href="index.php?controller=Curso&action=create" class="btn btn-success"><i class="fas fa-plus"></i> Nuevo
@@ -25,10 +23,13 @@ $title = 'Cursos';
 <?php if (isset($showUpsellBanner) && $showUpsellBanner): ?>
     <div class="row mb-4">
         <div class="col-12">
-            <div class="alert alert-warning border border-warning shadow-sm d-flex justify-content-between align-items-center flex-wrap">
+            <div
+                class="alert alert-warning border border-warning shadow-sm d-flex justify-content-between align-items-center flex-wrap">
                 <div>
-                    <h4 class="alert-heading fw-bold"><i class="fas fa-exclamation-triangle"></i> ¡Mejora tu experiencia!</h4>
-                    <p class="mb-1">Hemos notado que has tenido <strong><?php echo $interruptionCount; ?> interrupciones</strong> en tu sesión recientemente.</p>
+                    <h4 class="alert-heading fw-bold"><i class="fas fa-exclamation-triangle"></i> ¡Mejora tu experiencia!
+                    </h4>
+                    <p class="mb-1">Hemos notado que has tenido <strong><?php echo $interruptionCount; ?>
+                            interrupciones</strong> en tu sesión recientemente.</p>
                     <p class="mb-0 small"><?php echo $upsellMessage; ?></p>
                 </div>
                 <div class="mt-2 mt-md-0">
@@ -69,8 +70,7 @@ $title = 'Cursos';
                             $estado = isset($curso['estado']) && !empty($curso['estado']) ? $curso['estado'] : 'activo';
                             $precio = isset($curso['precio']) ? number_format($curso['precio'], 2) : '0.00';
 
-                            // --- VERIFICAR SI YA ESTÁ INSCRITO ---
-                            // Buscamos si el ID del curso actual está en el array de inscritos
+
                             $ya_inscrito = false;
                             if (isset($cursos_inscritos) && is_array($cursos_inscritos)) {
                                 if (in_array($curso['id'], $cursos_inscritos)) {
@@ -112,9 +112,7 @@ $title = 'Cursos';
                                             </a>
                                         <?php else: ?>
                                             <?php
-                                            // Si no está inscrito y es estudiante (o no tiene rol de profesor/admin definido), mostrar opción de plan
-                                            // O simplemente si no tiene permiso especial de gestión.
-                                            // Mas simple: Si no es profesor/admin, ofrecer suscripción.
+
                                             $rol = $_SESSION['user_role'] ?? 'estudiante';
                                             if ($rol !== 'profesor' && $rol !== 'admin'):
                                                 ?>

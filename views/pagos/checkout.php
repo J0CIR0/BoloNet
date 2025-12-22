@@ -1,7 +1,6 @@
 <?php
 $title = 'Finalizar Compra';
 require_once __DIR__ . '/../layouts/header.php';
-// Generamos un número aleatorio para obligar a recargar el script
 $version = time();
 ?>
 
@@ -59,12 +58,10 @@ $version = time();
         onApprove: function (data, actions) {
             console.log("1. Autorizado. Iniciando captura...");
 
-            // NO TOCAMOS EL HTML AQUI. DEJAMOS QUE PAYPAL TERMINE.
 
             return actions.order.capture().then(function (details) {
                 console.log("2. Captura completada. Dinero recibido.");
 
-                // AHORA SÍ: Actualizamos la pantalla
                 const container = document.getElementById('paypal-button-container');
                 container.innerHTML = `
                     <div class="alert alert-success">
@@ -74,7 +71,6 @@ $version = time();
                     </div>
                 `;
 
-                // Enviamos a PHP
                 return fetch('index.php?controller=Pago&action=procesarPagoExitoso', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -87,7 +83,7 @@ $version = time();
                     })
                 });
             })
-                .then(response => response.text()) // Leemos texto primero para ver errores PHP
+                .then(response => response.text())
                 .then(text => {
                     console.log("3. Respuesta Servidor:", text);
                     try {
@@ -98,7 +94,6 @@ $version = time();
                 })
                 .then(data => {
                     if (data.status === 'success') {
-                        // Redirigimos
                         window.location.href = "index.php?controller=Curso&action=mis_cursos";
                     } else {
                         throw new Error(data.mensaje);

@@ -65,7 +65,6 @@
             font-size: 42px;
             color: #c0392b;
             font-family: 'Pinyon Script', cursive;
-            /* Fallback si no carga */
             border-bottom: 1px solid #7f8c8d;
             display: inline-block;
             min-width: 400px;
@@ -118,7 +117,6 @@
             }
         }
 
-        /* Importar fuente cursiva bonita */
         @import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap');
     </style>
 </head>
@@ -141,11 +139,12 @@
             <p class="sub-header">Se otorga el presente reconocimiento a:</p>
 
             <h2 class="nombre-estudiante" style="font-family: 'Pinyon Script', cursive;">
-                <?php echo htmlspecialchars($inscripcion['nombre'] . ' ' . $inscripcion['apellido']); ?></h2>
+                <?php echo htmlspecialchars($inscripcion['nombre'] . ' ' . $inscripcion['apellido']); ?>
+            </h2>
 
             <p class="texto-cuerpo">
                 Por haber completado y aprobado satisfactoriamente el curso de:<br>
-                <span class="curso-nombre"><?php echo htmlspecialchars($curso['nombre']); ?></span><br>
+                <span class="curso-nombre"><?php echo htmlspecialchars($curso->nombre); ?></span><br>
                 Con una calificación final de: <strong><?php echo $inscripcion['nota_final']; ?> / 100</strong>
             </p>
 
@@ -156,7 +155,6 @@
                 </div>
                 <div class="firma">
                     <strong><?php echo date('d/m/Y', strtotime($inscripcion['fecha_inscripcion'])); ?></strong><br>
-                    <!-- Usamos fecha inscripcion como fecha issue por simplicidad o NOW -->
                     Fecha de Emisión
                 </div>
             </div>
