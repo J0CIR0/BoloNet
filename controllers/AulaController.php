@@ -544,7 +544,7 @@ class AulaController
                 try {
                     $estudiante = $this->inscripcionModel->getDetalleInscripcion($curso_id, $estudiante_id);
                     if ($estudiante && !empty($estudiante['email'])) {
-                        require_once __DIR__ . '/../vendor/autoload.php';
+                        require_once __DIR__ . '/../vendor/PHPMailer/autoload.php';
                         // La configuración SMTP ya debería estar cargada por index.php o config/conexion.php, 
                         // pero por si acaso cargamos smtp.php si no está definida
                         if (!defined('SMTP_HOST')) {

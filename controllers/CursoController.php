@@ -445,7 +445,7 @@ class CursoController
     private function sendCertificateEmail($estudiante)
     {
         if ($estudiante && !empty($estudiante['email'])) {
-            require_once __DIR__ . '/../vendor/autoload.php';
+            require_once __DIR__ . '/../vendor/PHPMailer/autoload.php';
             if (!defined('SMTP_HOST')) {
                 require_once __DIR__ . '/../config/smtp.php';
             }
