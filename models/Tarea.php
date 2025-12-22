@@ -21,10 +21,11 @@ class Tarea
 
     public function getEntregasPorTarea($tarea_id)
     {
-        $sql = "SELECT e.*, u.id as usuario_id FROM curso_entrega e 
+        $sql = "SELECT e.*, u.id as usuario_id, p.nombre, p.apellido 
+                FROM curso_entrega e 
                 JOIN usuario u ON e.estudiante_id = u.id 
+                JOIN persona p ON u.persona_id = p.id
                 WHERE e.tarea_id = ?";
-        // Nota: Ajustar JOIN con 'persona' si se necesita nombre del estudiante
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("i", $tarea_id);
         $stmt->execute();

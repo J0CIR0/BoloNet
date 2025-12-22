@@ -491,10 +491,61 @@ class AulaController
 
         $curso_id = $res['curso_id'] ?? 0;
 
-        // Obtener entrega del estudiante
-        $entrega = $this->tareaModel->getEntregaEstudiante($tarea_id, $user_id);
+        // Verificar rol
+        require_once __DIR__ . '/../models/Usuario.php'; // Asegurarnos de tener acceso a roles si es necesario o usar session
+        $esProfesor = (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'profesor');
+
+        $entregas = [];
+        $entrega = null;
+
+        if ($esProfesor) {
+            // Profesor: Ver todas las entregas
+            $entregas = $this->tareaModel->getEntregasPorTarea($tarea_id);
+        } else {
+            // Estudiante: Ver su propia entrega
+            $entrega = $this->tareaModel->getEntregaEstudiante($tarea_id, $user_id);
+        }
 
         require_once __DIR__ . '/../views/aula/ver_tarea.php';
+    }
+
+    public function calificar_entrega()
+    {
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+
+        $this->verificarPermisosProfesor();
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $entrega_id = (int) $_POST['entrega_id'];
+            $tarea_id = (int) $_POST['tarea_id'];
+            $calificacion = $_POST['calificacion'];
+            $retroalimentacion = $_POST['retroalimentacion'];
+
+            // Validar que la calificacion no exceda el maximo (opcional pero bueno)
+            // Actualizar en BD
+            // Necesitamos un metodo en Tarea para actualizar calificacion.
+            // O usaremos query directo aqui por rapidez si no existe metodo especifico en Model.
+            // Mejor añadir metodo rapido en Modelo o Query directo.
+            // Usaremos query directo por ahora para no editar Model otra vez si no es necesario.
+
+            $sql = "UPDATE curso_entrega SET calificacion = ?, retroalimentacion = ? WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            if ($stmt) {
+                // calificacion puede ser decimal o int. BD suele ser decimal(5,2) o int.
+                // Asumimos decimal/double 'd' o string 's'. 'd' es seguro.
+                $stmt->bind_param("dsi", $calificacion, $retroalimentacion, $entrega_id);
+                if ($stmt->execute()) {
+                    $_SESSION['success'] = "Calificación guardada.";
+                } else {
+                    $_SESSION['error'] = "Error al guardar calificación.";
+                }
+                $stmt->close();
+            }
+
+            header("Location: index.php?controller=Aula&action=ver_tarea&id=" . $tarea_id);
+            exit();
+        }
     }
 }
 ?>
