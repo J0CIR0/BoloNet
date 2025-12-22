@@ -237,7 +237,7 @@
                                 aria-expanded="true">
                                 <h5 class="mb-0 fw-bold text-dark">
                                     <?php echo htmlspecialchars($mod['titulo']); ?>
-                                    <?php echo htmlspecialchars($mod['titulo']); ?>
+
                                     <?php if ($esProfesor): ?>
                                         <button class="btn btn-sm btn-outline-warning ms-2" 
                                                 onclick="event.stopPropagation(); prepararEditarModulo(<?php echo $mod['id']; ?>, '<?php echo addslashes($mod['titulo']); ?>', '<?php echo addslashes($mod['descripcion']); ?>')">
@@ -368,26 +368,72 @@
             <?php endif; ?>
         </div>
 
-        <!-- PESTAÑA 2: CALIFICACIONES (Placeholder) -->
+        <!-- PESTAÑA 2: CALIFICACIONES -->
         <div class="tab-pane fade" id="calificaciones-content" role="tabpanel">
-            <h4 class="mb-4">Calificaciones</h4>
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Actividad</th>
-                            <th>Estado</th>
-                            <th>Calificación</th>
-                            <th>Retroalimentación</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td colspan="4" class="text-center text-muted">No tienes calificaciones registradas aún.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="card bg-dark border-secondary">
+                <div class="card-header border-secondary">
+                    <h5 class="mb-0 text-white">Reporte de Actividades</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Actividad</th>
+                                    <th>Módulo</th>
+                                    <th>Vencimiento</th>
+                                    <th>Estado</th>
+                                    <th>Nota</th>
+                                    <th>Retroalimentación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($calificacionesData)): ?>
+                                    <?php foreach ($calificacionesData as $cal): ?>
+                                        <?php 
+                                            // Estado para Estudiante
+                                            $estado = '<span class="badge bg-secondary">Pendiente</span>';
+                                            $nota = '-';
+                                            $feedback = '-';
+                                            
+                                            if (isset($cal['entrega']) && $cal['entrega']) {
+                                                if ($cal['entrega']['calificacion'] !== null) {
+                                                    $estado = '<span class="badge bg-success">Calificado</span>';
+                                                    $nota = $cal['entrega']['calificacion'] . ' / ' . $cal['puntaje'];
+                                                    $feedback = $cal['entrega']['retroalimentacion'] ? $cal['entrega']['retroalimentacion'] : 'Sin comentarios';
+                                                } else {
+                                                    $estado = '<span class="badge bg-info text-dark">Entregado</span>';
+                                                }
+                                            } else {
+                                                // Si ya venció
+                                                if (strtotime($cal['fecha_entrega']) < time()) {
+                                                    $estado = '<span class="badge bg-danger">Vencido</span>';
+                                                }
+                                            }
+                                        ?>
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold"><?php echo htmlspecialchars($cal['titulo']); ?></div>
+                                            </td>
+                                            <td class="small text-muted"><?php echo htmlspecialchars($cal['modulo_titulo']); ?></td>
+                                            <td class="small"><?php echo $cal['fecha_entrega']; ?></td>
+                                            <td><?php echo $estado; ?></td>
+                                            <td class="fw-bold text-success"><?php echo $nota; ?></td>
+                                            <td class="small text-muted"><?php echo htmlspecialchars($feedback); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-muted">
+                                            <i class="fas fa-clipboard-check mb-2 fa-2x"></i><br>
+                                            No hay tareas asignadas en este curso.
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 

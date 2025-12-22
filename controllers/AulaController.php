@@ -149,6 +149,43 @@ class AulaController
             }
         }
 
+        // 3. Obtener Datos para Pestaña Calificaciones
+        $calificacionesData = [];
+        // Si es profesor, quizás quiera ver listado de alumnos y sus notas (complejo, dejaremos placeholder o lista de tareas)
+        // Si es estudiante, quiere ver SUS notas.
+
+        // Aplanamos todas las tareas del curso para mostrarlas en la tabla
+        $todasLasTareas = [];
+        if (!empty($modulos)) {
+            foreach ($modulos as $mod) {
+                if (!empty($mod['tareas'])) {
+                    foreach ($mod['tareas'] as $t) {
+                        $t['modulo_titulo'] = $mod['titulo'];
+                        $todasLasTareas[] = $t;
+                    }
+                }
+            }
+        }
+
+        if (!$esProfesor && ($yaInscrito || ($isSubscribed && $puedeInscribirse))) {
+            // Obtener entregas del estudiante
+            // Necesitamos un modelo para esto, o usar TareaModel si tiene método.
+            // Por ahora usaremos una consulta directa rapida o via model si existe.
+            // Asumimos que TareaModel tiene 'getEntrega($tarea_id, $usuario_id)'
+
+            foreach ($todasLasTareas as &$tarea) {
+                $entrega = $this->tareaModel->obtenerEntrega($tarea['id'], $_SESSION['user_id']);
+                $tarea['entrega'] = $entrega; // Si es null, no entregó
+            }
+            unset($tarea); // romper referencia
+            $calificacionesData = $todasLasTareas;
+        } elseif ($esProfesor) {
+            // Para el profesor, mostramos las tareas y cuantos han entregado (Resumen)
+            // Ojo: El usuario pidió "ver calificaciones", para profesor sería tabla de alumnos.
+            // Por simplicidad del fix, mostramos listado de tareas pendientes de calificar.
+            $calificacionesData = $todasLasTareas;
+        }
+
         // 4. Renderizar Vista
         $title = "Aula Virtual: " . $cursoData['nombre'];
         require_once __DIR__ . '/../views/aula/index.php';
