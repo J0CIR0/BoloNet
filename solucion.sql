@@ -220,4 +220,17 @@ CREATE TABLE IF NOT EXISTS user_sessions (
 -- 3. Índices nuevos
 CREATE INDEX idx_user_subscription ON usuario(subscription_status, plan_type);
 
+-- 4. Tabla de Pagos (Faltante)
+CREATE TABLE IF NOT EXISTS pago (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    usuario_id INT NOT NULL,
+    curso_id INT NOT NULL DEFAULT 0, -- 0 si es suscripción
+    transaccion_id VARCHAR(100) NOT NULL,
+    monto DECIMAL(10, 2) NOT NULL,
+    metodo_pago VARCHAR(50) NOT NULL,
+    estado VARCHAR(50) NOT NULL,
+    fecha_pago TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
