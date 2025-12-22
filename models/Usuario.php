@@ -316,49 +316,82 @@ class Usuario
     {
         $this->db->begin_transaction();
         try {
-            // Actualizar tabla usuario (email)
-            $sql_user = "UPDATE usuario SET email = ? WHERE id = ?";
-            $params = [$email, $id];
-            $types = 'si';
-
-            if ($password) {
-                // Verificar historial de contraseñas (Simplificado)
-                $usuario = $this->getById($id);
-                $history = json_decode($usuario['password_history'] ?? '[]', true);
-                if (in_array($password, $history)) {
-                    throw new Exception("No puedes usar una contraseña anterior");
-                }
-
-                // Actualizar password e historial
-                array_unshift($history, $usuario['password']);
-                $history = array_slice($history, 0, 3);
-                $history_json = json_encode($history);
-
-                $sql_user = "UPDATE usuario SET email = ?, password = ?, password_history = ? WHERE id = ?";
-                $params = [$email, $password, $history_json, $id];
-                $types = 'sssi';
+            // 1. Validar Email único (excluyendo al propio usuario)
+            $sql = "SELECT id FROM usuario WHERE email = ? AND id != ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bind_param("si", $email, $id);
+            $stmt->execute();
+            if ($stmt->get_result()->num_rows > 0) {
+                return ['success' => false, 'error' => 'El email ya está en uso.'];
             }
 
-            $stmt_u = $this->db->prepare($sql_user);
-            $stmt_u->bind_param($types, ...$params);
-            $stmt_u->execute();
+            // 2. Actualizar Usuario
+            $sqlUsuario = "UPDATE usuario SET email = ? WHERE id = ?";
+            $types = "si";
+            $params = [$email, $id];
 
-            // Actualizar tabla persona (telefono)
-            // Primero obtenemos el persona_id
-            $usuario_data = $this->getById($id);
-            $persona_id = $usuario_data['persona_id'];
+            if ($password) {
+                // Verificar historial de contraseñas
+                $userData = $this->getById($id);
+                $history = $userData['password_history'] ? json_decode($userData['password_history'], true) : [];
 
-            $sql_p = "UPDATE persona SET telefono = ? WHERE id = ?";
-            $stmt_p = $this->db->prepare($sql_p);
-            $stmt_p->bind_param("si", $telefono, $persona_id);
-            $stmt_p->execute();
+                foreach ($history as $oldHash) {
+                    if (password_verify($password, $oldHash)) {
+                        return ['success' => false, 'error' => 'No puedes usar una contraseña reciente.'];
+                    }
+                }
+
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+                $sqlUsuario = "UPDATE usuario SET email = ?, password = ?, password_history = ? WHERE id = ?";
+
+                // Actualizar historial
+                array_unshift($history, $hash);
+                if (count($history) > 3)
+                    array_pop($history);
+                $historyJson = json_encode($history);
+
+                $types = "sssi";
+                $params = [$email, $hash, $historyJson, $id];
+            }
+
+            $stmt = $this->db->prepare($sqlUsuario);
+            $stmt->bind_param($types, ...$params);
+            $stmt->execute();
+
+            // 3. Actualizar Persona (Teléfono)
+            $sqlPersona = "UPDATE persona SET telefono = ? WHERE id = (SELECT persona_id FROM usuario WHERE id = ?)";
+            $stmt = $this->db->prepare($sqlPersona);
+            $stmt->bind_param("si", $telefono, $id);
+            $stmt->execute();
 
             $this->db->commit();
             return ['success' => true];
+
         } catch (Exception $e) {
             $this->db->rollback();
-            return ['error' => $e->getMessage()];
+            return ['success' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    public function incrementarInterrupciones($user_id)
+    {
+        $sql = "UPDATE usuario SET conteo_interrupciones = conteo_interrupciones + 1 WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("i", $user_id);
+        return $stmt->execute();
+    }
+
+    public function getInterrupciones($user_id)
+    {
+        $sql = "SELECT conteo_interrupciones FROM usuario WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            return $row['conteo_interrupciones'];
+        }
+        return 0;
     }
 }
 ?>

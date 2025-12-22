@@ -26,6 +26,10 @@ class CursoController
         require_once __DIR__ . '/../models/UserSession.php';
         $sessionModel = new UserSession();
         if (isset($_SESSION['user_id']) && !$sessionModel->isValid(session_id())) {
+
+            // Increment interruption count before destroying session
+            $this->usuario->incrementarInterrupciones($_SESSION['user_id']);
+
             session_destroy();
             header('Location: index.php?error=sesion_invalida');
             exit();
@@ -248,6 +252,14 @@ class CursoController
 
         // --- LÓGICA DE SINCRONIZACIÓN SUSCRIPCIÓN ---
         $isSubscribed = isset($_SESSION['subscription_status']) && $_SESSION['subscription_status'] === 'active';
+
+        // Check for interruption upsell
+        $userData = $this->usuario->getById($estudiante_id);
+        $interruptionCount = $userData['conteo_interrupciones'] ?? 0;
+        $planType = $userData['plan_type'] ?? 'basic'; // Default to basic if null
+
+        // Show upsell if plan is basic (or null) and interruptions >= 3
+        $showUpsellBanner = ($planType === 'basic' || !$planType) && $interruptionCount >= 3;
 
         if ((isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'profesor') || $this->usuario->hasPermission($estudiante_id, 'crear_curso')) {
             // Es PROFESOR: Obtener cursos asignados

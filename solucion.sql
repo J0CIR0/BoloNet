@@ -48,6 +48,7 @@ CREATE TABLE usuario (
     reset_token VARCHAR(6) NULL,
     reset_expires DATETIME NULL,
     password_history TEXT NULL,
+    conteo_interrupciones INT DEFAULT 0,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (persona_id) REFERENCES persona(id) ON DELETE CASCADE,
