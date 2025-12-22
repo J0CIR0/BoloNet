@@ -11,15 +11,19 @@ class AulaController
     private $cursoModel;
     private $usuarioModel;
     private $tareaModel;
+    private $inscripcionModel;
+    private $db;
 
     public function __construct()
     {
         require_once __DIR__ . '/../models/Database.php';
+        require_once __DIR__ . '/../models/Inscripcion.php';
         $this->db = Database::getConnection();
         $this->moduloModel = new Modulo();
         $this->cursoModel = new Curso();
         $this->usuarioModel = new Usuario();
         $this->tareaModel = new Tarea();
+        $this->inscripcionModel = new Inscripcion();
     }
 
     // VISTA PRINCIPAL DEL AULA
@@ -72,6 +76,8 @@ class AulaController
 
         if ($esProfesor) {
             $gradingEnabled = true; // Profesores siempre pueden "calificar/editar"
+            // Obtener lista de estudiantes inscritos para calificar/aprobar
+            $inscritos = $this->inscripcionModel->obtenerInscritosPorCurso($id_curso);
         } else {
             // Verificar si YA está inscrito realmente
             require_once __DIR__ . '/../models/Inscripcion.php';
@@ -243,50 +249,7 @@ class AulaController
         exit();
     }
 
-    public function certificado()
-    {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
 
-        if (!isset($_GET['id']) || !isset($_SESSION['user_id'])) {
-            die("Acceso denegado");
-        }
-
-        $curso_id = (int) $_GET['id'];
-        $user_id = $_SESSION['user_id'];
-
-        // Verificar aprobación
-        require_once __DIR__ . '/../models/Inscripcion.php';
-        $inscripcionModel = new Inscripcion();
-        $misCursos = $inscripcionModel->obtenerCursosPorEstudiante($user_id);
-
-        $datosInscripcion = null;
-        foreach ($misCursos as $mc) {
-            if ($mc['id'] == $curso_id) {
-                $datosInscripcion = $mc;
-                break;
-            }
-        }
-
-        if (!$datosInscripcion || $datosInscripcion['estado_inscripcion'] !== 'aprobado') {
-            die("No tienes un certificado disponible para este curso. Debes aprobarlo primero.");
-        }
-
-        // Obtener datos del curso y profesor
-        $curso = $this->cursoModel->obtenerPorId($curso_id);
-        $cursoData = is_object($curso) ? (array) $curso : $curso;
-
-        // Obtener nombre del estudiante
-        require_once __DIR__ . '/../models/Usuario.php';
-        // Asumiendo que podemos obtener datos del usuario actual
-        // Si no hay un metodo directo, usaremos la sesión si tiene nombre, o un query rapido.
-        // Haremos un metodo helper rapido aqui o query
-        // Para simplificar, asumimos que nombre esta en session o lo sacamos del modelo
-        $nombreEstudiante = $_SESSION['user_name'] . ' ' . ($_SESSION['user_lastname'] ?? '');
-
-        require_once __DIR__ . '/../views/aula/certificado.php';
-    }
 
     public function editar_modulo()
     {
@@ -545,18 +508,9 @@ class AulaController
             $calificacion = $_POST['calificacion'];
             $retroalimentacion = $_POST['retroalimentacion'];
 
-            // Validar que la calificacion no exceda el maximo (opcional pero bueno)
-            // Actualizar en BD
-            // Necesitamos un metodo en Tarea para actualizar calificacion.
-            // O usaremos query directo aqui por rapidez si no existe metodo especifico en Model.
-            // Mejor añadir metodo rapido en Modelo o Query directo.
-            // Usaremos query directo por ahora para no editar Model otra vez si no es necesario.
-
             $sql = "UPDATE curso_entrega SET calificacion = ?, retroalimentacion = ? WHERE id = ?";
             $stmt = $this->db->prepare($sql);
             if ($stmt) {
-                // calificacion puede ser decimal o int. BD suele ser decimal(5,2) o int.
-                // Asumimos decimal/double 'd' o string 's'. 'd' es seguro.
                 $stmt->bind_param("dsi", $calificacion, $retroalimentacion, $entrega_id);
                 if ($stmt->execute()) {
                     $_SESSION['success'] = "Calificación guardada.";
@@ -569,6 +523,69 @@ class AulaController
             header("Location: index.php?controller=Aula&action=ver_tarea&id=" . $tarea_id);
             exit();
         }
+    }
+
+    // Aprobar estudiante y emitir certificado
+    public function aprobar_estudiante()
+    {
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+        $this->verificarPermisosProfesor();
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $curso_id = (int) $_POST['curso_id'];
+            $estudiante_id = (int) $_POST['estudiante_id'];
+            $nota_final = $_POST['nota_final'];
+
+            if ($this->inscripcionModel->aprobarEstudiante($curso_id, $estudiante_id, $nota_final)) {
+                $_SESSION['success'] = "Estudiante aprobado y certificado generado.";
+            } else {
+                $_SESSION['error'] = "Error al aprobar estudiante.";
+            }
+
+            header("Location: index.php?controller=Aula&action=index&id=" . $curso_id . "&section=calificaciones");
+            exit();
+        }
+    }
+
+    // Ver certificado
+    public function certificado()
+    {
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: login.php");
+            exit();
+        }
+
+        $curso_id = (int) $_GET['id'];
+        $usuario_id = $_SESSION['user_id'];
+
+        // Verificar si está aprobado
+        if (!$this->inscripcionModel->verificarInscripcion($usuario_id, $curso_id)) {
+            die("No estás inscrito en este curso.");
+        }
+
+        // Obtener datos
+        $cursoObj = $this->cursoModel->obtenerPorId($curso_id);
+        $curso = is_object($cursoObj) ? (array) $cursoObj : $cursoObj;
+
+        // Usamos una consulta directa para obtener datos de usuario y nota
+        $stmt = $this->db->prepare("SELECT i.*, p.nombre, p.apellido, p.ci 
+                                    FROM inscripcion i 
+                                    JOIN usuario u ON i.estudiante_id = u.id 
+                                    JOIN persona p ON u.persona_id = p.id 
+                                    WHERE i.curso_id = ? AND i.estudiante_id = ? AND i.estado = 'aprobado'");
+        $stmt->bind_param("ii", $curso_id, $usuario_id);
+        $stmt->execute();
+        $inscripcion = $stmt->get_result()->fetch_assoc();
+
+        if (!$inscripcion) {
+            die("El certificado no está disponible o el curso no ha sido aprobado.");
+        }
+
+        require_once __DIR__ . '/../views/aula/certificado.php';
     }
 }
 ?>

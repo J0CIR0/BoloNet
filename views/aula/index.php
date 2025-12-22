@@ -369,77 +369,176 @@
             <?php endif; ?>
         </div>
 
-        <div class="tab-pane fade" id="calificaciones-content" role="tabpanel">
-            <div class="card bg-dark border-secondary">
-                <div class="card-header border-secondary">
-                    <h5 class="mb-0 text-white">Reporte de Actividades</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-dark table-hover mb-0 align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Actividad</th>
-                                    <th>Módulo</th>
-                                    <th>Vencimiento</th>
-                                    <th>Estado</th>
-                                    <th>Nota</th>
-                                    <th>Retroalimentación</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($calificacionesData)): ?>
-                                    <?php foreach ($calificacionesData as $cal): ?>
-                                        <?php 
-                                            // Estado para Estudiante
-                                            $estado = '<span class="badge bg-secondary">Pendiente</span>';
-                                            $nota = '-';
-                                            $feedback = '-';
-                                            
-                                            if (isset($cal['entrega']) && $cal['entrega']) {
-                                                $archivoLink = '';
-                                                if (!empty($cal['entrega']['archivo_url'])) {
-                                                    $archivoLink = ' <a href="' . $cal['entrega']['archivo_url'] . '" target="_blank" class="text-info" title="Ver Archivo"><i class="fas fa-paperclip"></i></a>';
-                                                }
+    </div>
+</div>
 
-                                                if ($cal['entrega']['calificacion'] !== null) {
-                                                    $estado = '<span class="badge bg-success">Calificado</span>' . $archivoLink;
-                                                    $nota = $cal['entrega']['calificacion'] . ' / ' . ($cal['puntaje_maximo'] ?? 0);
-                                                    $feedback = $cal['entrega']['retroalimentacion'] ? $cal['entrega']['retroalimentacion'] : 'Sin comentarios';
-                                                } else {
-                                                    $estado = '<span class="badge bg-info text-dark">Entregado</span>' . $archivoLink;
-                                                }
-                                            } else {
-                                                if (strtotime($cal['fecha_entrega']) < time()) {
-                                                    $estado = '<span class="badge bg-danger">Vencido</span>';
-                                                }
-                                            }
-                                        ?>
-                                        <tr>
-                                            <td>
-                                                <div class="fw-bold text-break"><?php echo htmlspecialchars($cal['titulo']); ?></div>
-                                            </td>
-                                            <td class="small text-muted"><?php echo htmlspecialchars($cal['modulo_titulo']); ?></td>
-                                            <td class="small"><?php echo $cal['fecha_entrega']; ?></td>
-                                            <td><?php echo $estado; ?></td>
-                                            <td class="fw-bold text-success"><?php echo $nota; ?></td>
-                                            <td class="small text-muted text-break"><?php echo htmlspecialchars($feedback); ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="6" class="text-center py-4 text-muted">
-                                            <i class="fas fa-clipboard-check mb-2 fa-2x"></i><br>
-                                            No hay tareas asignadas en este curso.
-                                        </td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+<div class="tab-pane fade" id="calificaciones-content" role="tabpanel">
+
+    <?php if ($esProfesor): ?>
+        <div class="card bg-dark border-secondary mb-4">
+            <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-white"><i class="fas fa-users-cog me-2"></i> Gestión de Estudiantes</h5>
+                <span class="badge bg-primary">Total: <?php echo count($inscritos ?? []); ?></span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead>
+                            <tr class="text-secondary text-uppercase small">
+                                <th>Estudiante</th>
+                                <th>Email</th>
+                                <th>Estado</th>
+                                <th>Nota Final</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            // Obtener inscritos (Lógica simplificada en Vista, idealmente en Controller)
+                            // Usaremos una variable provista por el controlador
+                            if (!empty($inscritos)): 
+                                foreach ($inscritos as $est):
+                            ?>
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-white"><?php echo htmlspecialchars($est['nombre'] . ' ' . $est['apellido']); ?></div>
+                                        <div class="small text-muted"><?php echo htmlspecialchars($est['ci']); ?></div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($est['email']); ?></td>
+                                    <td>
+                                        <?php if ($est['estado'] === 'aprobado'): ?>
+                                            <span class="badge bg-success">Aprobado</span>
+                                            <div class="small text-success mt-1"><i class="fas fa-check-circle"></i> Certificado</div>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary">Cursando</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo $est['nota_final'] ?? '-'; ?></td>
+                                    <td class="text-end">
+                                        <?php if ($est['estado'] !== 'aprobado'): ?>
+                                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" 
+                                                    data-bs-target="#modalAprobar<?php echo $est['usuario_id']; ?>">
+                                                <i class="fas fa-award me-1"></i> Aprobar
+                                            </button>
+
+                                            <!-- Modal Aprobar -->
+                                            <div class="modal fade text-start" id="modalAprobar<?php echo $est['usuario_id']; ?>" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <form class="modal-content" method="POST" action="index.php?controller=Aula&action=aprobar_estudiante">
+                                                        <div class="modal-header bg-success text-white">
+                                                            <h5 class="modal-title">Aprobar Estudiante</h5>
+                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body text-dark">
+                                                            <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
+                                                            <input type="hidden" name="estudiante_id" value="<?php echo $est['usuario_id']; ?>">
+                                                            
+                                                            <p>¿Deseas aprobar a <strong><?php echo htmlspecialchars($est['nombre']); ?></strong>?</p>
+                                                            <p class="small text-muted">Esto generará automáticamente su certificado de finalización.</p>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold">Nota Final (0-100)</label>
+                                                                <input type="number" name="nota_final" class="form-control" required min="0" max="100" value="100">
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                            <button type="submit" class="btn btn-success fw-bold">Confirmar Aprobación</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+
+                                        <?php else: ?>
+                                            <a href="index.php?controller=Aula&action=certificado&id=<?php echo $id_curso; ?>" target="_blank" 
+                                               class="btn btn-sm btn-warning disabled" title="Ya aprobado">
+                                                <i class="fas fa-certificate"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; else: ?>
+                                <tr><td colspan="5" class="text-center py-4 text-muted">No hay estudiantes inscritos aún.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+    <?php else: ?>
+        <!-- VISTA ESTUDIANTE: Mis Calificaciones -->
+    <?php endif; ?>
+
+    <div class="card bg-dark border-secondary">
+        <div class="card-header border-secondary">
+            <h5 class="mb-0 text-white">Reporte de Actividades</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>Módulo</th>
+                            <th>Vencimiento</th>
+                            <th>Estado</th>
+                            <th>Nota</th>
+                            <th>Retroalimentación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($calificacionesData)): ?>
+                            <?php foreach ($calificacionesData as $cal): ?>
+                                <?php 
+                                    // Estado para Estudiante
+                                    $estado = '<span class="badge bg-secondary">Pendiente</span>';
+                                    $nota = '-';
+                                    $feedback = '-';
+                                    
+                                    if (isset($cal['entrega']) && $cal['entrega']) {
+                                        $archivoLink = '';
+                                        if (!empty($cal['entrega']['archivo_url'])) {
+                                            $archivoLink = ' <a href="' . $cal['entrega']['archivo_url'] . '" target="_blank" class="text-info" title="Ver Archivo"><i class="fas fa-paperclip"></i></a>';
+                                        }
+
+                                        if ($cal['entrega']['calificacion'] !== null) {
+                                            $estado = '<span class="badge bg-success">Calificado</span>' . $archivoLink;
+                                            $nota = $cal['entrega']['calificacion'] . ' / ' . ($cal['puntaje_maximo'] ?? 0);
+                                            $feedback = $cal['entrega']['retroalimentacion'] ? $cal['entrega']['retroalimentacion'] : 'Sin comentarios';
+                                        } else {
+                                            $estado = '<span class="badge bg-info text-dark">Entregado</span>' . $archivoLink;
+                                        }
+                                    } else {
+                                        if (strtotime($cal['fecha_entrega']) < time()) {
+                                            $estado = '<span class="badge bg-danger">Vencido</span>';
+                                        }
+                                    }
+                                ?>
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-break"><?php echo htmlspecialchars($cal['titulo']); ?></div>
+                                    </td>
+                                    <td class="small text-muted"><?php echo htmlspecialchars($cal['modulo_titulo']); ?></td>
+                                    <td class="small"><?php echo $cal['fecha_entrega']; ?></td>
+                                    <td><?php echo $estado; ?></td>
+                                    <td class="fw-bold text-success"><?php echo $nota; ?></td>
+                                    <td class="small text-muted text-break"><?php echo htmlspecialchars($feedback); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="fas fa-clipboard-check mb-2 fa-2x"></i><br>
+                                    No hay tareas asignadas en este curso.
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
     </div>
 </div>
