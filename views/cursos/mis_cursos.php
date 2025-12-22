@@ -193,6 +193,10 @@ require_once __DIR__ . '/../layouts/header.php';
                     <div class="card-footer bg-transparent border-0 position-relative pb-4" style="z-index: 2;">
                         <div class="d-flex justify-content-between align-items-end mb-2">
                             <span class="small fw-bold text-white"><?php echo $progreso; ?>% completado</span>
+                            <a href="index.php?controller=Aula&action=index&id=<?php echo $fila['id']; ?>"
+                                class="btn btn-sm btn-light px-3 rounded-pill fw-bold" style="font-size: 0.8rem;">
+                                Aula <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
                         </div>
                         <div class="progress bg-secondary bg-opacity-25" style="height: 8px; border-radius: 4px;">
                             <div class="progress-bar bg-success" role="progressbar"

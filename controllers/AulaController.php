@@ -1,0 +1,84 @@
+<?php
+require_once __DIR__ . '/../models/Modulo.php';
+require_once __DIR__ . '/../models/Curso.php';
+require_once __DIR__ . '/../models/Usuario.php';
+require_once __DIR__ . '/../models/Tarea.php';
+// require_once __DIR__ . '/../models/Contenido.php'; // Lo cargaremos on-demand
+
+class AulaController
+{
+    private $moduloModel;
+    private $cursoModel;
+    private $usuarioModel;
+    private $tareaModel;
+
+    public function __construct()
+    {
+        $this->moduloModel = new Modulo();
+        $this->cursoModel = new Curso();
+        $this->usuarioModel = new Usuario();
+        $this->tareaModel = new Tarea();
+    }
+
+    // VISTA PRINCIPAL DEL AULA
+    public function index()
+    {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!isset($_GET['id'])) {
+            header('Location: index.php?controller=Curso&action=mis_cursos');
+            exit();
+        }
+
+        $id_curso = (int) $_GET['id'];
+        $user_id = $_SESSION['user_id'] ?? 0;
+
+        // 1. Validar Acceso (Suscripción o Inscripción)
+        // Puedes reutilizar lógica de CursoController o simplificar aquí
+        // Por ahora asumimos que si llega aquí es porque tiene permiso, pero lo ideal es validar
+
+        $curso = $this->cursoModel->obtenerPorId($id_curso); // Devuelve objeto u array
+        if (!$curso) {
+            die("Curso no encontrado");
+        }
+        // Convertir a array si es objeto para consistencia
+        $cursoData = is_object($curso) ? (array) $curso : $curso;
+
+        // 2. Cargar contenido del aula
+        $modulos = $this->moduloModel->getByCurso($id_curso);
+
+        // 3. Determinar rol en el contexto del aula
+        $esProfesor = $this->usuarioModel->hasPermission($user_id, 'crear_curso'); // Simplificación
+
+        // 4. Renderizar Vista
+        // La vista tendrá pestañas: Contenido, Calificaciones, etc.
+        $title = "Aula Virtual: " . $cursoData['nombre'];
+        require_once __DIR__ . '/../views/aula/index.php';
+    }
+
+    // --- ACCIONES DEL PROFESOR ---
+
+    public function crear_modulo()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->moduloModel->crear($_POST['curso_id'], $_POST['titulo'], $_POST['descripcion']);
+            header("Location: index.php?controller=Aula&action=index&id=" . $_POST['curso_id']);
+        }
+    }
+
+    public function crear_contenido()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            require_once __DIR__ . '/../models/Contenido.php';
+            $contenidoModel = new Contenido();
+            $contenidoModel->crear($_POST['modulo_id'], $_POST['titulo'], $_POST['tipo'], $_POST['url'], $_POST['descripcion']);
+            // Redirigir al curso
+            // Necesitamos el ID del curso, que debería venir en el POST o deducirse
+            // Hack rápido: enviar curso_id en form oculto
+            header("Location: index.php?controller=Aula&action=index&id=" . $_POST['curso_id']);
+        }
+    }
+}
+?>

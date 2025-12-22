@@ -87,9 +87,10 @@ $title = 'Cursos';
                                     <div class="d-grid gap-2">
                                         <?php if ($usuarioModel->hasPermission($_SESSION['user_id'], 'inscribir_curso')): ?>
                                             <?php if ($ya_inscrito): ?>
-                                                <button class="btn btn-secondary btn-sm" disabled>
-                                                    <i class="fas fa-check"></i> Inscrito
-                                                </button>
+                                                <a href="index.php?controller=Aula&action=index&id=<?php echo $curso['id']; ?>"
+                                                    class="btn btn-secondary btn-sm">
+                                                    <i class="fas fa-chalkboard"></i> Ir al Aula
+                                                </a>
                                             <?php else: ?>
                                                 <a href="index.php?controller=Pago&action=checkout&id_curso=<?php echo $curso['id']; ?>"
                                                     class="btn btn-success btn-sm">
