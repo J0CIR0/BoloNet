@@ -57,6 +57,20 @@ class Tarea
         }
         return $stmt->execute();
     }
+    public function eliminarEntrega($tarea_id, $estudiante_id)
+    {
+        $entrega = $this->getEntregaEstudiante($tarea_id, $estudiante_id);
+        if ($entrega) {
+            $sql = "DELETE FROM curso_entrega WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bind_param("i", $entrega['id']);
+            if ($stmt->execute()) {
+                return $entrega['archivo_url'];
+            }
+        }
+        return false;
+    }
+
     public function obtenerPorId($id)
     {
         $sql = "SELECT * FROM curso_tarea WHERE id = ?";

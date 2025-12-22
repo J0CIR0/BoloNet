@@ -425,7 +425,9 @@ class AulaController
             $user_id = $_SESSION['user_id'];
 
             // Manejo de archivo
-            $url_archivo = '';
+            $entregaExistente = $this->tareaModel->getEntregaEstudiante($tarea_id, $user_id);
+            $url_archivo = $entregaExistente ? $entregaExistente['archivo_url'] : '';
+
             if (isset($_FILES['archivo_tarea']) && $_FILES['archivo_tarea']['error'] === UPLOAD_ERR_OK) {
                 // Crear directorio si no existe
                 $uploadDir = __DIR__ . '/../uploads/cursos/tareas/';
@@ -444,24 +446,45 @@ class AulaController
                     header("Location: index.php?controller=Aula&action=index&id=" . $curso_id);
                     exit();
                 }
-            } else {
-                // Si no subió archivo pero puso comentario, es válido, o podría ser obligatorio.
-                // Asumimos que puede entregar solo texto o hubo error leve
-                if (isset($_FILES['archivo_tarea']) && $_FILES['archivo_tarea']['error'] !== UPLOAD_ERR_NO_FILE) {
-                    $_SESSION['error'] = "Error en la subida del archivo.";
-                    header("Location: index.php?controller=Aula&action=index&id=" . $curso_id);
-                    exit();
-                }
             }
+            // Validacion: Si no hay archivo nuevo NI viejo, y se requiere archivo, error.
+            // (Asumimos por ahora que si es edit solo comentario, vale).
 
             // Guardar en BD
             if ($this->tareaModel->entregar($tarea_id, $user_id, $url_archivo, $comentario)) {
-                $_SESSION['success'] = "Tarea entregada correctamente.";
+                $_SESSION['success'] = "Entrega guardada correctamente.";
             } else {
                 $_SESSION['error'] = "Error al guardar la entrega.";
             }
 
-            header("Location: index.php?controller=Aula&action=index&id=" . $curso_id);
+            header("Location: index.php?controller=Aula&action=ver_tarea&id=" . $tarea_id);
+            exit();
+        }
+    }
+
+    public function eliminar_entrega()
+    {
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['user_id'])) {
+            $tarea_id = (int) $_POST['tarea_id'];
+            $curso_id = (int) $_POST['curso_id'];
+            $user_id = $_SESSION['user_id'];
+
+            $archivoEliminado = $this->tareaModel->eliminarEntrega($tarea_id, $user_id);
+
+            if ($archivoEliminado !== false) {
+                // Intentar borrar archivo fisico
+                if ($archivoEliminado && file_exists(__DIR__ . '/../' . $archivoEliminado)) {
+                    unlink(__DIR__ . '/../' . $archivoEliminado);
+                }
+                $_SESSION['success'] = "Entrega eliminada.";
+            } else {
+                $_SESSION['error'] = "No se pudo eliminar la entrega.";
+            }
+
+            header("Location: index.php?controller=Aula&action=ver_tarea&id=" . $tarea_id);
             exit();
         }
     }

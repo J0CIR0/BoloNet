@@ -62,7 +62,8 @@ $timeInfo = time_remaining($tarea['fecha_entrega']);
                                     <th>Archivo</th>
                                     <th>Comentario Alumno</th>
                                     <th style="min-width: 150px;">Calificación (Max:
-                                        <?php echo $tarea['puntaje_maximo']; ?>)</th>
+                                        <?php echo $tarea['puntaje_maximo']; ?>)
+                                    </th>
                                     <th style="min-width: 200px;">Retroalimentación</th>
                                     <th>Acción</th>
                                 </tr>
@@ -253,12 +254,26 @@ $timeInfo = time_remaining($tarea['fecha_entrega']);
                     <?php endif; ?>
                 <?php else: ?>
                     <?php if (!$entrega['calificacion']): ?>
-                        <button class="btn btn-secondary px-4 py-2" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#formEntrega">
-                            Editar entrega
-                        </button>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button class="btn btn-secondary px-4 py-2" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#formEntrega">
+                                Editar entrega
+                            </button>
+
+                            <form action="index.php?controller=Aula&action=eliminar_entrega" method="POST"
+                                onsubmit="return confirm('¿Estás seguro de que quieres quitar tu envío? Se borrará el archivo y el comentario.');">
+                                <input type="hidden" name="tarea_id" value="<?php echo $tarea['id']; ?>">
+                                <input type="hidden" name="curso_id" value="<?php echo $curso_id; ?>">
+                                <button type="submit" class="btn btn-danger px-4 py-2">
+                                    Quitar envío
+                                </button>
+                            </form>
+                        </div>
                     <?php else: ?>
                         <!-- Si ya está calificada, no se suele dejar editar -->
+                        <div class="alert alert-info d-inline-block">
+                            Esta tarea ya ha sido calificada y no se puede editar.
+                        </div>
                     <?php endif; ?>
                 <?php endif; ?>
 
@@ -272,7 +287,7 @@ $timeInfo = time_remaining($tarea['fecha_entrega']);
             <div class="collapse mt-4 <?php echo (!$entrega && !$timeInfo['is_late']) ? 'show' : ''; ?>" id="formEntrega">
                 <div class="card bg-dark border-secondary mx-auto" style="max-width: 800px;">
                     <div class="card-header border-secondary bg-secondary bg-opacity-10">
-                        Subir archivos
+                        <?php echo $entrega ? 'Editar entrega' : 'Subir archivos'; ?>
                     </div>
                     <div class="card-body">
                         <form action="index.php?controller=Aula&action=subir_tarea" method="POST"
@@ -282,14 +297,26 @@ $timeInfo = time_remaining($tarea['fecha_entrega']);
 
                             <div class="mb-4 text-center border border-secondary border-dashed p-5 rounded">
                                 <i class="fas fa-cloud-upload-alt fa-3x text-white-50 mb-3"></i>
+
+                                <?php if ($entrega && $entrega['archivo_url']): ?>
+                                    <div class="mb-3 text-start bg-secondary bg-opacity-25 p-2 rounded">
+                                        <span class="text-white-50 small d-block">Archivo actual:</span>
+                                        <a href="<?php echo $entrega['archivo_url']; ?>" target="_blank"
+                                            class="text-info fw-bold">
+                                            <i class="fas fa-file me-1"></i> <?php echo basename($entrega['archivo_url']); ?>
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+
                                 <div class="mb-3">
+                                    <label
+                                        class="form-label text-white-50 small mb-1"><?php echo $entrega ? 'Reemplazar archivo (opcional)' : 'Seleccionar archivo'; ?></label>
                                     <input type="file" name="archivo_tarea"
-                                        class="form-control bg-dark text-white border-secondary" required>
+                                        class="form-control bg-dark text-white border-secondary" <?php echo $entrega ? '' : 'required'; ?>>
                                 </div>
                                 <p class="text-muted small">Arrastre y suelte los archivos aquí o use el selector de
                                     archivos.</p>
                             </div>
-
                             <div class="mb-3">
                                 <label class="form-label text-white">Comentarios:</label>
                                 <textarea name="comentario" class="form-control bg-dark text-white border-secondary"
