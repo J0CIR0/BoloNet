@@ -47,26 +47,39 @@ if ($usuarioModel->hasPermission($_SESSION['user_id'], 'ver_cursos')) {
     </div>
 
     <?php
-    // --- LÓGICA DE UPSELL POR INTERRUPCIONES ---
+    // --- LÓGICA DE UPSELL POR INTERRUPCIONES Y PLAN ---
     $showUpsellBanner = false;
     $upsellMessage = '';
+    $upsellTitle = '¡Mejora tu experiencia!';
+    $showInterruptionCount = false; // Flag para mostrar el contador en el HTML
     $user_id = $_SESSION['user_id'];
 
     // Obtener conteo actual
     $interruptionCount = $usuarioModel->getInterrupciones($user_id);
-    $userPlan = $_SESSION['plan_type'] ?? 'basic'; // Default a basic si no está seteado
-    
-    // Definir límites (Basic: 1 sesión, Pro: 3 sesiones, Premium: 5 sesiones)
-    // El "Upsell" se muestra si ha tenido interrupciones frecuentes (ej > 3) indicando que necesita más sesiones
-    if ($interruptionCount >= 3) {
+    $userPlan = $_SESSION['plan_type'] ?? 'basic';
+
+    // MOSTRAR POR DEFECTO A TODOS LOS NO-PREMIUM
+    if ($userPlan !== 'premium') {
         $showUpsellBanner = true;
-        if ($userPlan === 'basic') {
-            $upsellMessage = "Tu <strong>Plan Básico</strong> solo permite 1 sesión simultánea. Actualiza a <strong>Pro</strong> (3 sesiones) o <strong>Premium</strong> (5 sesiones) para evitar interrupciones.";
-        } elseif ($userPlan === 'pro') {
-            $upsellMessage = "Tu <strong>Plan Pro</strong> permite 3 sesiones. Si necesitas más, actualiza a <strong>Premium</strong> (5 sesiones).";
+
+        if ($interruptionCount > 0) {
+            // CASO REACTIVO: Ya tuvo problemas
+            $showInterruptionCount = true;
+            $upsellTitle = '¡Interrupciones Detectadas!';
+            if ($userPlan === 'basic') {
+                $upsellMessage = "Tu <strong>Plan Básico</strong> solo permite 1 sesión simultánea. Actualiza a <strong>Pro</strong> (3 sesiones) o <strong>Premium</strong> (5 sesiones) para evitar estas molestias.";
+            } else {
+                $upsellMessage = "Tu <strong>Plan Pro</strong> permite 3 sesiones. Si necesitas más, actualiza a <strong>Premium</strong> (5 sesiones).";
+            }
         } else {
-            // Premium (ya tiene max)
-            $showUpsellBanner = false;
+            // CASO PROACTIVO: Aún no tiene problemas (0 interrupciones)
+            $showInterruptionCount = false;
+            $upsellTitle = '¡Lleva tu aprendizaje al siguiente nivel!';
+            if ($userPlan === 'basic') {
+                $upsellMessage = "Actualmente tienes el <strong>Plan Básico</strong>. Actualiza a <strong>Premium</strong> para disfrutar de sesiones simultáneas y certificados verificados.";
+            } else {
+                $upsellMessage = "Disfruta de la máxima potencia con <strong>Premium</strong>: 5 sesiones simultáneas y soporte prioritario.";
+            }
         }
     }
     ?>
@@ -77,10 +90,12 @@ if ($usuarioModel->hasPermission($_SESSION['user_id'], 'ver_cursos')) {
                 <div
                     class="alert alert-warning border border-warning shadow-sm d-flex justify-content-between align-items-center flex-wrap">
                     <div>
-                        <h4 class="alert-heading fw-bold"><i class="fas fa-exclamation-triangle"></i> ¡Mejora tu
-                            experiencia!</h4>
-                        <p class="mb-1">Hemos notado que has tenido <strong><?php echo $interruptionCount; ?>
-                                interrupciones</strong> en tu sesión recientemente.</p>
+                        <h4 class="alert-heading fw-bold"><i class="fas fa-exclamation-triangle"></i>
+                            <?php echo $upsellTitle; ?></h4>
+                        <?php if ($showInterruptionCount): ?>
+                            <p class="mb-1">Hemos notado que has tenido <strong><?php echo $interruptionCount; ?>
+                                    interrupciones</strong> en tu sesión recientemente.</p>
+                        <?php endif; ?>
                         <p class="mb-0 small"><?php echo $upsellMessage; ?></p>
                     </div>
                     <div class="mt-2 mt-md-0">
