@@ -153,4 +153,21 @@ class Inscripcion
         }
         return null;
     }
+
+    public function getInscripcionPorId($inscripcion_id)
+    {
+        $sql = "SELECT i.*, u.email, p.nombre, p.apellido, c.nombre as curso_nombre 
+                FROM inscripcion i 
+                JOIN usuario u ON i.estudiante_id = u.id 
+                JOIN persona p ON u.persona_id = p.id 
+                JOIN curso c ON i.curso_id = c.id
+                WHERE i.id = ?";
+        $stmt = $this->db->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param("i", $inscripcion_id);
+            $stmt->execute();
+            return $stmt->get_result()->fetch_assoc();
+        }
+        return null;
+    }
 }

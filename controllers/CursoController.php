@@ -367,12 +367,71 @@ class CursoController
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (isset($_POST['inscripcion_id'])) {
-                $this->curso->actualizarInscripcion(
-                    $_POST['inscripcion_id'],
-                    $_POST['estado'],
-                    $_POST['nota_final'] ?? null
-                );
-                $_SESSION['success'] = 'Inscripción actualizada';
+                $estado = $_POST['estado'];
+                $inscripcionId = $_POST['inscripcion_id'];
+
+                if (
+                    $this->curso->actualizarInscripcion(
+                        $inscripcionId,
+                        $estado,
+                        $_POST['nota_final'] ?? null
+                    )
+                ) {
+                    $_SESSION['success'] = 'Inscripción actualizada';
+
+                    // --- ENVIAR CORREO SI ES APROBADO ---
+                    if ($estado === 'aprobado') {
+                        try {
+                            // Obtener datos del estudiante e inscripción
+                            $estudiante = $this->inscripcion->getInscripcionPorId($inscripcionId);
+
+                            if ($estudiante && !empty($estudiante['email'])) {
+                                require_once __DIR__ . '/../vendor/autoload.php';
+                                if (!defined('SMTP_HOST')) {
+                                    require_once __DIR__ . '/../config/smtp.php';
+                                }
+
+                                $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+                                $host = $_SERVER['HTTP_HOST'];
+                                // Construir link al certificado
+                                $certLink = $protocol . "://" . $host . "/BoloNet/index.php?controller=Aula&action=certificado&id=" . $estudiante['curso_id'];
+
+                                $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+                                $mail->isSMTP();
+                                $mail->Host = SMTP_HOST;
+                                $mail->SMTPAuth = true;
+                                $mail->Username = SMTP_USER;
+                                $mail->Password = SMTP_PASS;
+                                $mail->SMTPSecure = SMTP_SECURE;
+                                $mail->Port = SMTP_PORT;
+
+                                $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
+                                $mail->addAddress($estudiante['email'], $estudiante['nombre'] . ' ' . $estudiante['apellido']);
+
+                                $mail->isHTML(true);
+                                $mail->Subject = '¡Felicidades! Has aprobado el curso ' . $estudiante['curso_nombre'];
+                                $mail->Body = "
+                                    <h1>¡Felicitaciones " . htmlspecialchars($estudiante['nombre']) . "!</h1>
+                                    <p>Nos complace informarte que has aprobado satisfactoriamente el curso <strong>" . htmlspecialchars($estudiante['curso_nombre']) . "</strong>.</p>
+                                    <p>Tu <strong>Certificado de Finalización</strong> ya está disponible.</p>
+                                    <p>Puedes verlo y descargarlo en formato PDF haciendo clic en el siguiente enlace:</p>
+                                    <p><a href='" . $certLink . "' style='background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Ver Mi Certificado</a></p>
+                                    <p>Si el botón no funciona, copia y pega este enlace en tu navegador:<br> $certLink</p>
+                                    <hr>
+                                    <small>BoloNet Learning System</small>
+                                ";
+
+                                $mail->send();
+                                $_SESSION['success'] .= " y notificación enviada.";
+                            }
+                        } catch (Exception $e) {
+                            error_log("Error enviando certificado: " . $e->getMessage());
+                        }
+                    }
+
+                } else {
+                    $_SESSION['error'] = 'Error al actualizar inscripción';
+                }
             }
         }
 
