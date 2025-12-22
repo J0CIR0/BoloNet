@@ -15,47 +15,50 @@ require_once __DIR__ . '/../layouts/header.php';
                     <h4 class="mb-0"><i class="fas fa-plus-circle"></i> Crear Nuevo Curso</h4>
                 </div>
                 <div class="card-body p-4">
-                    
+
                     <form method="POST" action="index.php?controller=Curso&action=create" id="cursoForm">
-                        
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Código del Curso <span class="text-danger">*</span></label>
-                                <input type="text" name="codigo" class="form-control" placeholder="Ej: PROG101" required>
+                                <label class="form-label fw-bold">Código del Curso <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" name="codigo" class="form-control" placeholder="Ej: PROG101"
+                                    required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Nombre del Curso <span class="text-danger">*</span></label>
-                                <input type="text" name="nombre" class="form-control" placeholder="Ej: Introducción a Java" required>
+                                <label class="form-label fw-bold">Nombre del Curso <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" name="nombre" class="form-control"
+                                    placeholder="Ej: Introducción a Java" required>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Descripción</label>
-                            <textarea name="descripcion" class="form-control" rows="3" placeholder="Detalles sobre lo que aprenderán..."></textarea>
+                            <textarea name="descripcion" class="form-control" rows="3"
+                                placeholder="Detalles sobre lo que aprenderán..."></textarea>
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold text-success">Precio (USD) <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" name="precio" class="form-control" step="0.01" min="0" placeholder="0.00" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Duración (horas) <span class="text-danger">*</span></label>
-                                <input type="number" name="duracion_horas" class="form-control" min="1" value="40" required>
+
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-bold">Duración (horas) <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" name="duracion_horas" class="form-control" min="1" value="40"
+                                    required>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Fecha Inicio</label>
-                                <input type="date" name="fecha_inicio" class="form-control" value="<?php echo $fecha_hoy; ?>" required>
+                                <input type="date" name="fecha_inicio" class="form-control"
+                                    value="<?php echo $fecha_hoy; ?>" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Fecha Fin</label>
-                                <input type="date" name="fecha_fin" class="form-control" value="<?php echo $fecha_mes; ?>" required>
+                                <input type="date" name="fecha_fin" class="form-control"
+                                    value="<?php echo $fecha_mes; ?>" required>
                             </div>
                         </div>
 
@@ -64,11 +67,11 @@ require_once __DIR__ . '/../layouts/header.php';
                                 <label class="form-label fw-bold">Profesor Asignado</label>
                                 <select name="profesor_id" class="form-select">
                                     <option value="">Seleccionar Profesor...</option>
-                                    <?php if(isset($profesores)): ?>
-                                        <?php foreach($profesores as $profesor): ?>
-                                        <option value="<?php echo $profesor['id']; ?>">
-                                            <?php echo htmlspecialchars($profesor['nombre_completo'] ?? $profesor['nombre']); ?>
-                                        </option>
+                                    <?php if (isset($profesores)): ?>
+                                        <?php foreach ($profesores as $profesor): ?>
+                                            <option value="<?php echo $profesor['id']; ?>">
+                                                <?php echo htmlspecialchars($profesor['nombre_completo'] ?? $profesor['nombre']); ?>
+                                            </option>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
                                 </select>
@@ -100,26 +103,24 @@ require_once __DIR__ . '/../layouts/header.php';
 </div>
 
 <script>
-document.getElementById('cursoForm').addEventListener('submit', function(e) {
-    var fechaInicio = document.querySelector('input[name="fecha_inicio"]').value;
-    var fechaFin = document.querySelector('input[name="fecha_fin"]').value;
-    var precio = parseFloat(document.querySelector('input[name="precio"]').value);
-    
-    // Validaciones
+    document.getElementById('cursoForm').addEventListener('submit', function (e) {
+        var fechaInicio = document.querySelector('input[name="fecha_inicio"]').value;
+        var fechaFin = document.querySelector('input[name="fecha_fin"]').value;
+
+        // Validaciones
+        if (fechaInicio >= fechaFin) {
+            alert('⚠️ Error: La fecha de inicio debe ser anterior a la fecha de fin.');
+            e.preventDefault();
+            return false;
+        }
+
+        // Validaciones
     if (fechaInicio >= fechaFin) {
         alert('⚠️ Error: La fecha de inicio debe ser anterior a la fecha de fin.');
         e.preventDefault();
         return false;
     }
-    
-    if (precio < 0) {
-        alert('⚠️ Error: El precio no puede ser negativo.');
-        e.preventDefault();
-        return false;
-    }
-    
-    return true;
-});
+    });
 </script>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>

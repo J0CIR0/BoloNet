@@ -97,17 +97,16 @@ class Curso
         // --- INSERT CON PREPARED STATEMENTS (RECOMENDADO) ---
         // Se actualiza para incluir el PRECIO
         if ($profesor_id !== null) {
-            $sql = "INSERT INTO curso (codigo, nombre, descripcion, duracion_horas, precio, fecha_inicio, fecha_fin, profesor_id, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO curso (codigo, nombre, descripcion, duracion_horas, fecha_inicio, fecha_fin, profesor_id, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->db->prepare($sql);
             if ($stmt) {
-                // "sssidissi" -> d = double (para el precio)
+                // "sssisssi" 
                 $stmt->bind_param(
-                    "sssidissi",
+                    "sssisssi",
                     $codigo,
                     $nombre,
                     $descripcion,
                     $duracion_horas,
-                    $precio,
                     $fecha_inicio,
                     $fecha_fin,
                     $profesor_id,
@@ -118,16 +117,16 @@ class Curso
                 return $result;
             }
         } else {
-            $sql = "INSERT INTO curso (codigo, nombre, descripcion, duracion_horas, precio, fecha_inicio, fecha_fin, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO curso (codigo, nombre, descripcion, duracion_horas, fecha_inicio, fecha_fin, estado) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->db->prepare($sql);
             if ($stmt) {
+                // "sssiss"
                 $stmt->bind_param(
-                    "sssidiss",
+                    "sssiss",
                     $codigo,
                     $nombre,
                     $descripcion,
                     $duracion_horas,
-                    $precio,
                     $fecha_inicio,
                     $fecha_fin,
                     $estado
