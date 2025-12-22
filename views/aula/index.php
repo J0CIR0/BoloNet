@@ -157,12 +157,57 @@
         <!-- PESTAÑA 1: CONTENIDO DEL CURSO -->
         <div class="tab-pane fade show active" id="curso-content" role="tabpanel">
 
-            <!-- ALERT PARA OYENTES -->
-            <?php if (isset($auditorMessage) && !empty($auditorMessage)): ?>
+            <!-- ESTADO DEL CURSO Y ACCIONES -->
+            
+            <!-- 1. Curso Finalizado -->
+            <?php if (isset($cursoFinalizado) && $cursoFinalizado): ?>
+                <div class="alert alert-dark border border-secondary shadow-sm mb-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <i class="fas fa-flag-checkered fa-2x me-3 text-secondary"></i>
+                            <span class="h5 mb-0 align-middle">Curso Finalizado</span>
+                        </div>
+                        <?php if (isset($isAprobado) && $isAprobado): ?>
+                            <a href="index.php?controller=Aula&action=certificado&id=<?php echo $id_curso; ?>" target="_blank" 
+                               class="btn btn-warning fw-bold">
+                                <i class="fas fa-certificate"></i> Descargar Certificado
+                            </a>
+                        <?php else: ?>
+                            <span class="badge bg-secondary">Finalizado: <?php echo $cursoData['fecha_fin']; ?></span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <!-- 2. Botón Participar (Si puede inscribirse y NO es profesor) -->
+            <?php if (isset($puedeInscribirse) && $puedeInscribirse && !$esProfesor && empty($estaInscrito)): ?>
+                <div class="alert alert-success border-0 shadow-sm mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="alert-heading mb-1"><i class="fas fa-user-plus me-2"></i>¡Únete al Curso!</h5>
+                            <p class="mb-0 small">Al participar, aparecerás en la lista del profesor y podrás entregar tareas para ser calificado.</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <form action="index.php?controller=Aula&action=participar" method="POST">
+                                <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
+                                <button type="submit" class="btn btn-success fw-bold px-4">Participar en el Curso</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <!-- 3. Alert para Oyentes (Inscripciones Cerradas) -->
+            <?php if (isset($inscripcionesCerradas) && $inscripcionesCerradas): ?>
                 <div class="alert alert-warning border-0 shadow-sm mb-4">
                     <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Atención:</strong> <?php echo $auditorMessage; ?>
+                    <strong>Modo Oyente:</strong> El curso ha avanzado más del 50%. Puedes acceder al contenido pero no se aceptan nuevas inscripciones para calificación.
                 </div>
+            <?php endif; ?>
+
+            <!-- 4. Ya participando (Opcional, feedback positivo) -->
+            <?php if (isset($estaInscrito) && $estaInscrito && !isset($cursoFinalizado)): ?>
+                <!-- <div class="badge bg-success mb-3"><i class="fas fa-check"></i> Participando</div> -->
             <?php endif; ?>
 
             <!-- Botón Agregar Módulo (Solo Profesor) -->
