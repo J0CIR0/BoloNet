@@ -20,6 +20,26 @@ $title = 'Cursos';
             Mis Cursos</a>
     <?php endif; ?>
 </div>
+</div>
+
+<?php if (isset($showUpsellBanner) && $showUpsellBanner): ?>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-warning border border-warning shadow-sm d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h4 class="alert-heading fw-bold"><i class="fas fa-exclamation-triangle"></i> ¡Mejora tu experiencia!</h4>
+                    <p class="mb-1">Hemos notado que has tenido <strong><?php echo $interruptionCount; ?> interrupciones</strong> en tu sesión recientemente.</p>
+                    <p class="mb-0 small"><?php echo $upsellMessage; ?></p>
+                </div>
+                <div class="mt-2 mt-md-0">
+                    <a href="index.php?controller=Pago&action=planes" class="btn btn-warning fw-bold text-dark">
+                        <i class="fas fa-arrow-circle-up"></i> Ver Planes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
 
 <div class="card shadow-lg bg-dark border-secondary">
     <div class="card-body">

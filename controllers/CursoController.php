@@ -68,6 +68,26 @@ class CursoController
             }
         }
 
+        // --- LÓGICA DE UPSELL (Banner Interrupciones) ---
+        $showUpsellBanner = false;
+        $upsellMessage = '';
+        $interruptionCount = 0;
+        if (isset($_SESSION['user_id'])) {
+            $interruptionCount = $this->usuario->getInterrupciones($_SESSION['user_id']);
+            $userPlan = $_SESSION['plan_type'] ?? 'basic';
+
+            if ($interruptionCount >= 3) {
+                $showUpsellBanner = true;
+                if ($userPlan === 'basic') {
+                    $upsellMessage = "Tu <strong>Plan Básico</strong> solo permite 1 sesión simultánea. Actualiza a <strong>Pro</strong> (3 sesiones) o <strong>Premium</strong> (5 sesiones) para evitar interrupciones.";
+                } elseif ($userPlan === 'pro') {
+                    $upsellMessage = "Tu <strong>Plan Pro</strong> permite 3 sesiones. Si necesitas más, actualiza a <strong>Premium</strong> (5 sesiones).";
+                } else {
+                    $showUpsellBanner = false;
+                }
+            }
+        }
+
         $title = 'Lista de Cursos';
         require_once __DIR__ . '/../views/layouts/header.php';
         require_once __DIR__ . '/../views/cursos/index.php';
