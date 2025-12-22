@@ -544,7 +544,9 @@ class AulaController
                 try {
                     $estudiante = $this->inscripcionModel->getDetalleInscripcion($curso_id, $estudiante_id);
                     if ($estudiante && !empty($estudiante['email'])) {
-                        require_once __DIR__ . '/../vendor/PHPMailer/autoload.php';
+                        require_once __DIR__ . '/../vendor/PHPMailer/src/Exception.php';
+                        require_once __DIR__ . '/../vendor/PHPMailer/src/PHPMailer.php';
+                        require_once __DIR__ . '/../vendor/PHPMailer/src/SMTP.php';
                         // La configuración SMTP ya debería estar cargada por index.php o config/conexion.php, 
                         // pero por si acaso cargamos smtp.php si no está definida
                         if (!defined('SMTP_HOST')) {
@@ -589,7 +591,7 @@ class AulaController
                         $mail->send();
                         $_SESSION['success'] .= " Notificación enviada al correo.";
                     }
-                } catch (Exception $e) {
+                } catch (Throwable $e) {
                     // No detener el flujo si falla el correo, solo advertir
                     // $_SESSION['error'] = "Aprobado, pero error al enviar correo: " . $mail->ErrorInfo;
                     // Mejor solo logear o ignorar para no asustar al profe si el SMTP falla en local

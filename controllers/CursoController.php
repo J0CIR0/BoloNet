@@ -424,7 +424,7 @@ class CursoController
                 try {
                     $this->sendCertificateEmail($estudiante);
                     $_SESSION['success'] = 'Certificado reenviado exitosamente a ' . $estudiante['email'];
-                } catch (Exception $e) {
+                } catch (Throwable $e) {
                     $_SESSION['error'] = 'Error al reenviar certificado: ' . $e->getMessage();
                 }
             } else {
@@ -445,7 +445,10 @@ class CursoController
     private function sendCertificateEmail($estudiante)
     {
         if ($estudiante && !empty($estudiante['email'])) {
-            require_once __DIR__ . '/../vendor/PHPMailer/autoload.php';
+            require_once __DIR__ . '/../vendor/PHPMailer/src/Exception.php';
+            require_once __DIR__ . '/../vendor/PHPMailer/src/PHPMailer.php';
+            require_once __DIR__ . '/../vendor/PHPMailer/src/SMTP.php';
+
             if (!defined('SMTP_HOST')) {
                 require_once __DIR__ . '/../config/smtp.php';
             }
