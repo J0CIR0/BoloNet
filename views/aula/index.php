@@ -237,6 +237,13 @@
                                 aria-expanded="true">
                                 <h5 class="mb-0 fw-bold text-dark">
                                     <?php echo htmlspecialchars($mod['titulo']); ?>
+                                    <?php echo htmlspecialchars($mod['titulo']); ?>
+                                    <?php if ($esProfesor): ?>
+                                        <button class="btn btn-sm btn-outline-warning ms-2" 
+                                                onclick="event.stopPropagation(); prepararEditarModulo(<?php echo $mod['id']; ?>, '<?php echo addslashes($mod['titulo']); ?>', '<?php echo addslashes($mod['descripcion']); ?>')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    <?php endif; ?>
                                 </h5>
                                 <i class="fas fa-chevron-down text-muted"></i>
                             </div>
@@ -261,10 +268,18 @@
                                                     <?php else: ?><i class="fas fa-link text-primary"></i><?php endif; ?>
                                                 </div>
                                                 <div class="flex-grow-1">
-                                                     <a href="<?php echo htmlspecialchars($rec['url_recurso']); ?>" target="_blank"
-                                                        class="text-decoration-none text-white fw-bold">
-                                                        <?php echo htmlspecialchars($rec['titulo']); ?>
-                                                    </a>
+                                                     <div class="d-flex justify-content-between align-items-center">
+                                                        <a href="<?php echo htmlspecialchars($rec['url_recurso']); ?>" target="_blank"
+                                                            class="text-decoration-none text-white fw-bold">
+                                                            <?php echo htmlspecialchars($rec['titulo']); ?>
+                                                        </a>
+                                                        <?php if ($esProfesor): ?>
+                                                            <button class="btn btn-sm text-warning p-0 ms-2" 
+                                                                    onclick="prepararEditarContenido(<?php echo $rec['id']; ?>, '<?php echo addslashes($rec['titulo']); ?>', '<?php echo addslashes($rec['url_recurso']); ?>', '<?php echo addslashes($rec['descripcion']); ?>')">
+                                                                <i class="fas fa-pencil-alt"></i>
+                                                            </button>
+                                                        <?php endif; ?>
+                                                     </div>
                                                     <?php if ($rec['descripcion']): ?>
                                                         <p class="mb-0 text-muted small">
                                                             <?php echo htmlspecialchars($rec['descripcion']); ?></p>
@@ -302,24 +317,27 @@
                                             <div class="recurso-icon bg-warning bg-opacity-10 text-warning">
                                                 <i class="fas fa-tasks"></i>
                                             </div>
-                                            <div class="flex-grow-1">
-                                                <a href="#" class="text-decoration-none text-white fw-bold">
-                                                    <?php echo htmlspecialchars($tarea['titulo']); ?>
-                                                </a>
-                                                <p class="mb-0 text-muted small">
-                                                    Vence: <?php echo $tarea['fecha_entrega']; ?>
-                                                    <?php if ($esProfesor): ?>
-                                                        <span class="badge bg-warning text-dark ms-2">Por calificar</span>
-                                                    <?php endif; ?>
-                                                </p>
-                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center w-100">
                                             <div>
-                                                <?php if ($gradingEnabled): ?>
-                                                    <button class="btn btn-sm btn-outline-light">Ver Tarea</button>
-                                                <?php else: ?>
-                                                    <button class="btn btn-sm btn-secondary" disabled>Modo Oyente</button>
+                                                <h6 class="mb-0 fw-bold"><?php echo htmlspecialchars($tarea['titulo']); ?></h6>
+                                                <small class="text-muted">Vence: <?php echo $tarea['fecha_entrega']; ?></small>
+                                                <?php if($esProfesor): ?>
+                                                    <span class="badge bg-warning text-dark ms-2">Por calificar</span>
                                                 <?php endif; ?>
                                             </div>
+                                            
+                                            <?php if ($gradingEnabled): ?>
+                                                <button class="btn btn-outline-light btn-sm" 
+                                                        data-bs-toggle="modal" data-bs-target="#modalVerTarea"
+                                                        onclick="verTarea(<?php echo $tarea['id']; ?>, '<?php echo addslashes($tarea['titulo']); ?>', '<?php echo addslashes($tarea['descripcion']); ?>', '<?php echo $tarea['fecha_entrega']; ?>', <?php echo $tarea['puntaje']; ?>)">
+                                                    Ver Tarea
+                                                </button>
+                                            <?php else: ?>
+                                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                                    <i class="fas fa-lock"></i> Modo Oyente
+                                                </button>
+                                            <?php endif; ?>
+                                        </div>
                                         </div>
                                     <?php endforeach; ?>
 
@@ -487,40 +505,193 @@
         </div>
     </div>
 
-    <script>
-        function prepararModalContenido(moduloId) {
-            document.getElementById('inputModuloId').value = moduloId;
-            var myModal = new bootstrap.Modal(document.getElementById('modalNuevoContenido'));
-            myModal.show();
-            toggleRecursoInputs(); // Reset state
-        }
+<!-- MODAL EDITAR MÓDULO -->
+<div class="modal fade" id="modalEditarModulo" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="POST" action="index.php?controller=Aula&action=editar_modulo">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Módulo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="id" id="edit_modulo_id">
+                <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
+                <div class="mb-3">
+                    <label class="form-label">Título</label>
+                    <input type="text" name="titulo" id="edit_modulo_titulo" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    <textarea name="descripcion" id="edit_modulo_desc" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-        function prepararModalTarea(moduloId) {
-            document.getElementById('inputModuloIdTarea').value = moduloId;
-            var myModal = new bootstrap.Modal(document.getElementById('modalNuevaTarea'));
-            myModal.show();
-        }
+<!-- MODAL EDITAR CONTENIDO -->
+<div class="modal fade" id="modalEditarContenido" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="POST" action="index.php?controller=Aula&action=editar_contenido">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Recurso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="id" id="edit_content_id">
+                <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
+                
+                <div class="mb-3">
+                    <label class="form-label">Título</label>
+                    <input type="text" name="titulo" id="edit_content_titulo" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">URL / Enlace</label>
+                    <input type="text" name="url_recurso" id="edit_content_url" class="form-control">
+                    <small class="text-muted">Para archivos subidos, la URL es interna (no cambiar a menos que sepa).</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    <textarea name="descripcion" id="edit_content_desc" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-        function toggleRecursoInputs() {
-            const tipo = document.getElementById('selectTipoRecurso').value;
-            const groupUrl = document.getElementById('groupUrl');
-            const groupArchivo = document.getElementById('groupArchivo');
-            const inputUrl = document.getElementById('inputUrl');
-            const inputArchivo = document.getElementById('inputArchivo');
+<!-- MODAL VER TAREA (Y ENTREGAR) -->
+<div class="modal fade" id="modalVerTarea" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-success" id="tarea_titulo">Título Tarea</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>Instrucciones:</h6>
+                        <p id="tarea_descripcion" class="text-white-50">...</p>
+                    </div>
+                    <div class="col-md-4 border-start border-secondary">
+                        <div class="mb-3">
+                            <label class="fw-bold text-success">Vencimiento:</label>
+                            <div id="tarea_fecha" class="text-white"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold text-success">Puntos:</label>
+                            <div id="tarea_puntaje" class="text-white"></div>
+                        </div>
+                    </div>
+                </div>
 
-            if (tipo === 'archivo') {
-                groupUrl.classList.add('d-none');
-                groupArchivo.classList.remove('d-none');
-                inputUrl.removeAttribute('required');
-                inputArchivo.setAttribute('required', 'required');
-            } else {
-                groupUrl.classList.remove('d-none');
-                groupArchivo.classList.add('d-none');
-                inputUrl.setAttribute('required', 'required');
-                inputArchivo.removeAttribute('required');
-            }
+                <hr class="border-secondary">
+
+                <!-- ÁREA DE ENTREGA (Solo para alumnos estudiantes) -->
+                <?php if (!$esProfesor && isset($estaInscrito)): ?>
+                <div class="mt-4">
+                    <h5 class="text-success"><i class="fas fa-upload"></i> Mi Entrega</h5>
+                    <!-- Formulario de subida simulado, se puede implementar real en el backend -->
+                     <form action="index.php?controller=Aula&action=subir_tarea" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="tarea_id" id="tarea_id_input">
+                        <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
+                        
+                        <div class="mb-3">
+                            <label class="form-label text-white-50">Comentario / Nota</label>
+                            <textarea name="comentario" class="form-control bg-dark text-white border-secondary" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-white-50">Adjuntar Archivo (PDF, ZIP, IMG)</label>
+                            <input type="file" name="archivo_tarea" class="form-control bg-dark text-white border-secondary">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Enviar Tarea</button>
+                    </form>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($esProfesor): ?>
+                    <div class="alert alert-info bg-dark border-info text-info">
+                        Como profesor, puedes ver esta vista previa, pero las entregas se revisan en la pestaña "Calificaciones".
+                    </div>
+                <?php endif; ?>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function prepararModalContenido(moduloId) {
+        document.getElementById('inputModuloId').value = moduloId;
+        var myModal = new bootstrap.Modal(document.getElementById('modalNuevoContenido'));
+        myModal.show();
+        toggleRecursoInputs(); 
+    }
+
+    function prepararModalTarea(moduloId) {
+        document.getElementById('inputModuloIdTarea').value = moduloId;
+        var myModal = new bootstrap.Modal(document.getElementById('modalNuevaTarea'));
+        myModal.show();
+    }
+    
+    // --- NUEVAS FUNCIONES ---
+    function prepararEditarModulo(id, titulo, descripcion) {
+        document.getElementById('edit_modulo_id').value = id;
+        document.getElementById('edit_modulo_titulo').value = titulo;
+        document.getElementById('edit_modulo_desc').value = descripcion;
+        var myModal = new bootstrap.Modal(document.getElementById('modalEditarModulo'));
+        myModal.show();
+    }
+
+    function prepararEditarContenido(id, titulo, url, descripcion) {
+        document.getElementById('edit_content_id').value = id;
+        document.getElementById('edit_content_titulo').value = titulo;
+        document.getElementById('edit_content_url').value = url;
+        document.getElementById('edit_content_desc').value = descripcion;
+        var myModal = new bootstrap.Modal(document.getElementById('modalEditarContenido'));
+        myModal.show();
+    }
+
+    function verTarea(id, titulo, descripcion, fecha, puntaje) {
+        document.getElementById('tarea_titulo').innerText = titulo;
+        document.getElementById('tarea_descripcion').innerText = descripcion;
+        document.getElementById('tarea_fecha').innerText = fecha;
+        document.getElementById('tarea_puntaje').innerText = puntaje + ' pts';
+        
+        // Asignar ID al form si existe
+        var inputId = document.getElementById('tarea_id_input');
+        if(inputId) inputId.value = id;
+
+        var myModal = new bootstrap.Modal(document.getElementById('modalVerTarea'));
+        myModal.show();
+    }
+
+    function toggleRecursoInputs() {
+        const tipo = document.getElementById('selectTipoRecurso').value;
+        const groupUrl = document.getElementById('groupUrl');
+        const groupArchivo = document.getElementById('groupArchivo');
+        const inputUrl = document.getElementById('inputUrl');
+        const inputArchivo = document.getElementById('inputArchivo');
+
+        if (tipo === 'archivo') {
+            groupUrl.classList.add('d-none');
+            groupArchivo.classList.remove('d-none');
+            inputUrl.removeAttribute('required');
+            inputArchivo.setAttribute('required', 'required');
+        } else {
+            groupUrl.classList.remove('d-none');
+            groupArchivo.classList.add('d-none');
+            inputUrl.setAttribute('required', 'required');
+            inputArchivo.removeAttribute('required');
         }
-    </script>
+    }
+</script>
 <?php endif; ?>
 
 <!-- MODAL CONFIRMAR PARTICIPACIÓN (Estudiantes) -->

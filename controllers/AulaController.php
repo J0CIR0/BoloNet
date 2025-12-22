@@ -248,9 +248,73 @@ class AulaController
         require_once __DIR__ . '/../views/aula/certificado.php';
     }
 
-    // --- ACCIONES DEL PROFESOR ---
+    public function editar_modulo()
+    {
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        $this->verificarPermisosProfesor(); // Helper o check manual
 
-    public function crear_modulo()
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)$_POST['id'];
+            $titulo = $_POST['titulo'];
+            $descripcion = $_POST['descripcion'];
+            $curso_id = (int)$_POST['curso_id'];
+
+            // Actualizar
+            $sql = "UPDATE curso_modulo SET titulo = ?, descripcion = ? WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            if ($stmt) {
+                $stmt->bind_param("ssi", $titulo, $descripcion, $id);
+                if ($stmt->execute()) {
+                    $_SESSION['success'] = "Módulo actualizado.";
+                } else {
+                    $_SESSION['error'] = "Error al actualizar módulo.";
+                }
+                $stmt->close();
+            }
+            header("Location: index.php?controller=Aula&action=index&id=" . $curso_id);
+            exit();
+        }
+    }
+
+    public function editar_contenido()
+    {
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        $this->verificarPermisosProfesor();
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)$_POST['id'];
+            $titulo = $_POST['titulo'];
+            $descripcion = $_POST['descripcion'];
+            $url = $_POST['url_recurso'] ?? '';
+            $curso_id = (int)$_POST['curso_id'];
+
+            // Si es archivo, la lógica de subida es más compleja, por ahora solo editamos texto/url simple
+            // Ojo: Si suben otro archivo, habría que manejarlo. Por simplicidad en este "Fix", actualizamos textos.
+
+            $sql = "UPDATE curso_contenido SET titulo = ?, descripcion = ?, url_recurso = ? WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            if ($stmt) {
+                $stmt->bind_param("sssi", $titulo, $descripcion, $url, $id);
+                if ($stmt->execute()) {
+                    $_SESSION['success'] = "Recurso actualizado.";
+                } else {
+                    $_SESSION['error'] = "Error al actualizar recurso.";
+                }
+                $stmt->close();
+            }
+            header("Location: index.php?controller=Aula&action=index&id=" . $curso_id);
+            exit();
+        }
+    }
+
+    private function verificarPermisosProfesor() {
+         $user_id = $_SESSION['user_id'] ?? 0;
+         $user_role = $_SESSION['user_role'] ?? '';
+         if ($user_role !== 'profesor' && !$this->usuarioModel->hasPermission($user_id, 'crear_curso')) {
+             die("Acceso denegado");
+         }
+    }
+
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->moduloModel->crear($_POST['curso_id'], $_POST['titulo'], $_POST['descripcion']);
