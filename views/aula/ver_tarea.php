@@ -39,89 +39,16 @@ $timeInfo = time_remaining($tarea['fecha_entrega']);
         </div>
 
         <?php if ($esProfesor): ?>
-            <div class="card bg-dark border-secondary shadow-lg">
-                <div
-                    class="card-header bg-secondary bg-opacity-25 border-secondary d-flex justify-content-between align-items-center flex-wrap">
-                    <h5 class="mb-0 text-white"><i class="fas fa-chalkboard-teacher me-2"></i> Panel de Calificación</h5>
-                    <span class="badge bg-primary mt-2 mt-md-0"><?php echo count($entregas); ?> Entregas</span>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-dark table-striped table-hover mb-0 align-middle">
-                            <thead>
-                                <tr class="text-white-50 small text-uppercase">
-                                    <th>Estudiante</th>
-                                    <th>Fecha Entrega</th>
-                                    <th>Archivo</th>
-                                    <th>Comentario</th>
-                                    <th style="min-width: 150px;">Calificación (Max:
-                                        <?php echo $tarea['puntaje_maximo']; ?>)
-                                    </th>
-                                    <th style="min-width: 200px;">Feedback</th>
-                                    <th>Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($entregas)): ?>
-                                    <tr>
-                                        <td colspan="7" class="text-center py-4 text-white-50">No hay entregas registradas aún.
-                                        </td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($entregas as $ent): ?>
-                                        <tr>
-                                            <td class="fw-bold text-white">
-                                                <?php echo htmlspecialchars($ent['nombre'] . ' ' . $ent['apellido']); ?>
-                                            </td>
-                                            <td class="small text-white-50">
-                                                <?php echo format_date($ent['fecha_entrega']); ?>
-                                                <?php if ($ent['fecha_entrega'] > $tarea['fecha_entrega']): ?>
-                                                    <span class="badge bg-danger ms-1">Tardío</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <?php if ($ent['archivo_url']): ?>
-                                                    <a href="<?php echo htmlspecialchars($ent['archivo_url']); ?>" target="_blank"
-                                                        class="btn btn-outline-info btn-sm">
-                                                        <i class="fas fa-download"></i>
-                                                    </a>
-                                                <?php else: ?>
-                                                    <span class="text-muted small">-</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="small text-white-50 fst-italic text-break" style="max-width: 200px;">
-                                                <?php echo htmlspecialchars($ent['comentario'] ?? ''); ?>
-                                            </td>
-
-                                            <form action="index.php?controller=Aula&action=calificar_entrega" method="POST">
-                                                <input type="hidden" name="entrega_id" value="<?php echo $ent['id']; ?>">
-                                                <input type="hidden" name="tarea_id" value="<?php echo $tarea['id']; ?>">
-
-                                                <td>
-                                                    <input type="number" step="0.01" max="<?php echo $tarea['puntaje_maximo']; ?>"
-                                                        name="calificacion"
-                                                        class="form-control form-control-sm bg-dark text-white border-secondary"
-                                                        value="<?php echo $ent['calificacion']; ?>"
-                                                        placeholder="0-<?php echo $tarea['puntaje_maximo']; ?>">
-                                                </td>
-                                                <td>
-                                                    <textarea name="retroalimentacion"
-                                                        class="form-control form-control-sm bg-dark text-white border-secondary"
-                                                        rows="1"
-                                                        placeholder="Comentario..."><?php echo htmlspecialchars($ent['retroalimentacion'] ?? ''); ?></textarea>
-                                                </td>
-                                                <td>
-                                                    <button type="submit" class="btn btn-success btn-sm" title="Guardar">
-                                                        <i class="fas fa-save"></i>
-                                                    </button>
-                                                </td>
-                                            </form>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="card bg-dark border-secondary shadow-lg mb-4">
+                <div class="card-body text-center p-5 border-dashed border-secondary rounded">
+                    <i class="fas fa-clipboard-check fa-4x text-warning mb-3"></i>
+                    <h4 class="text-white">Panel de Calificación</h4>
+                    <p class="text-muted">Gestiona las entregas y calificaciones de los estudiantes en la vista dedicada.
+                    </p>
+                    <a href="index.php?controller=Aula&action=ver_calificaciones_tarea&id=<?php echo $tarea['id']; ?>"
+                        class="btn btn-warning btn-lg fw-bold px-5">
+                        <i class="fas fa-tasks me-2"></i> Gestionar Calificaciones
+                    </a>
                 </div>
             </div>
 

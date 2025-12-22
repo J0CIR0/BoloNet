@@ -523,9 +523,53 @@ class AulaController
                 $stmt->close();
             }
 
-            header("Location: index.php?controller=Aula&action=ver_tarea&id=" . $tarea_id);
+            if (isset($_POST['redirect_view']) && $_POST['redirect_view'] === 'calificar_tarea') {
+                header("Location: index.php?controller=Aula&action=ver_calificaciones_tarea&id=" . $tarea_id);
+            } else {
+                header("Location: index.php?controller=Aula&action=ver_tarea&id=" . $tarea_id);
+            }
             exit();
         }
+    }
+
+    public function ver_calificaciones_tarea()
+    {
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+        $this->verificarPermisosProfesor();
+
+        if (!isset($_GET['id'])) {
+            header('Location: index.php?controller=Curso&action=mis_cursos');
+            exit();
+        }
+
+        $tarea_id = (int) $_GET['id'];
+
+        // Cargar modelos si no están cargados
+        require_once __DIR__ . '/../models/Tarea.php';
+        require_once __DIR__ . '/../models/Modulo.php';
+
+        if (!isset($this->tareaModel))
+            $this->tareaModel = new Tarea();
+        // Necesitamos el modulo para saber el curso_id
+        $moduloModel = new Modulo();
+
+        $tarea = $this->tareaModel->obtenerPorId($tarea_id);
+        if (!$tarea) {
+            $_SESSION['error'] = "Tarea no encontrada.";
+            header('Location: index.php');
+            exit();
+        }
+
+        $modulo = $moduloModel->obtenerPorId($tarea['modulo_id']);
+        $curso_id = $modulo['curso_id'];
+
+        $entregas = $this->tareaModel->getEntregasPorTarea($tarea_id);
+
+        // Título para la vista
+        $title = "Calificar: " . $tarea['titulo'];
+
+        require_once __DIR__ . '/../views/aula/calificar_tarea.php';
     }
 
     // Aprobar estudiante y emitir certificado

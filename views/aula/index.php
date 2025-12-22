@@ -515,6 +515,7 @@
                             <th>Estado</th>
                             <th>Nota</th>
                             <th>Retroalimentación</th>
+                            <?php if ($esProfesor): ?><th>Acción</th><?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -554,6 +555,14 @@
                                     <td><?php echo $estado; ?></td>
                                     <td class="fw-bold text-success"><?php echo $nota; ?></td>
                                     <td class="small text-muted text-break"><?php echo htmlspecialchars($feedback); ?></td>
+                                    <?php if ($esProfesor): ?>
+                                        <td class="text-end">
+                                            <a href="index.php?controller=Aula&action=ver_calificaciones_tarea&id=<?php echo $cal['id']; ?>" 
+                                               class="btn btn-sm btn-warning fw-bold text-dark">
+                                                <i class="fas fa-edit"></i> Calificar
+                                            </a>
+                                        </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
