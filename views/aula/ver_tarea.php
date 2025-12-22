@@ -55,7 +55,8 @@ $timeInfo = time_remaining($tarea['fecha_entrega']);
                                     <th>Archivo</th>
                                     <th>Comentario</th>
                                     <th style="min-width: 150px;">Calificación (Max:
-                                        <?php echo $tarea['puntaje_maximo']; ?>)</th>
+                                        <?php echo $tarea['puntaje_maximo']; ?>)
+                                    </th>
                                     <th style="min-width: 200px;">Feedback</th>
                                     <th>Acción</th>
                                 </tr>
@@ -261,7 +262,7 @@ $timeInfo = time_remaining($tarea['fecha_entrega']);
                 <?php endif; ?>
 
                 <a href="index.php?controller=Aula&action=index&id=<?php echo $curso_id; ?>"
-                    class="btn btn-outline-light ms-0 ms-md-2 mt-2 mt-md-0 w-100 w-md-auto">
+                    class="btn btn-outline-light ms-0 ms-md-2 mt-2 mt-md-0 w-100 w-md-auto px-4">
                     Volver al curso
                 </a>
             </div>
@@ -320,6 +321,7 @@ $timeInfo = time_remaining($tarea['fecha_entrega']);
     </div>
 </div>
 
+<style>
     .border-dashed {
         border-style: dashed !important;
     }

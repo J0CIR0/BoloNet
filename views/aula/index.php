@@ -335,11 +335,11 @@
                                             
                                             <?php if ($gradingEnabled): ?>
                                                 <a href="index.php?controller=Aula&action=ver_tarea&id=<?php echo $tarea['id']; ?>" 
-                                                   class="btn btn-outline-light btn-sm w-100 w-md-auto mt-2 mt-md-0">
+                                                   class="btn btn-outline-light w-100 w-md-auto mt-2 mt-md-0 px-4">
                                                     <i class="fas fa-eye me-1"></i> Ver Tarea
                                                 </a>
                                             <?php else: ?>
-                                                <button class="btn btn-outline-secondary btn-sm w-100 w-md-auto mt-2 mt-md-0" disabled>
+                                                <button class="btn btn-outline-secondary w-100 w-md-auto mt-2 mt-md-0 px-4" disabled>
                                                     <i class="fas fa-lock"></i> Modo Oyente
                                                 </button>
                                             <?php endif; ?>
