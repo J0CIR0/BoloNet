@@ -3,19 +3,21 @@ $title = 'Cursos';
 ?>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="text-white">Cursos Disponibles</h2>
-    <?php 
+    <?php
     // Instanciamos el modelo Usuario para verificar permisos visuales
     require_once __DIR__ . '/../../models/Usuario.php';
     $usuarioModel = new Usuario();
-    
+
     // Botón para crear cursos (solo admin/profesor)
-    if($usuarioModel->hasPermission($_SESSION['user_id'], 'crear_curso')): 
-    ?>
-    <a href="index.php?controller=Curso&action=create" class="btn btn-success"><i class="fas fa-plus"></i> Nuevo Curso</a>
+    if ($usuarioModel->hasPermission($_SESSION['user_id'], 'crear_curso')):
+        ?>
+        <a href="index.php?controller=Curso&action=create" class="btn btn-success"><i class="fas fa-plus"></i> Nuevo
+            Curso</a>
     <?php endif; ?>
 
-    <?php if($usuarioModel->hasPermission($_SESSION['user_id'], 'ver_inscripciones')): ?>
-    <a href="index.php?controller=Curso&action=mis_cursos" class="btn btn-primary"><i class="fas fa-graduation-cap"></i> Mis Cursos</a>
+    <?php if ($usuarioModel->hasPermission($_SESSION['user_id'], 'ver_inscripciones')): ?>
+        <a href="index.php?controller=Curso&action=mis_cursos" class="btn btn-primary"><i class="fas fa-graduation-cap"></i>
+            Mis Cursos</a>
     <?php endif; ?>
 </div>
 
@@ -27,7 +29,6 @@ $title = 'Cursos';
                     <tr class="table-secondary text-dark">
                         <th>Código</th>
                         <th>Nombre</th>
-                        <th>Precio</th>
                         <th>Duración</th>
                         <th>Fechas</th>
                         <th>Profesor</th>
@@ -37,75 +38,86 @@ $title = 'Cursos';
                 </thead>
                 <tbody>
                     <?php if (empty($cursos)): ?>
-                        <tr><td colspan="8" class="text-center py-4">No hay cursos disponibles en este momento.</td></tr>
-                    <?php else: ?>
-                        <?php foreach($cursos as $curso): ?>
-                        <?php 
-                        $fecha_inicio = isset($curso['fecha_inicio']) && $curso['fecha_inicio'] != '0000-00-00' ? date('d/m/Y', strtotime($curso['fecha_inicio'])) : 'Sin fecha';
-                        $fecha_fin = isset($curso['fecha_fin']) && $curso['fecha_fin'] != '0000-00-00' ? date('d/m/Y', strtotime($curso['fecha_fin'])) : 'Sin fecha';
-                        $estado = isset($curso['estado']) && !empty($curso['estado']) ? $curso['estado'] : 'activo';
-                        $precio = isset($curso['precio']) ? number_format($curso['precio'], 2) : '0.00';
-                        
-                        // --- VERIFICAR SI YA ESTÁ INSCRITO ---
-                        // Buscamos si el ID del curso actual está en el array de inscritos
-                        $ya_inscrito = false;
-                        if (isset($cursos_inscritos) && is_array($cursos_inscritos)) {
-                            if (in_array($curso['id'], $cursos_inscritos)) {
-                                $ya_inscrito = true;
-                            }
-                        }
-                        ?>
                         <tr>
-                            <td><span class="badge bg-secondary"><?php echo htmlspecialchars($curso['codigo'] ?? ''); ?></span></td>
-                            <td class="fw-bold"><?php echo htmlspecialchars($curso['nombre'] ?? ''); ?></td>
-                            
-                            <td class="text-success fw-bold">$<?php echo $precio; ?></td>
-                            
-                            <td><?php echo isset($curso['duracion_horas']) ? $curso['duracion_horas'] . ' hrs' : '-'; ?></td>
-                            <td>
-                                <small class="d-block text-muted">Inicio: <?php echo $fecha_inicio; ?></small>
-                                <small class="d-block text-muted">Fin: <?php echo $fecha_fin; ?></small>
-                            </td>
-                            <td><?php echo htmlspecialchars($curso['profesor_nombre'] ?? 'Sin asignar'); ?></td>
-                            <td>
-                                <?php 
-                                $estado_clase = 'secondary';
-                                if ($estado == 'activo') $estado_clase = 'success';
-                                elseif ($estado == 'inactivo') $estado_clase = 'danger';
-                                elseif ($estado == 'completado') $estado_clase = 'info';
-                                ?>
-                                <span class="badge bg-<?php echo $estado_clase; ?>"><?php echo ucfirst($estado); ?></span>
-                            </td>
-                            <td>
-                                <div class="d-grid gap-2">
-                                    <?php if($usuarioModel->hasPermission($_SESSION['user_id'], 'inscribir_curso')): ?>
-                                        <?php if ($ya_inscrito): ?>
-                                            <button class="btn btn-secondary btn-sm" disabled>
-                                                <i class="fas fa-check"></i> Inscrito
-                                            </button>
-                                        <?php else: ?>
-                                            <a href="index.php?controller=Pago&action=checkout&id_curso=<?php echo $curso['id']; ?>" class="btn btn-success btn-sm">
-                                                <i class="fas fa-shopping-cart"></i> Inscribirse
-                                            </a>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
-
-                                    <div class="btn-group btn-group-sm">
-                                        <?php if($usuarioModel->hasPermission($_SESSION['user_id'], 'editar_curso')): ?>
-                                        <a href="index.php?controller=Curso&action=edit&id=<?php echo $curso['id']; ?>" class="btn btn-warning" title="Editar"><i class="fas fa-edit"></i></a>
-                                        <?php endif; ?>
-                                        
-                                        <?php if($usuarioModel->hasPermission($_SESSION['user_id'], 'gestionar_inscripciones')): ?>
-                                        <a href="index.php?controller=Curso&action=gestionarInscripciones&id=<?php echo $curso['id']; ?>" class="btn btn-info" title="Alumnos"><i class="fas fa-users"></i></a>
-                                        <?php endif; ?>
-                                        
-                                        <?php if($usuarioModel->hasPermission($_SESSION['user_id'], 'eliminar_curso')): ?>
-                                        <a href="index.php?controller=Curso&action=delete&id=<?php echo $curso['id']; ?>" class="btn btn-danger" onclick="return confirm('¿Eliminar curso?')" title="Eliminar"><i class="fas fa-trash"></i></a>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            </td>
+                            <td colspan="7" class="text-center py-4">No hay cursos disponibles en este momento.</td>
                         </tr>
+                    <?php else: ?>
+                        <?php foreach ($cursos as $curso): ?>
+                            <?php
+                            $fecha_inicio = isset($curso['fecha_inicio']) && $curso['fecha_inicio'] != '0000-00-00' ? date('d/m/Y', strtotime($curso['fecha_inicio'])) : 'Sin fecha';
+                            $fecha_fin = isset($curso['fecha_fin']) && $curso['fecha_fin'] != '0000-00-00' ? date('d/m/Y', strtotime($curso['fecha_fin'])) : 'Sin fecha';
+                            $estado = isset($curso['estado']) && !empty($curso['estado']) ? $curso['estado'] : 'activo';
+                            $precio = isset($curso['precio']) ? number_format($curso['precio'], 2) : '0.00';
+
+                            // --- VERIFICAR SI YA ESTÁ INSCRITO ---
+                            // Buscamos si el ID del curso actual está en el array de inscritos
+                            $ya_inscrito = false;
+                            if (isset($cursos_inscritos) && is_array($cursos_inscritos)) {
+                                if (in_array($curso['id'], $cursos_inscritos)) {
+                                    $ya_inscrito = true;
+                                }
+                            }
+                            ?>
+                            <tr>
+                                <td><span
+                                        class="badge bg-secondary"><?php echo htmlspecialchars($curso['codigo'] ?? ''); ?></span>
+                                </td>
+                                <td class="fw-bold"><?php echo htmlspecialchars($curso['nombre'] ?? ''); ?></td>
+
+                                <td><?php echo isset($curso['duracion_horas']) ? $curso['duracion_horas'] . ' hrs' : '-'; ?>
+                                </td>
+                                <td>
+                                    <small class="d-block text-muted">Inicio: <?php echo $fecha_inicio; ?></small>
+                                    <small class="d-block text-muted">Fin: <?php echo $fecha_fin; ?></small>
+                                </td>
+                                <td><?php echo htmlspecialchars($curso['profesor_nombre'] ?? 'Sin asignar'); ?></td>
+                                <td>
+                                    <?php
+                                    $estado_clase = 'secondary';
+                                    if ($estado == 'activo')
+                                        $estado_clase = 'success';
+                                    elseif ($estado == 'inactivo')
+                                        $estado_clase = 'danger';
+                                    elseif ($estado == 'completado')
+                                        $estado_clase = 'info';
+                                    ?>
+                                    <span class="badge bg-<?php echo $estado_clase; ?>"><?php echo ucfirst($estado); ?></span>
+                                </td>
+                                <td>
+                                    <div class="d-grid gap-2">
+                                        <?php if ($usuarioModel->hasPermission($_SESSION['user_id'], 'inscribir_curso')): ?>
+                                            <?php if ($ya_inscrito): ?>
+                                                <button class="btn btn-secondary btn-sm" disabled>
+                                                    <i class="fas fa-check"></i> Inscrito
+                                                </button>
+                                            <?php else: ?>
+                                                <a href="index.php?controller=Pago&action=checkout&id_curso=<?php echo $curso['id']; ?>"
+                                                    class="btn btn-success btn-sm">
+                                                    <i class="fas fa-shopping-cart"></i> Inscribirse
+                                                </a>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+
+                                        <div class="btn-group btn-group-sm">
+                                            <?php if ($usuarioModel->hasPermission($_SESSION['user_id'], 'editar_curso')): ?>
+                                                <a href="index.php?controller=Curso&action=edit&id=<?php echo $curso['id']; ?>"
+                                                    class="btn btn-warning" title="Editar"><i class="fas fa-edit"></i></a>
+                                            <?php endif; ?>
+
+                                            <?php if ($usuarioModel->hasPermission($_SESSION['user_id'], 'gestionar_inscripciones')): ?>
+                                                <a href="index.php?controller=Curso&action=gestionarInscripciones&id=<?php echo $curso['id']; ?>"
+                                                    class="btn btn-info" title="Alumnos"><i class="fas fa-users"></i></a>
+                                            <?php endif; ?>
+
+                                            <?php if ($usuarioModel->hasPermission($_SESSION['user_id'], 'eliminar_curso')): ?>
+                                                <a href="index.php?controller=Curso&action=delete&id=<?php echo $curso['id']; ?>"
+                                                    class="btn btn-danger" onclick="return confirm('¿Eliminar curso?')"
+                                                    title="Eliminar"><i class="fas fa-trash"></i></a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
