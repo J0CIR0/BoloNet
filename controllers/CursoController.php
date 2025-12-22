@@ -384,46 +384,8 @@ class CursoController
                         try {
                             // Obtener datos del estudiante e inscripción
                             $estudiante = $this->inscripcion->getInscripcionPorId($inscripcionId);
-
-                            if ($estudiante && !empty($estudiante['email'])) {
-                                require_once __DIR__ . '/../vendor/autoload.php';
-                                if (!defined('SMTP_HOST')) {
-                                    require_once __DIR__ . '/../config/smtp.php';
-                                }
-
-                                $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-                                $host = $_SERVER['HTTP_HOST'];
-                                // Construir link al certificado
-                                $certLink = $protocol . "://" . $host . "/BoloNet/index.php?controller=Aula&action=certificado&id=" . $estudiante['curso_id'];
-
-                                $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
-                                $mail->isSMTP();
-                                $mail->Host = SMTP_HOST;
-                                $mail->SMTPAuth = true;
-                                $mail->Username = SMTP_USER;
-                                $mail->Password = SMTP_PASS;
-                                $mail->SMTPSecure = SMTP_SECURE;
-                                $mail->Port = SMTP_PORT;
-
-                                $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
-                                $mail->addAddress($estudiante['email'], $estudiante['nombre'] . ' ' . $estudiante['apellido']);
-
-                                $mail->isHTML(true);
-                                $mail->Subject = '¡Felicidades! Has aprobado el curso ' . $estudiante['curso_nombre'];
-                                $mail->Body = "
-                                    <h1>¡Felicitaciones " . htmlspecialchars($estudiante['nombre']) . "!</h1>
-                                    <p>Nos complace informarte que has aprobado satisfactoriamente el curso <strong>" . htmlspecialchars($estudiante['curso_nombre']) . "</strong>.</p>
-                                    <p>Tu <strong>Certificado de Finalización</strong> ya está disponible.</p>
-                                    <p>Puedes verlo y descargarlo en formato PDF haciendo clic en el siguiente enlace:</p>
-                                    <p><a href='" . $certLink . "' style='background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Ver Mi Certificado</a></p>
-                                    <p>Si el botón no funciona, copia y pega este enlace en tu navegador:<br> $certLink</p>
-                                    <hr>
-                                    <small>BoloNet Learning System</small>
-                                ";
-
-                                $mail->send();
-                                $_SESSION['success'] .= " y notificación enviada.";
-                            }
+                            $this->sendCertificateEmail($estudiante);
+                            $_SESSION['success'] .= " y notificación enviada.";
                         } catch (Exception $e) {
                             error_log("Error enviando certificado: " . $e->getMessage());
                         }
@@ -448,6 +410,77 @@ class CursoController
         require_once __DIR__ . '/../views/layouts/header.php';
         require_once __DIR__ . '/../views/cursos/gestionar_inscripciones.php';
         require_once __DIR__ . '/../views/layouts/footer.php';
+    }
+    // --- ACCIÓN PARA REENVIAR CERTIFICADO ---
+    public function reenviarCertificado()
+    {
+        $this->checkPermission('gestionar_inscripciones');
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['inscripcion_id'])) {
+            $inscripcionId = $_POST['inscripcion_id'];
+            $estudiante = $this->inscripcion->getInscripcionPorId($inscripcionId);
+
+            if ($estudiante && $estudiante['estado'] === 'aprobado') {
+                try {
+                    $this->sendCertificateEmail($estudiante);
+                    $_SESSION['success'] = 'Certificado reenviado exitosamente a ' . $estudiante['email'];
+                } catch (Exception $e) {
+                    $_SESSION['error'] = 'Error al reenviar certificado: ' . $e->getMessage();
+                }
+            } else {
+                $_SESSION['error'] = 'El estudiante no está aprobado o no existe.';
+            }
+
+            // Redirigir de vuelta a gestionar inscripciones
+            if ($estudiante) {
+                header("Location: index.php?controller=Curso&action=gestionarInscripciones&id=" . $estudiante['curso_id']);
+            } else {
+                header('Location: index.php?controller=Curso&action=index');
+            }
+            exit();
+        }
+    }
+
+    // --- HELPER PRIVADO PARA ENVIAR EMAIL ---
+    private function sendCertificateEmail($estudiante)
+    {
+        if ($estudiante && !empty($estudiante['email'])) {
+            require_once __DIR__ . '/../vendor/autoload.php';
+            if (!defined('SMTP_HOST')) {
+                require_once __DIR__ . '/../config/smtp.php';
+            }
+
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+            $host = $_SERVER['HTTP_HOST'];
+            // Construir link al certificado
+            $certLink = $protocol . "://" . $host . "/BoloNet/index.php?controller=Aula&action=certificado&id=" . $estudiante['curso_id'];
+
+            $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Host = SMTP_HOST;
+            $mail->SMTPAuth = true;
+            $mail->Username = SMTP_USER;
+            $mail->Password = SMTP_PASS;
+            $mail->SMTPSecure = SMTP_SECURE;
+            $mail->Port = SMTP_PORT;
+
+            $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
+            $mail->addAddress($estudiante['email'], $estudiante['nombre'] . ' ' . $estudiante['apellido']);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Recordatorio: Tu Certificado del Curso ' . ($estudiante['curso_nombre'] ?? '');
+            $mail->Body = "
+                <h1>Hola " . htmlspecialchars($estudiante['nombre']) . "</h1>
+                <p>Te enviamos nuevamente el enlace a tu certificado del curso <strong>" . htmlspecialchars($estudiante['curso_nombre'] ?? 'BoloNet') . "</strong>.</p>
+                <p>Puedes verlo y descargarlo aquí:</p>
+                <p><a href='" . $certLink . "' style='background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Ver Mi Certificado</a></p>
+                <p>Si el botón no funciona, copia y pega este enlace:<br> $certLink</p>
+                <hr>
+                <small>BoloNet Learning System</small>
+            ";
+
+            $mail->send();
+        }
     }
 }
 ?>
