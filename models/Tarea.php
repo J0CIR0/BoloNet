@@ -25,7 +25,8 @@ class Tarea
                 FROM curso_entrega e 
                 JOIN usuario u ON e.estudiante_id = u.id 
                 JOIN persona p ON u.persona_id = p.id
-                WHERE e.tarea_id = ?";
+                WHERE e.tarea_id = ?
+                ORDER BY (e.calificacion IS NULL) DESC, e.fecha_entrega ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("i", $tarea_id);
         $stmt->execute();
