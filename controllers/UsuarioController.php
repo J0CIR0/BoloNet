@@ -1,15 +1,18 @@
 <?php
 require_once __DIR__ . '/../config/conexion.php';
-class UsuarioController {
+class UsuarioController
+{
     private $usuario;
     private $rol;
-    public function __construct() {
+    public function __construct()
+    {
         require_once __DIR__ . '/../models/Usuario.php';
         require_once __DIR__ . '/../models/Rol.php';
         $this->usuario = new Usuario();
         $this->rol = new Rol();
     }
-    public function checkPermission($permiso) {
+    public function checkPermission($permiso)
+    {
         if (!isset($_SESSION['user_id'])) {
             $_SESSION['error'] = 'Debes iniciar sesión';
             header('Location: index.php');
@@ -21,14 +24,16 @@ class UsuarioController {
             exit();
         }
     }
-    public function index() {
+    public function index()
+    {
         $this->checkPermission('ver_usuarios');
         $usuarios = $this->usuario->getAll();
         require_once __DIR__ . '/../views/layouts/header.php';
         require_once __DIR__ . '/../views/usuarios/index.php';
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
-    public function create() {
+    public function create()
+    {
         $this->checkPermission('crear_usuario');
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $data = [
@@ -63,7 +68,8 @@ class UsuarioController {
         require_once __DIR__ . '/../views/usuarios/create.php';
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
-    public function edit($id) {
+    public function edit($id)
+    {
         $this->checkPermission('editar_usuario');
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $data = [
@@ -100,7 +106,8 @@ class UsuarioController {
         require_once __DIR__ . '/../views/usuarios/edit.php';
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
-    public function delete($id) {
+    public function delete($id)
+    {
         $this->checkPermission('eliminar_usuario');
         $usuario_a_eliminar = $this->usuario->getById($id);
         if (!$usuario_a_eliminar) {
@@ -126,6 +133,42 @@ class UsuarioController {
             header('Location: usuarios.php');
             exit();
         }
+    }
+
+    public function perfil()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: index.php');
+            exit();
+        }
+
+        $userId = $_SESSION['user_id'];
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $email = $_POST['email'];
+            $telefono = $_POST['telefono'];
+            $password = !empty($_POST['password']) ? $_POST['password'] : null;
+            $confirm_password = !empty($_POST['confirm_password']) ? $_POST['confirm_password'] : null;
+
+            if ($password && $password !== $confirm_password) {
+                $_SESSION['error'] = 'Las contraseñas no coinciden';
+            } else {
+                $result = $this->usuario->updateProfile($userId, $email, $telefono, $password);
+                if (isset($result['success'])) {
+                    $_SESSION['success'] = 'Perfil actualizado correctamente. Si cambiaste tu contraseña, úsala en tu próximo inicio de sesión.';
+                } else {
+                    $_SESSION['error'] = 'Error al actualizar perfil: ' . $result['error'];
+                }
+            }
+            header('Location: index.php?controller=Usuario&action=perfil');
+            exit();
+        }
+
+        $usuario = $this->usuario->getById($userId);
+        $title = 'Mi Perfil';
+        require_once __DIR__ . '/../views/layouts/header.php';
+        require_once __DIR__ . '/../views/usuario/perfil.php';
+        require_once __DIR__ . '/../views/layouts/footer.php';
     }
 }
 ?>

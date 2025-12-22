@@ -311,5 +311,54 @@ class Usuario
         $stmt->bind_param("sssi", $planType, $status, $endDate, $userId);
         return $stmt->execute();
     }
+
+    public function updateProfile($id, $email, $telefono, $password = null)
+    {
+        $this->db->begin_transaction();
+        try {
+            // Actualizar tabla usuario (email)
+            $sql_user = "UPDATE usuario SET email = ? WHERE id = ?";
+            $params = [$email, $id];
+            $types = 'si';
+
+            if ($password) {
+                // Verificar historial de contraseñas (Simplificado)
+                $usuario = $this->getById($id);
+                $history = json_decode($usuario['password_history'] ?? '[]', true);
+                if (in_array($password, $history)) {
+                    throw new Exception("No puedes usar una contraseña anterior");
+                }
+
+                // Actualizar password e historial
+                array_unshift($history, $usuario['password']);
+                $history = array_slice($history, 0, 3);
+                $history_json = json_encode($history);
+
+                $sql_user = "UPDATE usuario SET email = ?, password = ?, password_history = ? WHERE id = ?";
+                $params = [$email, $password, $history_json, $id];
+                $types = 'sssi';
+            }
+
+            $stmt_u = $this->db->prepare($sql_user);
+            $stmt_u->bind_param($types, ...$params);
+            $stmt_u->execute();
+
+            // Actualizar tabla persona (telefono)
+            // Primero obtenemos el persona_id
+            $usuario_data = $this->getById($id);
+            $persona_id = $usuario_data['persona_id'];
+
+            $sql_p = "UPDATE persona SET telefono = ? WHERE id = ?";
+            $stmt_p = $this->db->prepare($sql_p);
+            $stmt_p->bind_param("si", $telefono, $persona_id);
+            $stmt_p->execute();
+
+            $this->db->commit();
+            return ['success' => true];
+        } catch (Exception $e) {
+            $this->db->rollback();
+            return ['error' => $e->getMessage()];
+        }
+    }
 }
 ?>
