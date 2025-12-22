@@ -1,21 +1,27 @@
 <?php
 require_once __DIR__ . '/../config/conexion.php';
-class Usuario {
+class Usuario
+{
     private $db;
-    public function __construct() {
+    public function __construct()
+    {
         require_once __DIR__ . '/Database.php';
         $this->db = Database::getConnection();
     }
-    public function getAll() {
-        $sql = "SELECT u.*, r.nombre as rol_nombre, p.ci, p.nombre as persona_nombre, p.apellido as persona_apellido 
+    public function getAll()
+    {
+        $sql = "SELECT u.*, u.plan_type, u.subscription_status, u.subscription_end, 
+                       r.nombre as rol_nombre, p.ci, p.nombre as persona_nombre, p.apellido as persona_apellido 
                 FROM usuario u 
                 JOIN rol r ON u.rol_id = r.id 
                 JOIN persona p ON u.persona_id = p.id";
         $result = $this->db->query($sql);
         return $result->fetch_all(MYSQLI_ASSOC);
     }
-    public function getById($id) {
-        $sql = "SELECT u.*, r.nombre as rol_nombre, p.ci, p.nombre as persona_nombre, p.apellido as persona_apellido 
+    public function getById($id)
+    {
+        $sql = "SELECT u.*, u.plan_type, u.subscription_status, u.subscription_end, 
+                       r.nombre as rol_nombre, p.ci, p.nombre as persona_nombre, p.apellido as persona_apellido 
                 FROM usuario u 
                 JOIN rol r ON u.rol_id = r.id 
                 JOIN persona p ON u.persona_id = p.id 
@@ -25,8 +31,10 @@ class Usuario {
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc();
     }
-    public function findByEmail($email) {
-        $sql = "SELECT u.*, r.nombre as rol_nombre, p.nombre as persona_nombre, p.apellido as persona_apellido 
+    public function findByEmail($email)
+    {
+        $sql = "SELECT u.*, u.plan_type, u.subscription_status, u.subscription_end,
+                       r.nombre as rol_nombre, p.nombre as persona_nombre, p.apellido as persona_apellido 
                 FROM usuario u 
                 JOIN rol r ON u.rol_id = r.id 
                 JOIN persona p ON u.persona_id = p.id 
@@ -36,7 +44,8 @@ class Usuario {
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc();
     }
-    public function create($data) {
+    public function create($data)
+    {
         $this->db->begin_transaction();
         try {
             $sql_persona = "INSERT INTO persona (ci, nombre, apellido, fecha_nacimiento, genero, telefono, direccion) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -48,10 +57,11 @@ class Usuario {
             $genero = $data['genero'] ?? 'M';
             $telefono = $data['telefono'] ?? '';
             $direccion = $data['direccion'] ?? '';
-            $stmt_persona->bind_param("sssssss", 
-                $ci, 
-                $nombre, 
-                $apellido, 
+            $stmt_persona->bind_param(
+                "sssssss",
+                $ci,
+                $nombre,
+                $apellido,
                 $fecha_nacimiento,
                 $genero,
                 $telefono,
@@ -69,10 +79,11 @@ class Usuario {
             $estado = $data['estado'] ?? 0;
             $verification_token = $data['verification_token'] ?? NULL;
             $token_expires = $data['token_expires'] ?? NULL;
-            $stmt_usuario->bind_param("issiiss", 
+            $stmt_usuario->bind_param(
+                "issiiss",
                 $persona_id,
-                $email, 
-                $password, 
+                $email,
+                $password,
                 $rol_id,
                 $estado,
                 $verification_token,
@@ -88,9 +99,11 @@ class Usuario {
             return false;
         }
     }
-    public function update($id, $data) {
+    public function update($id, $data)
+    {
         $usuario = $this->getById($id);
-        if (!$usuario) return false;
+        if (!$usuario)
+            return false;
         $this->db->begin_transaction();
         try {
             $sql_persona = "UPDATE persona SET ci = ?, nombre = ?, apellido = ?, fecha_nacimiento = ?, genero = ?, telefono = ?, direccion = ? WHERE id = ?";
@@ -103,10 +116,11 @@ class Usuario {
             $telefono = $data['telefono'] ?? '';
             $direccion = $data['direccion'] ?? '';
             $persona_id = $usuario['persona_id'];
-            $stmt_persona->bind_param("sssssssi", 
-                $ci, 
-                $nombre, 
-                $apellido, 
+            $stmt_persona->bind_param(
+                "sssssssi",
+                $ci,
+                $nombre,
+                $apellido,
                 $fecha_nacimiento,
                 $genero,
                 $telefono,
@@ -140,9 +154,11 @@ class Usuario {
             return false;
         }
     }
-    public function delete($id) {
+    public function delete($id)
+    {
         $usuario = $this->getById($id);
-        if (!$usuario) return false;
+        if (!$usuario)
+            return false;
         $this->db->begin_transaction();
         try {
             $sql_usuario = "DELETE FROM usuario WHERE id = ?";
@@ -160,7 +176,8 @@ class Usuario {
             return false;
         }
     }
-    public function getProfesores() {
+    public function getProfesores()
+    {
         $sql = "SELECT u.id, CONCAT(p.nombre, ' ', p.apellido) as nombre_completo 
                 FROM usuario u 
                 JOIN persona p ON u.persona_id = p.id 
@@ -170,7 +187,8 @@ class Usuario {
         $result = $this->db->query($sql);
         return $result->fetch_all(MYSQLI_ASSOC);
     }
-    public function getEstudiantes() {
+    public function getEstudiantes()
+    {
         $sql = "SELECT u.id, CONCAT(p.nombre, ' ', p.apellido) as nombre_completo, p.ci 
                 FROM usuario u 
                 JOIN persona p ON u.persona_id = p.id 
@@ -180,7 +198,8 @@ class Usuario {
         $result = $this->db->query($sql);
         return $result->fetch_all(MYSQLI_ASSOC);
     }
-    public function verificarUsuario($token) {
+    public function verificarUsuario($token)
+    {
         $sql = "SELECT u.id, u.email FROM usuario u WHERE verification_token = ? AND token_expires > NOW()";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("s", $token);
@@ -196,7 +215,8 @@ class Usuario {
         }
         return ['success' => false];
     }
-    public function generarCodigoRecuperacion($email) {
+    public function generarCodigoRecuperacion($email)
+    {
         $sql = "SELECT u.id, p.nombre, u.estado FROM usuario u JOIN persona p ON u.persona_id = p.id WHERE u.email = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("s", $email);
@@ -215,15 +235,16 @@ class Usuario {
         $stmt->bind_param("ssi", $codigo, $expira, $user['id']);
         if ($stmt->execute()) {
             return [
-                'success' => true, 
-                'codigo' => $codigo, 
+                'success' => true,
+                'codigo' => $codigo,
                 'user_id' => $user['id'],
                 'nombre' => $user['nombre']
             ];
         }
         return ['error' => 'Error al generar código'];
     }
-    public function validarCodigoRecuperacion($email, $codigo) {
+    public function validarCodigoRecuperacion($email, $codigo)
+    {
         $sql = "SELECT id FROM usuario WHERE email = ? AND reset_token = ? AND reset_expires > NOW()";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("ss", $email, $codigo);
@@ -231,7 +252,8 @@ class Usuario {
         $result = $stmt->get_result()->fetch_assoc();
         return $result ? $result['id'] : false;
     }
-    public function actualizarPassword($user_id, $new_password) {
+    public function actualizarPassword($user_id, $new_password)
+    {
         $sql = "SELECT password, password_history FROM usuario WHERE id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("i", $user_id);
@@ -255,7 +277,8 @@ class Usuario {
         }
         return ['error' => 'Error al actualizar contraseña'];
     }
-    public function hasPermission($usuario_id, $permiso_nombre) {
+    public function hasPermission($usuario_id, $permiso_nombre)
+    {
         $sql = "SELECT COUNT(*) as tiene FROM usuario u 
                 JOIN rol_permiso_detalle rpd ON u.rol_id = rpd.rol_id 
                 JOIN permiso p ON rpd.permiso_id = p.id 
@@ -276,8 +299,17 @@ class Usuario {
         }
         return $result['tiene'] > 0;
     }
-    public function getConnection() {
+    public function getConnection()
+    {
         return $this->db;
+    }
+
+    public function updateSubscription($userId, $planType, $status, $endDate = null)
+    {
+        $sql = "UPDATE usuario SET plan_type = ?, subscription_status = ?, subscription_end = ? WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("sssi", $planType, $status, $endDate, $userId);
+        return $stmt->execute();
     }
 }
 ?>

@@ -1,12 +1,15 @@
 <?php
 require_once __DIR__ . '/../config/conexion.php';
-class AuthController {
+class AuthController
+{
     private $usuario;
-    public function __construct() {
+    public function __construct()
+    {
         require_once __DIR__ . '/../models/Usuario.php';
         $this->usuario = new Usuario();
     }
-    public function login() {
+    public function login()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $email = $_POST['email'];
             $password = $_POST['password'];
@@ -18,11 +21,34 @@ class AuthController {
                     exit();
                 }
                 if ($password == $user['password']) {
+                    // --- CONTROL DE SESIONES CONCURRENTES ---
+                    require_once __DIR__ . '/../models/UserSession.php';
+                    $sessionModel = new UserSession();
+
+                    // Regenerar ID de sesión por seguridad
+                    session_regenerate_id(true);
+
+                    // Intentar registrar la sesión según el plan
+                    $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+                    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+                    $regResult = $sessionModel->registerSession($user['id'], session_id(), $ua, $ip);
+
+                    if (!$regResult['success']) {
+                        $_SESSION['error'] = $regResult['error']; // "Límite de sesiones alcanzado..."
+                        header('Location: index.php');
+                        exit();
+                    }
+
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['user_name'] = $user['persona_nombre'] . ' ' . $user['persona_apellido'];
                     $_SESSION['user_email'] = $user['email'];
                     $_SESSION['user_role'] = $user['rol_nombre'];
                     $_SESSION['role_id'] = $user['rol_id'];
+
+                    // Datos de Suscripción en Sesión
+                    $_SESSION['plan_type'] = $user['plan_type'];
+                    $_SESSION['subscription_status'] = $user['subscription_status'];
+
                     header('Location: dashboard.php');
                     exit();
                 } else {
@@ -35,7 +61,8 @@ class AuthController {
         header('Location: index.php');
         exit();
     }
-    public function register() {
+    public function register()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             require_once __DIR__ . '/../models/Email.php';
             $existing = $this->usuario->findByEmail($_POST['email']);
@@ -78,12 +105,23 @@ class AuthController {
         }
         require_once __DIR__ . '/../views/auth/register.php';
     }
-    public function logout() {
+    public function logout()
+    {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Eliminar sesión de la base de datos
+        require_once __DIR__ . '/../models/UserSession.php';
+        $sessionModel = new UserSession();
+        $sessionModel->removeSession(session_id());
+
         session_destroy();
         header('Location: index.php');
         exit();
     }
-    public function solicitarRecuperacion() {
+    public function solicitarRecuperacion()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             require_once __DIR__ . '/../models/Email.php';
             $email = trim($_POST['email']);
@@ -109,7 +147,8 @@ class AuthController {
         }
         require_once __DIR__ . '/../views/auth/forgot_password.php';
     }
-    public function resetPassword() {
+    public function resetPassword()
+    {
         if (!isset($_SESSION['reset_email'])) {
             header('Location: forgot_password.php');
             exit();
