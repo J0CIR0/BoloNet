@@ -180,7 +180,7 @@ class Curso
         $sql .= "nombre = '" . $this->db->real_escape_string($nombre) . "', ";
         $sql .= "descripcion = '" . $this->db->real_escape_string($descripcion) . "', ";
         $sql .= "duracion_horas = " . intval($duracion_horas) . ", ";
-        $sql .= "precio = " . floatval($precio) . ", "; // <--- NUEVO CAMPO
+
         $sql .= "fecha_inicio = '" . $this->db->real_escape_string($fecha_inicio) . "', ";
         $sql .= "fecha_fin = '" . $this->db->real_escape_string($fecha_fin) . "', ";
         $sql .= "estado = '" . $this->db->real_escape_string($estado) . "'";
