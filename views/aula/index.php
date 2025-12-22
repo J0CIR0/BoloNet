@@ -128,6 +128,12 @@
     .recurso-item .text-muted {
         color: #adb5bd !important;
     }
+
+    @media (min-width: 768px) {
+        .w-md-auto {
+            width: auto !important;
+        }
+    }
 </style>
 
 <div class="aula-header">

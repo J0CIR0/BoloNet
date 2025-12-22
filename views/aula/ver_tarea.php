@@ -320,9 +320,14 @@ $timeInfo = time_remaining($tarea['fecha_entrega']);
     </div>
 </div>
 
-<style>
     .border-dashed {
         border-style: dashed !important;
+    }
+
+    @media (min-width: 768px) {
+        .w-md-auto {
+            width: auto !important;
+        }
     }
 </style>
 
