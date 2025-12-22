@@ -85,16 +85,21 @@ $title = 'Cursos';
                                 </td>
                                 <td>
                                     <div class="d-grid gap-2">
-                                        <?php if ($usuarioModel->hasPermission($_SESSION['user_id'], 'inscribir_curso')): ?>
-                                            <?php if ($ya_inscrito): ?>
-                                                <a href="index.php?controller=Aula&action=index&id=<?php echo $curso['id']; ?>"
-                                                    class="btn btn-secondary btn-sm">
-                                                    <i class="fas fa-chalkboard"></i> Ir al Aula
-                                                </a>
-                                            <?php else: ?>
-                                                <a href="index.php?controller=Pago&action=checkout&id_curso=<?php echo $curso['id']; ?>"
-                                                    class="btn btn-success btn-sm">
-                                                    <i class="fas fa-shopping-cart"></i> Inscribirse
+                                        <?php if ($ya_inscrito): ?>
+                                            <a href="index.php?controller=Aula&action=index&id=<?php echo $curso['id']; ?>"
+                                                class="btn btn-secondary btn-sm">
+                                                <i class="fas fa-chalkboard"></i> Ir al Aula
+                                            </a>
+                                        <?php else: ?>
+                                            <?php
+                                            // Si no está inscrito y es estudiante (o no tiene rol de profesor/admin definido), mostrar opción de plan
+                                            // O simplemente si no tiene permiso especial de gestión.
+                                            // Mas simple: Si no es profesor/admin, ofrecer suscripción.
+                                            $rol = $_SESSION['user_role'] ?? 'estudiante';
+                                            if ($rol !== 'profesor' && $rol !== 'admin'):
+                                                ?>
+                                                <a href="index.php?controller=Pago&action=planes" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-unlock"></i> Obtener Acceso
                                                 </a>
                                             <?php endif; ?>
                                         <?php endif; ?>
