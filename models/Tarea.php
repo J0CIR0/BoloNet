@@ -56,5 +56,13 @@ class Tarea
         }
         return $stmt->execute();
     }
+    public function obtenerPorId($id)
+    {
+        $sql = "SELECT * FROM curso_tarea WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
+    }
 }
 ?>

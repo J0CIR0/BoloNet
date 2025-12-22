@@ -340,16 +340,16 @@
                                             </div>
                                             
                                             <?php if ($gradingEnabled): ?>
-                                                <button class="btn btn-outline-light btn-sm" 
-                                                        data-bs-toggle="modal" data-bs-target="#modalVerTarea"
-                                                        data-id="<?php echo $tarea['id']; ?>"
-                                                        data-titulo="<?php echo htmlspecialchars($tarea['titulo']); ?>"
-                                                        data-descripcion="<?php echo htmlspecialchars($tarea['descripcion'] ?? ''); ?>"
-                                                        data-fecha="<?php echo $tarea['fecha_entrega']; ?>"
-                                                        data-puntaje="<?php echo $tarea['puntaje_maximo'] ?? 0; ?>"
-                                                        onclick="verTareaFromButton(this)">
-                                                    Ver Tarea
+                                            <?php if ($gradingEnabled): ?>
+                                                <a href="index.php?controller=Aula&action=ver_tarea&id=<?php echo $tarea['id']; ?>" 
+                                                   class="btn btn-outline-light btn-sm">
+                                                    <i class="fas fa-eye me-1"></i> Ver Tarea
+                                                </a>
+                                            <?php else: ?>
+                                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                                    <i class="fas fa-lock"></i> Modo Oyente
                                                 </button>
+                                            <?php endif; ?>
                                             <?php else: ?>
                                                 <button class="btn btn-outline-secondary btn-sm" disabled>
                                                     <i class="fas fa-lock"></i> Modo Oyente
@@ -631,67 +631,6 @@
                 <button type="submit" class="btn btn-primary">Guardar Cambios</button>
             </div>
         </form>
-    </div>
-</div>
-
-<!-- MODAL VER TAREA (Y ENTREGAR) -->
-<div class="modal fade" id="modalVerTarea" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content bg-dark text-white border-secondary">
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title text-success" id="tarea_titulo">Título Tarea</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-8">
-                        <h6>Instrucciones:</h6>
-                        <p id="tarea_descripcion" class="text-white-50">...</p>
-                    </div>
-                    <div class="col-md-4 border-start border-secondary">
-                        <div class="mb-3">
-                            <label class="fw-bold text-success">Vencimiento:</label>
-                            <div id="tarea_fecha" class="text-white"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold text-success">Puntos:</label>
-                            <div id="tarea_puntaje" class="text-white"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <hr class="border-secondary">
-
-                <!-- ÁREA DE ENTREGA (Solo para alumnos estudiantes) -->
-                <?php if (!$esProfesor && isset($estaInscrito)): ?>
-                <div class="mt-4">
-                    <h5 class="text-success"><i class="fas fa-upload"></i> Mi Entrega</h5>
-                    <!-- Formulario de subida simulado, se puede implementar real en el backend -->
-                     <form action="index.php?controller=Aula&action=subir_tarea" method="POST" enctype="multipart/form-data">
-                        <input type="hidden" name="tarea_id" id="tarea_id_input">
-                        <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
-                        
-                        <div class="mb-3">
-                            <label class="form-label text-white-50">Comentario / Nota</label>
-                            <textarea name="comentario" class="form-control bg-dark text-white border-secondary" rows="2"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-white-50">Adjuntar Archivo (PDF, ZIP, IMG)</label>
-                            <input type="file" name="archivo_tarea" class="form-control bg-dark text-white border-secondary">
-                        </div>
-                        <button type="submit" class="btn btn-success w-100">Enviar Tarea</button>
-                    </form>
-                </div>
-                <?php endif; ?>
-
-                <?php if ($esProfesor): ?>
-                    <div class="alert alert-info bg-dark border-info text-info">
-                        Como profesor, puedes ver esta vista previa, pero las entregas se revisan en la pestaña "Calificaciones".
-                    </div>
-                <?php endif; ?>
-
-            </div>
-        </div>
     </div>
 </div>
 
