@@ -190,9 +190,13 @@
                                     <!-- Botones Agregar Contenido (Solo Profesor) -->
                                     <?php if ($esProfesor): ?>
                                         <div class="p-2 text-center border-top bg-light">
-                                            <button class="btn btn-sm btn-link text-success text-decoration-none"
-                                                onclick="prepararModalContenido(<?php echo $mod['id']; ?>)">
+                                            <button class="btn btn-sm btn-link text-success text-decoration-none" 
+                                                    onclick="prepararModalContenido(<?php echo $mod['id']; ?>)">
                                                 <i class="fas fa-plus-circle"></i> Agregar Recurso
+                                            </button>
+                                            <button class="btn btn-sm btn-link text-warning text-decoration-none ms-3" 
+                                                    onclick="prepararModalTarea(<?php echo $mod['id']; ?>)">
+                                                <i class="fas fa-tasks"></i> Nueva Tarea
                                             </button>
                                         </div>
                                     <?php endif; ?>
@@ -300,10 +304,54 @@
         </div>
     </div>
 
+    <!-- MODAL NUEVA TAREA -->
+    <div class="modal fade" id="modalNuevaTarea" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content" method="POST" action="index.php?controller=Aula&action=crear_tarea">
+                <div class="modal-header">
+                    <h5 class="modal-title">Asignar Nueva Tarea</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
+                    <input type="hidden" name="modulo_id" id="inputModuloIdTarea">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Título de la Tarea</label>
+                        <input type="text" name="titulo" class="form-control" required placeholder="Ej: Práctica 1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción / Instrucciones</label>
+                        <textarea name="descripcion" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fecha de Entrega</label>
+                            <input type="datetime-local" name="fecha_entrega" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Puntaje Máximo</label>
+                            <input type="number" name="puntaje" class="form-control" value="100" min="1">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-warning">Publicar Tarea</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         function prepararModalContenido(moduloId) {
             document.getElementById('inputModuloId').value = moduloId;
             var myModal = new bootstrap.Modal(document.getElementById('modalNuevoContenido'));
+            myModal.show();
+        }
+
+        function prepararModalTarea(moduloId) {
+            document.getElementById('inputModuloIdTarea').value = moduloId;
+            var myModal = new bootstrap.Modal(document.getElementById('modalNuevaTarea'));
             myModal.show();
         }
     </script>

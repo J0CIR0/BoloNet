@@ -80,5 +80,18 @@ class AulaController
             header("Location: index.php?controller=Aula&action=index&id=" . $_POST['curso_id']);
         }
     }
+    public function crear_tarea()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->tareaModel->crear(
+                $_POST['modulo_id'],
+                $_POST['titulo'],
+                $_POST['descripcion'],
+                $_POST['fecha_entrega'],
+                $_POST['puntaje']
+            );
+            header("Location: index.php?controller=Aula&action=index&id=" . $_POST['curso_id']);
+        }
+    }
 }
 ?>
