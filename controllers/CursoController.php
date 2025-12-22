@@ -2,12 +2,19 @@
 class CursoController {
     private $curso;
     private $usuario;
+    private $inscripcion;
+
     public function __construct() {
         require_once __DIR__ . '/../models/Curso.php';
         require_once __DIR__ . '/../models/Usuario.php';
+        require_once __DIR__ . '/../models/Inscripcion.php';
+        
         $this->curso = new Curso();
         $this->usuario = new Usuario();
+        $this->inscripcion = new Inscripcion();
     }
+
+    // Verificar permisos de usuario
     public function checkPermission($permiso) {
         if (!isset($_SESSION['user_id']) || !$this->usuario->hasPermission($_SESSION['user_id'], $permiso)) {
             $_SESSION['error'] = 'No tienes permisos para esta acción';
@@ -15,227 +22,228 @@ class CursoController {
             exit();
         }
     }
+
     public function index() {
         $this->checkPermission('ver_cursos');
+        
         $cursos = $this->curso->getAll();
+        
+        $cursos_inscritos = [];
+        if (isset($_SESSION['user_id'])) {
+            if (method_exists($this->inscripcion, 'obtenerIdsInscritos')) {
+                $cursos_inscritos = $this->inscripcion->obtenerIdsInscritos($_SESSION['user_id']);
+            }
+        }
+
+        $title = 'Lista de Cursos';
         require_once __DIR__ . '/../views/layouts/header.php';
         require_once __DIR__ . '/../views/cursos/index.php';
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
+
     public function create() {
         $this->checkPermission('crear_curso');
+        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $codigo = trim($_POST['codigo']);
             $nombre = trim($_POST['nombre']);
             $descripcion = trim($_POST['descripcion'] ?? '');
+            
+            $precio = isset($_POST['precio']) ? floatval($_POST['precio']) : 0.00;
             $duracion_horas = intval($_POST['duracion_horas']);
             $fecha_inicio = trim($_POST['fecha_inicio']);
             $fecha_fin = trim($_POST['fecha_fin']);
             $profesor_id = isset($_POST['profesor_id']) && $_POST['profesor_id'] !== '' ? intval($_POST['profesor_id']) : null;
             $estado = $_POST['estado'] ?? 'activo';
+            
+            // Validaciones básicas
             $dateRegex = '/^\d{4}-\d{2}-\d{2}$/';
-            if (!preg_match($dateRegex, $fecha_inicio)) {
-                $_SESSION['error'] = 'Formato de Fecha Inicio incorrecto. Use AAAA-MM-DD (Ej: 2025-12-18)';
-                header('Location: cursos.php?action=create');
-                exit();
+            if (!preg_match($dateRegex, $fecha_inicio) || !preg_match($dateRegex, $fecha_fin)) {
+                $_SESSION['error'] = 'Formato de fechas incorrecto';
+                header('Location: index.php?controller=Curso&action=create'); exit();
             }
-            if (!preg_match($dateRegex, $fecha_fin)) {
-                $_SESSION['error'] = 'Formato de Fecha Fin incorrecto. Use AAAA-MM-DD (Ej: 2026-01-18)';
-                header('Location: cursos.php?action=create');
-                exit();
-            }
-            if (!strtotime($fecha_inicio)) {
-                $_SESSION['error'] = 'Fecha de inicio no válida';
-                header('Location: cursos.php?action=create');
-                exit();
-            }
-            if (!strtotime($fecha_fin)) {
-                $_SESSION['error'] = 'Fecha de fin no válida';
-                header('Location: cursos.php?action=create');
-                exit();
-            }
-            if (empty($codigo) || empty($nombre) || empty($fecha_inicio) || empty($fecha_fin)) {
-                $_SESSION['error'] = 'Todos los campos obligatorios deben estar completos';
-                header('Location: cursos.php?action=create');
-                exit();
-            }
-            if ($duracion_horas <= 0) {
-                $_SESSION['error'] = 'La duración debe ser mayor a 0';
-                header('Location: cursos.php?action=create');
-                exit();
+            if ($duracion_horas <= 0 || $precio < 0) {
+                $_SESSION['error'] = 'Datos numéricos inválidos';
+                header('Location: index.php?controller=Curso&action=create'); exit();
             }
             if ($fecha_inicio >= $fecha_fin) {
-                $_SESSION['error'] = 'La fecha de inicio debe ser anterior a la fecha de fin';
-                header('Location: cursos.php?action=create');
-                exit();
+                $_SESSION['error'] = 'Fechas inválidas';
+                header('Location: index.php?controller=Curso&action=create'); exit();
             }
-            $existente = $this->curso->getByCodigo($codigo);
-            if ($existente) {
-                $_SESSION['error'] = 'El código del curso ya existe';
-                header('Location: cursos.php?action=create');
-                exit();
+            
+            if ($this->curso->getByCodigo($codigo)) {
+                $_SESSION['error'] = 'El código ya existe';
+                header('Location: index.php?controller=Curso&action=create'); exit();
             }
+
             $data = [
                 'codigo' => $codigo,
                 'nombre' => $nombre,
                 'descripcion' => $descripcion,
+                'precio' => $precio,
                 'duracion_horas' => $duracion_horas,
                 'fecha_inicio' => $fecha_inicio,
                 'fecha_fin' => $fecha_fin,
                 'profesor_id' => $profesor_id,
                 'estado' => $estado
             ];
+
             if ($this->curso->create($data)) {
                 $_SESSION['success'] = 'Curso creado exitosamente';
-                header('Location: cursos.php');
+                header('Location: index.php?controller=Curso&action=index');
                 exit();
             } else {
                 $_SESSION['error'] = 'Error al crear curso';
-                header('Location: cursos.php?action=create');
+                header('Location: index.php?controller=Curso&action=create');
                 exit();
             }
         }
+        
         $profesores = $this->usuario->getProfesores();
         $title = 'Nuevo Curso';
         require_once __DIR__ . '/../views/layouts/header.php';
         require_once __DIR__ . '/../views/cursos/create.php';
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
-    public function edit($id) {
-        $this->checkPermission('editar_curso');
-        $curso = $this->curso->getById($id);
-        if (!$curso) {
-            $_SESSION['error'] = 'Curso no encontrado';
-            header('Location: cursos.php');
+
+    // --- FUNCIÓN EDITAR CORREGIDA (Argumento Opcional) ---
+    public function edit($id = null) {
+        // Si no llega por parámetro, lo buscamos en GET
+        if ($id === null && isset($_GET['id'])) {
+            $id = $_GET['id'];
+        }
+
+        if (!$id) {
+            $_SESSION['error'] = 'ID de curso no especificado';
+            header('Location: index.php?controller=Curso&action=index');
             exit();
         }
+
+        $this->checkPermission('editar_curso');
+        $curso = $this->curso->getById($id);
+        
+        if (!$curso) {
+            $_SESSION['error'] = 'Curso no encontrado';
+            header('Location: index.php?controller=Curso&action=index');
+            exit();
+        }
+
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $codigo = trim($_POST['codigo']);
             $nombre = trim($_POST['nombre']);
             $descripcion = trim($_POST['descripcion'] ?? '');
+            
+            $precio = isset($_POST['precio']) ? floatval($_POST['precio']) : 0.00;
             $duracion_horas = intval($_POST['duracion_horas']);
             $fecha_inicio = trim($_POST['fecha_inicio']);
             $fecha_fin = trim($_POST['fecha_fin']);
             $profesor_id = isset($_POST['profesor_id']) && $_POST['profesor_id'] !== '' ? intval($_POST['profesor_id']) : null;
             $estado = $_POST['estado'] ?? 'activo';
-            $dateRegex = '/^\d{4}-\d{2}-\d{2}$/';
-            if (!preg_match($dateRegex, $fecha_inicio)) {
-                $_SESSION['error'] = 'Formato de Fecha Inicio incorrecto. Use AAAA-MM-DD';
-                header("Location: cursos.php?action=edit&id=$id");
+            
+            if ($duracion_horas <= 0 || $precio < 0) {
+                $_SESSION['error'] = 'Datos numéricos inválidos';
+                header("Location: index.php?controller=Curso&action=edit&id=$id");
                 exit();
             }
-            if (!preg_match($dateRegex, $fecha_fin)) {
-                $_SESSION['error'] = 'Formato de Fecha Fin incorrecto. Use AAAA-MM-DD';
-                header("Location: cursos.php?action=edit&id=$id");
-                exit();
-            }
-            if (empty($codigo) || empty($nombre) || empty($fecha_inicio) || empty($fecha_fin)) {
-                $_SESSION['error'] = 'Todos los campos obligatorios deben estar completos';
-                header("Location: cursos.php?action=edit&id=$id");
-                exit();
-            }
-            if ($duracion_horas <= 0) {
-                $_SESSION['error'] = 'La duración debe ser mayor a 0';
-                header("Location: cursos.php?action=edit&id=$id");
-                exit();
-            }
-            if ($fecha_inicio >= $fecha_fin) {
-                $_SESSION['error'] = 'La fecha de inicio debe ser anterior a la fecha de fin';
-                header("Location: cursos.php?action=edit&id=$id");
-                exit();
-            }
+
             if ($curso['codigo'] != $codigo) {
-                $existente = $this->curso->getByCodigo($codigo);
-                if ($existente) {
-                    $_SESSION['error'] = 'El código del curso ya existe';
-                    header("Location: cursos.php?action=edit&id=$id");
+                if ($this->curso->getByCodigo($codigo)) {
+                    $_SESSION['error'] = 'El código ya existe';
+                    header("Location: index.php?controller=Curso&action=edit&id=$id");
                     exit();
                 }
             }
+
             $data = [
                 'codigo' => $codigo,
                 'nombre' => $nombre,
                 'descripcion' => $descripcion,
+                'precio' => $precio,
                 'duracion_horas' => $duracion_horas,
                 'fecha_inicio' => $fecha_inicio,
                 'fecha_fin' => $fecha_fin,
                 'profesor_id' => $profesor_id,
                 'estado' => $estado
             ];
+
             if ($this->curso->update($id, $data)) {
                 $_SESSION['success'] = 'Curso actualizado exitosamente';
-                header('Location: cursos.php');
+                header('Location: index.php?controller=Curso&action=index');
                 exit();
             } else {
                 $_SESSION['error'] = 'Error al actualizar curso';
-                header("Location: cursos.php?action=edit&id=$id");
+                header("Location: index.php?controller=Curso&action=edit&id=$id");
                 exit();
             }
         }
+        
         $profesores = $this->usuario->getProfesores();
         $title = 'Editar Curso';
         require_once __DIR__ . '/../views/layouts/header.php';
         require_once __DIR__ . '/../views/cursos/edit.php';
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
-    public function delete($id) {
-        $this->checkPermission('eliminar_curso');
-        $curso = $this->curso->getById($id);
-        if (!$curso) {
-            $_SESSION['error'] = 'Curso no encontrado';
-            header('Location: cursos.php');
-            exit();
+
+    // --- FUNCIÓN ELIMINAR CORREGIDA (Argumento Opcional) ---
+    public function delete($id = null) {
+        if ($id === null && isset($_GET['id'])) {
+            $id = $_GET['id'];
         }
-        if ($this->curso->delete($id)) {
+
+        $this->checkPermission('eliminar_curso');
+        
+        if ($id && $this->curso->delete($id)) {
             $_SESSION['success'] = 'Curso eliminado exitosamente';
         } else {
             $_SESSION['error'] = 'Error al eliminar curso';
         }
-        header('Location: cursos.php');
+        header('Location: index.php?controller=Curso&action=index');
         exit();
     }
-    public function inscribir() {
-        $this->checkPermission('inscribir_curso');
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['curso_id'])) {
-            $curso_id = $_POST['curso_id'];
-            $estudiante_id = $_SESSION['user_id'];
-            if ($this->curso->inscribirEstudiante($estudiante_id, $curso_id)) {
-                $_SESSION['success'] = 'Inscripción realizada exitosamente';
-            } else {
-                $_SESSION['error'] = 'Ya estás inscrito en este curso';
-            }
-            header('Location: cursos.php');
-            exit();
-        }
-        $cursos_activos = $this->curso->getCursosActivos();
-        $title = 'Inscribirse en Curso';
-        require_once __DIR__ . '/../views/layouts/header.php';
-        require_once __DIR__ . '/../views/cursos/inscribir.php';
-        require_once __DIR__ . '/../views/layouts/footer.php';
-    }
-    public function misCursos() {
+
+    public function mis_cursos() {
         $this->checkPermission('ver_inscripciones');
+        
+        if (session_status() == PHP_SESSION_NONE) { session_start(); }
         $estudiante_id = $_SESSION['user_id'];
-        $inscripciones = $this->curso->getInscripcionesByEstudiante($estudiante_id);
+        
+        $inscripciones = $this->inscripcion->obtenerCursosPorEstudiante($estudiante_id);
+        
         $title = 'Mis Cursos';
         require_once __DIR__ . '/../views/layouts/header.php';
         require_once __DIR__ . '/../views/cursos/mis_cursos.php';
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
-    public function gestionarInscripciones($curso_id) {
+
+    // --- FUNCIÓN GESTIONAR INSCRIPCIONES CORREGIDA ---
+    public function gestionarInscripciones($curso_id = null) {
+        if ($curso_id === null && isset($_GET['id'])) {
+            $curso_id = $_GET['id'];
+        }
+
         $this->checkPermission('gestionar_inscripciones');
+        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $inscripcion_id = $_POST['inscripcion_id'];
-            $estado = $_POST['estado'];
-            $nota_final = $_POST['nota_final'] ?? null;
-            $this->curso->actualizarInscripcion($inscripcion_id, $estado, $nota_final);
-            $_SESSION['success'] = 'Inscripción actualizada';
-            header("Location: cursos.php?action=gestionar&id=$curso_id");
+             if(isset($_POST['inscripcion_id'])) {
+                 $this->curso->actualizarInscripcion(
+                     $_POST['inscripcion_id'], 
+                     $_POST['estado'], 
+                     $_POST['nota_final'] ?? null
+                 );
+                 $_SESSION['success'] = 'Inscripción actualizada';
+             }
+        }
+        
+        // Si después de todo no hay ID, volvemos
+        if (!$curso_id) {
+            header('Location: index.php?controller=Curso&action=index');
             exit();
         }
+
         $curso = $this->curso->getById($curso_id);
         $inscripciones = $this->curso->getInscripcionesByCurso($curso_id);
-        $title = 'Gestionar Inscripciones: ' . $curso['nombre'];
+        
+        $title = 'Gestionar Inscripciones: ' . ($curso['nombre'] ?? '');
         require_once __DIR__ . '/../views/layouts/header.php';
         require_once __DIR__ . '/../views/cursos/gestionar_inscripciones.php';
         require_once __DIR__ . '/../views/layouts/footer.php';

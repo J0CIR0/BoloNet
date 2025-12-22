@@ -1,15 +1,20 @@
 <?php
 require_once __DIR__ . '/../config/conexion.php';
 require_once __DIR__ . '/../config/constantes.php';
+require_once __DIR__ . '/../config/smtp.php';
+require_once 'controllers/AuthController.php';
 class Email {
     private $mailer;
+    
     public function __construct() {
         require_once __DIR__ . '/../vendor/PHPMailer/src/Exception.php';
         require_once __DIR__ . '/../vendor/PHPMailer/src/PHPMailer.php';
         require_once __DIR__ . '/../vendor/PHPMailer/src/SMTP.php';
+        
         $this->mailer = new PHPMailer\PHPMailer\PHPMailer(true);
         $this->configurarMailer();
     }
+    
     private function configurarMailer() {
         try {
             $this->mailer->isSMTP();
@@ -26,6 +31,7 @@ class Email {
             error_log("Error PHPMailer: " . $e->getMessage());
         }
     }
+    
     public function enviarVerificacion($email, $nombre, $token) {
         try {
             $this->mailer->clearAddresses();
@@ -35,6 +41,7 @@ class Email {
             $verification_link = SITE_URL . "verify.php?token=" . urlencode($token);
             $this->mailer->Body = $this->crearTemplateVerificacion($nombre, $verification_link);
             $this->mailer->AltBody = "Hola $nombre,\n\nVerifica tu cuenta: $verification_link\n\nVálido por 24 horas.";
+            
             if ($this->mailer->send()) {
                 return true;
             }
@@ -45,6 +52,7 @@ class Email {
             return false;
         }
     }
+    
     public function enviarCodigoRecuperacion($email, $nombre, $codigo) {
         try {
             $this->mailer->clearAddresses();
@@ -53,6 +61,7 @@ class Email {
             $this->mailer->Subject = 'Código de recuperación - ' . SITE_NAME;
             $this->mailer->Body = $this->crearTemplateRecuperacion($nombre, $codigo);
             $this->mailer->AltBody = "Código de recuperación: $codigo\nVálido por 15 minutos.";
+            
             if ($this->mailer->send()) {
                 return true;
             }
@@ -63,6 +72,7 @@ class Email {
             return false;
         }
     }
+    
     private function crearTemplateVerificacion($nombre, $enlace) {
         return '
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#1e1e1e;color:#fff;border-radius:10px;border:2px solid #28a745;">
@@ -85,6 +95,7 @@ class Email {
             </div>
         </div>';
     }
+    
     private function crearTemplateRecuperacion($nombre, $codigo) {
         return '
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#1e1e1e;color:#fff;border-radius:10px;border:2px solid #dc3545;">

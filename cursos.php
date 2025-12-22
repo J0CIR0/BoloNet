@@ -1,31 +1,13 @@
 <?php
-session_start();
-require_once 'config/conexion.php';
-require_once 'config/constantes.php';
+// cursos.php
+// Este archivo ahora solo sirve para redirigir enlaces viejos al nuevo Router
 
-if (!isset($_SESSION['user_id'])) {
-    header('Location: index.php');
-    exit();
-}
-
-require_once 'controllers/CursoController.php';
-$controller = new CursoController();
 $action = isset($_GET['action']) ? $_GET['action'] : 'index';
-$id = isset($_GET['id']) ? intval($_GET['id']) : null;
+$id = isset($_GET['id']) ? '&id=' . $_GET['id'] : '';
+$id_curso = isset($_GET['id_curso']) ? '&id_curso=' . $_GET['id_curso'] : '';
 
-if ($action == 'create') {
-    $controller->create();
-} elseif ($action == 'edit' && $id) {
-    $controller->edit($id);
-} elseif ($action == 'delete' && $id) {
-    $controller->delete($id);
-} elseif ($action == 'inscribir') {
-    $controller->inscribir();
-} elseif ($action == 'mis_cursos') {
-    $controller->misCursos();
-} elseif ($action == 'gestionar' && $id) {
-    $controller->gestionarInscripciones($id);
-} else {
-    $controller->index();
-}
+// Redirigimos la petición al index.php (El nuevo jefe)
+// Ejemplo: cursos.php?action=create  -->  index.php?controller=Curso&action=create
+header("Location: index.php?controller=Curso&action=" . $action . $id . $id_curso);
+exit();
 ?>
