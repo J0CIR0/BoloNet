@@ -539,6 +539,63 @@ class AulaController
 
             if ($this->inscripcionModel->aprobarEstudiante($curso_id, $estudiante_id, $nota_final)) {
                 $_SESSION['success'] = "Estudiante aprobado y certificado generado.";
+
+                // --- ENVIAR CORREO CON ENLACE AL CERTIFICADO ---
+                try {
+                    $estudiante = $this->inscripcionModel->getDetalleInscripcion($curso_id, $estudiante_id);
+                    if ($estudiante && !empty($estudiante['email'])) {
+                        require_once __DIR__ . '/../vendor/autoload.php';
+                        // La configuración SMTP ya debería estar cargada por index.php o config/conexion.php, 
+                        // pero por si acaso cargamos smtp.php si no está definida
+                        if (!defined('SMTP_HOST')) {
+                            require_once __DIR__ . '/../config/smtp.php';
+                        }
+
+                        // Determinar la URL base del sistema dinámicamente o hardcodeada si es necesario
+                        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+                        $host = $_SERVER['HTTP_HOST'];
+                        $path = dirname($_SERVER['PHP_SELF']); // Ojo: esto puede variar dependiendo de donde se ejecute
+                        // Mejor construcción manual basada en index.php
+                        $certLink = $protocol . "://" . $host . "/BoloNet/index.php?controller=Aula&action=certificado&id=" . $curso_id;
+                        // NOTA: Ajustar /BoloNet/ si el nombre de carpeta cambia.
+
+                        $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+                        $mail->isSMTP();
+                        $mail->Host = SMTP_HOST;
+                        $mail->SMTPAuth = true;
+                        $mail->Username = SMTP_USER;
+                        $mail->Password = SMTP_PASS;
+                        $mail->SMTPSecure = SMTP_SECURE;
+                        $mail->Port = SMTP_PORT;
+
+                        // Remitente y Destinatario
+                        $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
+                        $mail->addAddress($estudiante['email'], $estudiante['nombre'] . ' ' . $estudiante['apellido']);
+
+                        // Contenido
+                        $mail->isHTML(true);
+                        $mail->Subject = '¡Felicidades! Has aprobado el curso';
+                        $mail->Body = "
+                            <h1>¡Felicitaciones " . htmlspecialchars($estudiante['nombre']) . "!</h1>
+                            <p>Nos complace informarte que has aprobado satisfactoriamente tu curso.</p>
+                            <p>Tu <strong>Certificado de Finalización</strong> ya está disponible.</p>
+                            <p>Puedes verlo y descargarlo en formato PDF haciendo clic en el siguiente enlace:</p>
+                            <p><a href='" . $certLink . "' style='background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Ver Mi Certificado</a></p>
+                            <p>Si el botón no funciona, copia y pega este enlace en tu navegador:<br> $certLink</p>
+                            <hr>
+                            <small>BoloNet Learning System</small>
+                        ";
+
+                        $mail->send();
+                        $_SESSION['success'] .= " Notificación enviada al correo.";
+                    }
+                } catch (Exception $e) {
+                    // No detener el flujo si falla el correo, solo advertir
+                    // $_SESSION['error'] = "Aprobado, pero error al enviar correo: " . $mail->ErrorInfo;
+                    // Mejor solo logear o ignorar para no asustar al profe si el SMTP falla en local
+                    error_log("Error enviando certificado: " . $mail->ErrorInfo);
+                }
+
             } else {
                 $_SESSION['error'] = "Error al aprobar estudiante.";
             }

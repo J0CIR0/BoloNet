@@ -138,4 +138,19 @@ class Inscripcion
         }
         return [];
     }
+    public function getDetalleInscripcion($curso_id, $estudiante_id)
+    {
+        $sql = "SELECT i.*, u.email, p.nombre, p.apellido 
+                FROM inscripcion i 
+                JOIN usuario u ON i.estudiante_id = u.id 
+                JOIN persona p ON u.persona_id = p.id 
+                WHERE i.curso_id = ? AND i.estudiante_id = ?";
+        $stmt = $this->db->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param("ii", $curso_id, $estudiante_id);
+            $stmt->execute();
+            return $stmt->get_result()->fetch_assoc();
+        }
+        return null;
+    }
 }

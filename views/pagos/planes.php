@@ -9,11 +9,28 @@ require_once __DIR__ . '/../layouts/header.php';
         <p class="lead text-muted">Accede a todos nuestros cursos con un solo pago mensual.</p>
     </div>
 
+    <?php
+    // Definir jerarquía de planes
+    $plans = [
+        'basic' => ['level' => 1, 'name' => 'Básico', 'price' => '$9.99', 'btn_class' => 'btn-outline-primary', 'header_class' => '', 'border_class' => ''],
+        'pro' => ['level' => 2, 'name' => 'Pro', 'price' => '$19.99', 'btn_class' => 'btn-primary', 'header_class' => 'text-white bg-primary border-primary', 'border_class' => 'border-primary'],
+        'premium' => ['level' => 3, 'name' => 'Premium', 'price' => '$29.99', 'btn_class' => 'btn-success', 'header_class' => 'text-white bg-success border-success', 'border_class' => 'border-success']
+    ];
+
+    $currentPlan = $_SESSION['plan_type'] ?? '';
+    $currentStatus = $_SESSION['subscription_status'] ?? 'inactive';
+    $currentLevel = 0;
+
+    if ($currentStatus === 'active' && isset($plans[$currentPlan])) {
+        $currentLevel = $plans[$currentPlan]['level'];
+    }
+    ?>
+
     <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
         <!-- PLAN BÁSICO -->
         <div class="col">
-            <div class="card mb-4 rounded-3 shadow-sm">
-                <div class="card-header py-3">
+            <div class="card mb-4 rounded-3 shadow-sm <?php echo $plans['basic']['border_class']; ?>">
+                <div class="card-header py-3 <?php echo $plans['basic']['header_class']; ?>">
                     <h4 class="my-0 fw-normal">Básico</h4>
                 </div>
                 <div class="card-body">
@@ -24,16 +41,22 @@ require_once __DIR__ . '/../layouts/header.php';
                         <li>Soporte por email</li>
                         <li>Certificado de finalización</li>
                     </ul>
-                    <a href="index.php?controller=Pago&action=checkout&plan=basic"
-                        class="w-100 btn btn-lg btn-outline-primary">Seleccionar Básico</a>
+                    <?php if ($currentLevel == 1): ?>
+                        <button class="w-100 btn btn-lg btn-secondary" disabled>Tu Plan Actual</button>
+                    <?php elseif ($currentLevel > 1): ?>
+                        <button class="w-100 btn btn-lg btn-outline-secondary" disabled>No disponible</button>
+                    <?php else: ?>
+                        <a href="index.php?controller=Pago&action=checkout&plan=basic"
+                            class="w-100 btn btn-lg btn-outline-primary">Seleccionar Básico</a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
 
         <!-- PLAN PRO -->
         <div class="col">
-            <div class="card mb-4 rounded-3 shadow-sm border-primary">
-                <div class="card-header py-3 text-white bg-primary border-primary">
+            <div class="card mb-4 rounded-3 shadow-sm <?php echo $plans['pro']['border_class']; ?>">
+                <div class="card-header py-3 <?php echo $plans['pro']['header_class']; ?>">
                     <h4 class="my-0 fw-normal">Pro</h4>
                 </div>
                 <div class="card-body">
@@ -44,16 +67,23 @@ require_once __DIR__ . '/../layouts/header.php';
                         <li>Soporte prioritario</li>
                         <li>Descargas offline</li>
                     </ul>
-                    <a href="index.php?controller=Pago&action=checkout&plan=pro"
-                        class="w-100 btn btn-lg btn-primary">Seleccionar Pro</a>
+                    <?php if ($currentLevel == 2): ?>
+                        <button class="w-100 btn btn-lg btn-secondary" disabled>Tu Plan Actual</button>
+                    <?php elseif ($currentLevel > 2): ?>
+                        <button class="w-100 btn btn-lg btn-outline-secondary" disabled>No disponible</button>
+                    <?php else: ?>
+                        <a href="index.php?controller=Pago&action=checkout&plan=pro" class="w-100 btn btn-lg btn-primary">
+                            <?php echo ($currentLevel > 0) ? 'Mejorar a Pro' : 'Seleccionar Pro'; ?>
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
 
         <!-- PLAN PREMIUM -->
         <div class="col">
-            <div class="card mb-4 rounded-3 shadow-sm border-success">
-                <div class="card-header py-3 text-white bg-success border-success">
+            <div class="card mb-4 rounded-3 shadow-sm <?php echo $plans['premium']['border_class']; ?>">
+                <div class="card-header py-3 <?php echo $plans['premium']['header_class']; ?>">
                     <h4 class="my-0 fw-normal">Premium</h4>
                 </div>
                 <div class="card-body">
@@ -64,8 +94,14 @@ require_once __DIR__ . '/../layouts/header.php';
                         <li>Tutoría personalizada 1h/mes</li>
                         <li>Acceso anticipado a contenido</li>
                     </ul>
-                    <a href="index.php?controller=Pago&action=checkout&plan=premium"
-                        class="w-100 btn btn-lg btn-success">Seleccionar Premium</a>
+                    <?php if ($currentLevel == 3): ?>
+                        <button class="w-100 btn btn-lg btn-secondary" disabled>Tu Plan Actual</button>
+                    <?php else: ?>
+                        <a href="index.php?controller=Pago&action=checkout&plan=premium"
+                            class="w-100 btn btn-lg btn-success">
+                            <?php echo ($currentLevel > 0) ? 'Mejorar a Premium' : 'Seleccionar Premium'; ?>
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
