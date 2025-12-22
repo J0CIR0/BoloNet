@@ -410,12 +410,17 @@
                                             $feedback = '-';
                                             
                                             if (isset($cal['entrega']) && $cal['entrega']) {
+                                                $archivoLink = '';
+                                                if (!empty($cal['entrega']['archivo_url'])) {
+                                                    $archivoLink = ' <a href="' . $cal['entrega']['archivo_url'] . '" target="_blank" class="text-info" title="Ver Archivo"><i class="fas fa-paperclip"></i></a>';
+                                                }
+
                                                 if ($cal['entrega']['calificacion'] !== null) {
-                                                    $estado = '<span class="badge bg-success">Calificado</span>';
+                                                    $estado = '<span class="badge bg-success">Calificado</span>' . $archivoLink;
                                                     $nota = $cal['entrega']['calificacion'] . ' / ' . ($cal['puntaje_maximo'] ?? 0);
                                                     $feedback = $cal['entrega']['retroalimentacion'] ? $cal['entrega']['retroalimentacion'] : 'Sin comentarios';
                                                 } else {
-                                                    $estado = '<span class="badge bg-info text-dark">Entregado</span>';
+                                                    $estado = '<span class="badge bg-info text-dark">Entregado</span>' . $archivoLink;
                                                 }
                                             } else {
                                                 // Si ya venció

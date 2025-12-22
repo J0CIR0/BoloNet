@@ -413,5 +413,57 @@ class AulaController
             header("Location: index.php?controller=Aula&action=index&id=" . $_POST['curso_id']);
         }
     }
+    public function subir_tarea()
+    {
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['user_id'])) {
+            $tarea_id = (int) $_POST['tarea_id'];
+            $curso_id = (int) $_POST['curso_id'];
+            $comentario = $_POST['comentario'] ?? '';
+            $user_id = $_SESSION['user_id'];
+
+            // Manejo de archivo
+            $url_archivo = '';
+            if (isset($_FILES['archivo_tarea']) && $_FILES['archivo_tarea']['error'] === UPLOAD_ERR_OK) {
+                // Crear directorio si no existe
+                $uploadDir = __DIR__ . '/../uploads/cursos/tareas/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+
+                // Generar nombre único: timestamp_userid_filename
+                $fileName = time() . '_' . $user_id . '_' . basename($_FILES['archivo_tarea']['name']);
+                $destPath = $uploadDir . $fileName;
+
+                if (move_uploaded_file($_FILES['archivo_tarea']['tmp_name'], $destPath)) {
+                    $url_archivo = 'uploads/cursos/tareas/' . $fileName;
+                } else {
+                    $_SESSION['error'] = "Error al mover el archivo subido.";
+                    header("Location: index.php?controller=Aula&action=index&id=" . $curso_id);
+                    exit();
+                }
+            } else {
+                // Si no subió archivo pero puso comentario, es válido, o podría ser obligatorio.
+                // Asumimos que puede entregar solo texto o hubo error leve
+                if (isset($_FILES['archivo_tarea']) && $_FILES['archivo_tarea']['error'] !== UPLOAD_ERR_NO_FILE) {
+                    $_SESSION['error'] = "Error en la subida del archivo.";
+                    header("Location: index.php?controller=Aula&action=index&id=" . $curso_id);
+                    exit();
+                }
+            }
+
+            // Guardar en BD
+            if ($this->tareaModel->entregar($tarea_id, $user_id, $url_archivo, $comentario)) {
+                $_SESSION['success'] = "Tarea entregada correctamente.";
+            } else {
+                $_SESSION['error'] = "Error al guardar la entrega.";
+            }
+
+            header("Location: index.php?controller=Aula&action=index&id=" . $curso_id);
+            exit();
+        }
+    }
 }
 ?>
