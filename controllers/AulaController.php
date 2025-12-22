@@ -36,8 +36,21 @@ class AulaController
         $user_id = $_SESSION['user_id'] ?? 0;
 
         // 1. Validar Acceso (Suscripción o Inscripción)
-        // Puedes reutilizar lógica de CursoController o simplificar aquí
-        // Por ahora asumimos que si llega aquí es porque tiene permiso, pero lo ideal es validar
+        $user_role = $_SESSION['user_role'] ?? '';
+        $esProfesor = ($user_role === 'profesor') || $this->usuarioModel->hasPermission($user_id, 'crear_curso');
+
+        if (!$esProfesor) {
+            require_once __DIR__ . '/../models/Inscripcion.php';
+            $inscripcionCheck = new Inscripcion();
+            $yaInscrito = $inscripcionCheck->verificarInscripcion($user_id, $id_curso);
+            $isSubscribed = isset($_SESSION['subscription_status']) && $_SESSION['subscription_status'] === 'active';
+
+            if (!$yaInscrito && !$isSubscribed) {
+                $_SESSION['error'] = 'Debes tener una suscripción activa para acceder al contenido del curso.';
+                header('Location: index.php?controller=Pago&action=planes');
+                exit();
+            }
+        }
 
         $curso = $this->cursoModel->obtenerPorId($id_curso); // Devuelve objeto u array
         if (!$curso) {
@@ -49,10 +62,7 @@ class AulaController
         // 2. Cargar contenido del aula
         $modulos = $this->moduloModel->getByCurso($id_curso);
 
-        // 3. Determinar rol en el contexto del aula
-        // Permitir edición si es rol 'profesor' o tiene permiso 'crear_curso'
-        $user_role = $_SESSION['user_role'] ?? '';
-        $esProfesor = ($user_role === 'profesor') || $this->usuarioModel->hasPermission($user_id, 'crear_curso');
+        // 3. Determinar rol en el contexto del aula (Ya calculado arriba)
 
         // --- LÓGICA DE AUDITORÍA vs ESTUDIANTE (Suscripciones) ---
         $gradingEnabled = false; // Por defecto desactivado
