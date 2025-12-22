@@ -2,7 +2,7 @@
 
 <style>
     .aula-header {
-        background-color: #1a1d20; 
+        background-color: #1a1d20;
         border-bottom: 1px solid #2c3034;
         padding-top: 2rem;
         padding-bottom: 0;
@@ -11,7 +11,7 @@
     }
 
     .modal-content {
-        background-color: #212529; 
+        background-color: #212529;
         color: #fff;
         border: 1px solid #495057;
     }
@@ -28,22 +28,24 @@
         filter: invert(1) grayscale(100%) brightness(200%);
     }
 
-    .form-control, .form-select {
+    .form-control,
+    .form-select {
         background-color: #2c3034;
         border: 1px solid #495057;
         color: #e0e0e0;
     }
 
-    .form-control:focus, .form-select:focus {
+    .form-control:focus,
+    .form-select:focus {
         background-color: #2c3034;
-        border-color: #198754; 
+        border-color: #198754;
         color: #fff;
         box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
     }
-    
-    .nav-tabs .nav-link { 
+
+    .nav-tabs .nav-link {
         border: none;
-        color: #adb5bd; 
+        color: #adb5bd;
         padding-bottom: 1rem;
         font-weight: 500;
     }
@@ -68,7 +70,7 @@
         border-bottom: 1px solid #2c3034;
         cursor: pointer;
     }
-    
+
     .modulo-header:hover {
         background-color: #2c3034;
     }
@@ -125,6 +127,7 @@
     .recurso-item a.text-dark {
         color: #f8f9fa !important;
     }
+
     .recurso-item .text-muted {
         color: #adb5bd !important;
     }
@@ -178,8 +181,8 @@
                             <span class="h5 mb-0 align-middle">Curso Finalizado</span>
                         </div>
                         <?php if (isset($isAprobado) && $isAprobado): ?>
-                            <a href="index.php?controller=Aula&action=certificado&id=<?php echo $id_curso; ?>" target="_blank" 
-                               class="btn btn-warning fw-bold w-100 w-md-auto">
+                            <a href="index.php?controller=Aula&action=certificado&id=<?php echo $id_curso; ?>" target="_blank"
+                                class="btn btn-warning fw-bold w-100 w-md-auto">
                                 <i class="fas fa-certificate"></i> Descargar Certificado
                             </a>
                         <?php else: ?>
@@ -194,13 +197,16 @@
                     <div class="row align-items-center">
                         <div class="col-md-7 mb-3 mb-md-0 text-center text-md-start">
                             <h5 class="alert-heading mb-1"><i class="fas fa-user-plus me-2"></i>¡Únete al Curso!</h5>
-                            <p class="mb-1 small">Al participar, aparecerás en la lista del profesor y podrás entregar tareas para ser calificado.</p>
+                            <p class="mb-1 small">Al participar, aparecerás en la lista del profesor y podrás entregar
+                                tareas para ser calificado.</p>
                             <p class="mb-0 small text-muted">
-                                <i class="far fa-calendar-alt"></i> El curso finaliza el: <strong><?php echo date('d/m/Y', strtotime($cursoData['fecha_fin'])); ?></strong>
+                                <i class="far fa-calendar-alt"></i> El curso finaliza el:
+                                <strong><?php echo date('d/m/Y', strtotime($cursoData['fecha_fin'])); ?></strong>
                             </p>
                         </div>
                         <div class="col-md-5 text-center text-md-end">
-                            <button type="button" class="btn btn-success fw-bold px-4 w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#modalConfirmarParticipacion">
+                            <button type="button" class="btn btn-success fw-bold px-4 w-100 w-md-auto"
+                                data-bs-toggle="modal" data-bs-target="#modalConfirmarParticipacion">
                                 Participar en el Curso
                             </button>
                         </div>
@@ -211,7 +217,8 @@
             <?php if (isset($inscripcionesCerradas) && $inscripcionesCerradas): ?>
                 <div class="alert alert-warning border-0 shadow-sm mb-4">
                     <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Modo Oyente:</strong> El curso ha avanzado más del 50%. Puedes acceder al contenido pero no se aceptan nuevas inscripciones.
+                    <strong>Modo Oyente:</strong> El curso ha avanzado más del 50%. Puedes acceder al contenido pero no se
+                    aceptan nuevas inscripciones.
                 </div>
             <?php endif; ?>
 
@@ -240,8 +247,8 @@
                                     <?php echo htmlspecialchars($mod['titulo']); ?>
 
                                     <?php if ($esProfesor): ?>
-                                        <button class="btn btn-sm btn-outline-warning ms-2" 
-                                                onclick="event.stopPropagation(); prepararEditarModulo(<?php echo $mod['id']; ?>, '<?php echo addslashes($mod['titulo']); ?>', '<?php echo addslashes($mod['descripcion']); ?>')">
+                                        <button class="btn btn-sm btn-outline-warning ms-2"
+                                            onclick="event.stopPropagation(); prepararEditarModulo(<?php echo $mod['id']; ?>, '<?php echo addslashes($mod['titulo']); ?>', '<?php echo addslashes($mod['descripcion']); ?>')">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                     <?php endif; ?>
@@ -260,7 +267,8 @@
 
                                     <?php foreach ($mod['contenidos'] as $rec): ?>
                                         <div class="recurso-item">
-                                            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center w-100">
+                                            <div
+                                                class="d-flex flex-column flex-md-row align-items-start align-items-md-center w-100">
                                                 <div class="recurso-icon flex-shrink-0">
                                                     <?php if ($rec['tipo'] == 'video'): ?><i class="fas fa-play text-danger"></i>
                                                     <?php elseif ($rec['tipo'] == 'archivo'): ?><i
@@ -268,52 +276,56 @@
                                                     <?php else: ?><i class="fas fa-link text-primary"></i><?php endif; ?>
                                                 </div>
                                                 <div class="flex-grow-1 w-100">
-                                                     <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                                        <a href="<?php echo htmlspecialchars($rec['url_recurso']); ?>" target="_blank"
+                                                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                                        <a href="<?php echo htmlspecialchars($rec['url_recurso']); ?>"
+                                                            target="_blank"
                                                             class="text-decoration-none text-white fw-bold text-break">
                                                             <?php echo htmlspecialchars($rec['titulo']); ?>
                                                         </a>
                                                         <?php if ($esProfesor): ?>
-                                                            <button class="btn btn-sm text-warning p-0 ms-2" 
-                                                                    onclick="prepararEditarContenido(<?php echo $rec['id']; ?>, '<?php echo addslashes($rec['titulo']); ?>', '<?php echo addslashes($rec['url_recurso']); ?>', '<?php echo addslashes($rec['descripcion']); ?>')">
+                                                            <button class="btn btn-sm text-warning p-0 ms-2"
+                                                                onclick="prepararEditarContenido(<?php echo $rec['id']; ?>, '<?php echo addslashes($rec['titulo']); ?>', '<?php echo addslashes($rec['url_recurso']); ?>', '<?php echo addslashes($rec['descripcion']); ?>')">
                                                                 <i class="fas fa-pencil-alt"></i>
                                                             </button>
                                                         <?php endif; ?>
-                                                     </div>
+                                                    </div>
                                                     <?php if ($rec['descripcion']): ?>
                                                         <p class="mb-0 text-muted small text-break">
-                                                            <?php echo htmlspecialchars($rec['descripcion']); ?></p>
+                                                            <?php echo htmlspecialchars($rec['descripcion']); ?>
+                                                        </p>
+                                                    <?php endif; ?>
+
+                                                    <!-- Video Embed Logic moved here for correct alignment -->
+                                                    <?php if ($rec['tipo'] == 'video' && !empty($rec['url_recurso'])):
+                                                        $video_url = $rec['url_recurso'];
+                                                        $embed_code = '';
+
+                                                        if (strpos($video_url, 'youtube.com') !== false || strpos($video_url, 'youtu.be') !== false) {
+                                                            preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video_url, $match);
+                                                            if (isset($match[1])) {
+                                                                $embed_url = 'https://www.youtube.com/embed/' . $match[1];
+                                                                $embed_code = '<div class="ratio ratio-16x9 mt-4 rounded overflow-hidden shadow-lg w-100 w-md-75 mx-auto border border-secondary"><iframe src="' . $embed_url . '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
+                                                            }
+                                                        } elseif (strpos($video_url, 'vimeo.com') !== false) {
+                                                            preg_match('/vimeo\.com\/([0-9]+)/', $video_url, $match);
+                                                            if (isset($match[1])) {
+                                                                $embed_url = 'https://player.vimeo.com/video/' . $match[1];
+                                                                $embed_code = '<div class="ratio ratio-16x9 mt-4 rounded overflow-hidden shadow-lg w-100 w-md-75 mx-auto border border-secondary"><iframe src="' . $embed_url . '" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>';
+                                                            }
+                                                        } elseif (preg_match('/\.(mp4|webm|ogg)$/i', $video_url)) {
+                                                            $embed_code = '<div class="mt-4 w-100 w-md-75 mx-auto"><video controls class="w-100 rounded shadow-lg border border-secondary" style="max-height: 500px;"><source src="' . htmlspecialchars($video_url) . '">Tu navegador no soporta el elemento de video.</video></div>';
+                                                        }
+
+                                                        if ($embed_code) {
+                                                            echo $embed_code;
+                                                        } else {
+                                                            echo '<div class="mt-3 w-100 w-md-50 mx-auto"><a href="' . htmlspecialchars($video_url) . '" target="_blank" class="btn btn-outline-danger btn-sm w-100"><i class="fas fa-external-link-alt"></i> Ver Video Original</a></div>';
+                                                        }
+                                                        ?>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
 
-                                            <?php if ($rec['tipo'] == 'video' && !empty($rec['url_recurso'])): 
-                                                $video_url = $rec['url_recurso'];
-                                                $embed_code = ''; 
-
-                                                if (strpos($video_url, 'youtube.com') !== false || strpos($video_url, 'youtu.be') !== false) {
-                                                    preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video_url, $match);
-                                                    if (isset($match[1])) {
-                                                        $embed_url = 'https://www.youtube.com/embed/' . $match[1];
-                                                        $embed_code = '<div class="ratio ratio-16x9 mt-3 rounded overflow-hidden shadow-lg w-100"><iframe src="' . $embed_url . '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
-                                                    }
-                                                } elseif (strpos($video_url, 'vimeo.com') !== false) {
-                                                    preg_match('/vimeo\.com\/([0-9]+)/', $video_url, $match);
-                                                    if (isset($match[1])) {
-                                                        $embed_url = 'https://player.vimeo.com/video/' . $match[1];
-                                                        $embed_code = '<div class="ratio ratio-16x9 mt-3 rounded overflow-hidden shadow-lg w-100"><iframe src="' . $embed_url . '" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>';
-                                                    }
-                                                } elseif (preg_match('/\.(mp4|webm|ogg)$/i', $video_url)) {
-                                                    $embed_code = '<div class="mt-3 w-100"><video controls class="w-100 rounded shadow-lg" style="max-height: 500px;"><source src="' . htmlspecialchars($video_url) . '">Tu navegador no soporta el elemento de video.</video></div>';
-                                                }
-                                                
-                                                if ($embed_code) {
-                                                    echo $embed_code;
-                                                } else {
-                                                    echo '<div class="mt-2 w-100"><a href="' . htmlspecialchars($video_url) . '" target="_blank" class="btn btn-outline-danger btn-sm w-100"><i class="fas fa-external-link-alt"></i> Ver Video Original</a></div>';
-                                                }
-                                            ?>
-                                            <?php endif; ?>
 
                                         </div>
                                     <?php endforeach; ?>
@@ -321,41 +333,45 @@
                                     <?php foreach ($mod['tareas'] as $tarea): ?>
                                         <div class="recurso-item bg-dark border-start border-4 border-warning">
                                             <div class="d-flex flex-row align-items-center w-100">
-                                            <div class="recurso-icon bg-warning bg-opacity-10 text-warning flex-shrink-0">
-                                                <i class="fas fa-tasks"></i>
-                                            </div>
-                                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center w-100">
-                                            <div class="mb-2 mb-md-0">
-                                                <h6 class="mb-0 fw-bold"><?php echo htmlspecialchars($tarea['titulo']); ?></h6>
-                                                <small class="text-muted d-block d-md-inline">Vence: <?php echo $tarea['fecha_entrega']; ?></small>
-                                                <?php if($esProfesor): ?>
-                                                    <span class="badge bg-warning text-dark ms-0 ms-md-2">Por calificar</span>
-                                                <?php endif; ?>
-                                            </div>
-                                            
-                                            <?php if ($gradingEnabled): ?>
-                                                <a href="index.php?controller=Aula&action=ver_tarea&id=<?php echo $tarea['id']; ?>" 
-                                                   class="btn btn-outline-light w-100 w-md-auto mt-2 mt-md-0 px-4">
-                                                    <i class="fas fa-eye me-1"></i> Ver Tarea
-                                                </a>
-                                            <?php else: ?>
-                                                <button class="btn btn-outline-secondary w-100 w-md-auto mt-2 mt-md-0 px-4" disabled>
-                                                    <i class="fas fa-lock"></i> Modo Oyente
-                                                </button>
-                                            <?php endif; ?>
-                                            </div>
+                                                <div class="recurso-icon bg-warning bg-opacity-10 text-warning flex-shrink-0">
+                                                    <i class="fas fa-tasks"></i>
+                                                </div>
+                                                <div
+                                                    class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center w-100">
+                                                    <div class="mb-2 mb-md-0">
+                                                        <h6 class="mb-0 fw-bold"><?php echo htmlspecialchars($tarea['titulo']); ?>
+                                                        </h6>
+                                                        <small class="text-muted d-block d-md-inline">Vence:
+                                                            <?php echo $tarea['fecha_entrega']; ?></small>
+                                                        <?php if ($esProfesor): ?>
+                                                            <span class="badge bg-warning text-dark ms-0 ms-md-2">Por calificar</span>
+                                                        <?php endif; ?>
+                                                    </div>
+
+                                                    <?php if ($gradingEnabled): ?>
+                                                        <a href="index.php?controller=Aula&action=ver_tarea&id=<?php echo $tarea['id']; ?>"
+                                                            class="btn btn-outline-light w-100 w-md-auto mt-2 mt-md-0 px-4">
+                                                            <i class="fas fa-eye me-1"></i> Ver Tarea
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <button class="btn btn-outline-secondary w-100 w-md-auto mt-2 mt-md-0 px-4"
+                                                            disabled>
+                                                            <i class="fas fa-lock"></i> Modo Oyente
+                                                        </button>
+                                                    <?php endif; ?>
+                                                </div>
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
 
                                     <?php if ($esProfesor): ?>
                                         <div class="p-2 text-center border-top bg-light">
-                                            <button class="btn btn-sm btn-link text-success text-decoration-none" 
-                                                    onclick="prepararModalContenido(<?php echo $mod['id']; ?>)">
+                                            <button class="btn btn-sm btn-link text-success text-decoration-none"
+                                                onclick="prepararModalContenido(<?php echo $mod['id']; ?>)">
                                                 <i class="fas fa-plus-circle"></i> Agregar Recurso
                                             </button>
-                                            <button class="btn btn-sm btn-link text-warning text-decoration-none ms-3" 
-                                                    onclick="prepararModalTarea(<?php echo $mod['id']; ?>)">
+                                            <button class="btn btn-sm btn-link text-warning text-decoration-none ms-3"
+                                                onclick="prepararModalTarea(<?php echo $mod['id']; ?>)">
                                                 <i class="fas fa-tasks"></i> Nueva Tarea
                                             </button>
                                         </div>
@@ -393,72 +409,86 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php 
+                            <?php
                             // Obtener inscritos (Lógica simplificada en Vista, idealmente en Controller)
                             // Usaremos una variable provista por el controlador
-                            if (!empty($inscritos)): 
+                            if (!empty($inscritos)):
                                 foreach ($inscritos as $est):
-                            ?>
-                                <tr>
-                                    <td>
-                                        <div class="fw-bold text-white"><?php echo htmlspecialchars($est['nombre'] . ' ' . $est['apellido']); ?></div>
-                                        <div class="small text-muted"><?php echo htmlspecialchars($est['ci']); ?></div>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($est['email']); ?></td>
-                                    <td>
-                                        <?php if ($est['estado'] === 'aprobado'): ?>
-                                            <span class="badge bg-success">Aprobado</span>
-                                            <div class="small text-success mt-1"><i class="fas fa-check-circle"></i> Certificado</div>
-                                        <?php else: ?>
-                                            <span class="badge bg-secondary">Cursando</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?php echo $est['nota_final'] ?? '-'; ?></td>
-                                    <td class="text-end">
-                                        <?php if ($est['estado'] !== 'aprobado'): ?>
-                                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" 
-                                                    data-bs-target="#modalAprobar<?php echo $est['usuario_id']; ?>">
-                                                <i class="fas fa-award me-1"></i> Aprobar
-                                            </button>
-
-                                            <!-- Modal Aprobar -->
-                                            <div class="modal fade text-start" id="modalAprobar<?php echo $est['usuario_id']; ?>" tabindex="-1">
-                                                <div class="modal-dialog">
-                                                    <form class="modal-content" method="POST" action="index.php?controller=Aula&action=aprobar_estudiante">
-                                                        <div class="modal-header bg-success text-white">
-                                                            <h5 class="modal-title">Aprobar Estudiante</h5>
-                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                                        </div>
-                                                        <div class="modal-body text-dark">
-                                                            <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
-                                                            <input type="hidden" name="estudiante_id" value="<?php echo $est['usuario_id']; ?>">
-                                                            
-                                                            <p>¿Deseas aprobar a <strong><?php echo htmlspecialchars($est['nombre']); ?></strong>?</p>
-                                                            <p class="small text-muted">Esto generará automáticamente su certificado de finalización.</p>
-                                                            
-                                                            <div class="mb-3">
-                                                                <label class="form-label fw-bold">Nota Final (0-100)</label>
-                                                                <input type="number" name="nota_final" class="form-control" required min="0" max="100" value="100">
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                            <button type="submit" class="btn btn-success fw-bold">Confirmar Aprobación</button>
-                                                        </div>
-                                                    </form>
+                                    ?>
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-white">
+                                                <?php echo htmlspecialchars($est['nombre'] . ' ' . $est['apellido']); ?></div>
+                                            <div class="small text-muted"><?php echo htmlspecialchars($est['ci']); ?></div>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($est['email']); ?></td>
+                                        <td>
+                                            <?php if ($est['estado'] === 'aprobado'): ?>
+                                                <span class="badge bg-success">Aprobado</span>
+                                                <div class="small text-success mt-1"><i class="fas fa-check-circle"></i> Certificado
                                                 </div>
-                                            </div>
+                                            <?php else: ?>
+                                                <span class="badge bg-secondary">Cursando</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?php echo $est['nota_final'] ?? '-'; ?></td>
+                                        <td class="text-end">
+                                            <?php if ($est['estado'] !== 'aprobado'): ?>
+                                                <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal"
+                                                    data-bs-target="#modalAprobar<?php echo $est['usuario_id']; ?>">
+                                                    <i class="fas fa-award me-1"></i> Aprobar
+                                                </button>
 
-                                        <?php else: ?>
-                                            <a href="index.php?controller=Aula&action=certificado&id=<?php echo $id_curso; ?>" target="_blank" 
-                                               class="btn btn-sm btn-warning disabled" title="Ya aprobado">
-                                                <i class="fas fa-certificate"></i>
-                                            </a>
-                                        <?php endif; ?>
-                                    </td>
+                                                <!-- Modal Aprobar -->
+                                                <div class="modal fade text-start" id="modalAprobar<?php echo $est['usuario_id']; ?>"
+                                                    tabindex="-1">
+                                                    <div class="modal-dialog">
+                                                        <form class="modal-content" method="POST"
+                                                            action="index.php?controller=Aula&action=aprobar_estudiante">
+                                                            <div class="modal-header bg-success text-white">
+                                                                <h5 class="modal-title">Aprobar Estudiante</h5>
+                                                                <button type="button" class="btn-close btn-close-white"
+                                                                    data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <div class="modal-body text-dark">
+                                                                <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
+                                                                <input type="hidden" name="estudiante_id"
+                                                                    value="<?php echo $est['usuario_id']; ?>">
+
+                                                                <p>¿Deseas aprobar a
+                                                                    <strong><?php echo htmlspecialchars($est['nombre']); ?></strong>?
+                                                                </p>
+                                                                <p class="small text-muted">Esto generará automáticamente su certificado
+                                                                    de finalización.</p>
+
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-bold">Nota Final (0-100)</label>
+                                                                    <input type="number" name="nota_final" class="form-control" required
+                                                                        min="0" max="100" value="100">
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                    data-bs-dismiss="modal">Cancelar</button>
+                                                                <button type="submit" class="btn btn-success fw-bold">Confirmar
+                                                                    Aprobación</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+
+                                            <?php else: ?>
+                                                <a href="index.php?controller=Aula&action=certificado&id=<?php echo $id_curso; ?>"
+                                                    target="_blank" class="btn btn-sm btn-warning disabled" title="Ya aprobado">
+                                                    <i class="fas fa-certificate"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; else: ?>
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No hay estudiantes inscritos aún.</td>
                                 </tr>
-                            <?php endforeach; else: ?>
-                                <tr><td colspan="5" class="text-center py-4 text-muted">No hay estudiantes inscritos aún.</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -489,30 +519,30 @@
                     <tbody>
                         <?php if (!empty($calificacionesData)): ?>
                             <?php foreach ($calificacionesData as $cal): ?>
-                                <?php 
-                                    // Estado para Estudiante
-                                    $estado = '<span class="badge bg-secondary">Pendiente</span>';
-                                    $nota = '-';
-                                    $feedback = '-';
-                                    
-                                    if (isset($cal['entrega']) && $cal['entrega']) {
-                                        $archivoLink = '';
-                                        if (!empty($cal['entrega']['archivo_url'])) {
-                                            $archivoLink = ' <a href="' . $cal['entrega']['archivo_url'] . '" target="_blank" class="text-info" title="Ver Archivo"><i class="fas fa-paperclip"></i></a>';
-                                        }
+                                <?php
+                                // Estado para Estudiante
+                                $estado = '<span class="badge bg-secondary">Pendiente</span>';
+                                $nota = '-';
+                                $feedback = '-';
 
-                                        if ($cal['entrega']['calificacion'] !== null) {
-                                            $estado = '<span class="badge bg-success">Calificado</span>' . $archivoLink;
-                                            $nota = $cal['entrega']['calificacion'] . ' / ' . ($cal['puntaje_maximo'] ?? 0);
-                                            $feedback = $cal['entrega']['retroalimentacion'] ? $cal['entrega']['retroalimentacion'] : 'Sin comentarios';
-                                        } else {
-                                            $estado = '<span class="badge bg-info text-dark">Entregado</span>' . $archivoLink;
-                                        }
-                                    } else {
-                                        if (strtotime($cal['fecha_entrega']) < time()) {
-                                            $estado = '<span class="badge bg-danger">Vencido</span>';
-                                        }
+                                if (isset($cal['entrega']) && $cal['entrega']) {
+                                    $archivoLink = '';
+                                    if (!empty($cal['entrega']['archivo_url'])) {
+                                        $archivoLink = ' <a href="' . $cal['entrega']['archivo_url'] . '" target="_blank" class="text-info" title="Ver Archivo"><i class="fas fa-paperclip"></i></a>';
                                     }
+
+                                    if ($cal['entrega']['calificacion'] !== null) {
+                                        $estado = '<span class="badge bg-success">Calificado</span>' . $archivoLink;
+                                        $nota = $cal['entrega']['calificacion'] . ' / ' . ($cal['puntaje_maximo'] ?? 0);
+                                        $feedback = $cal['entrega']['retroalimentacion'] ? $cal['entrega']['retroalimentacion'] : 'Sin comentarios';
+                                    } else {
+                                        $estado = '<span class="badge bg-info text-dark">Entregado</span>' . $archivoLink;
+                                    }
+                                } else {
+                                    if (strtotime($cal['fecha_entrega']) < time()) {
+                                        $estado = '<span class="badge bg-danger">Vencido</span>';
+                                    }
+                                }
                                 ?>
                                 <tr>
                                     <td>
@@ -540,7 +570,7 @@
     </div>
 </div>
 
-    </div>
+</div>
 </div>
 
 <?php if ($esProfesor): ?>
@@ -572,7 +602,8 @@
 
     <div class="modal fade" id="modalNuevoContenido" tabindex="-1">
         <div class="modal-dialog">
-            <form class="modal-content" method="POST" action="index.php?controller=Aula&action=crear_contenido" enctype="multipart/form-data">
+            <form class="modal-content" method="POST" action="index.php?controller=Aula&action=crear_contenido"
+                enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title">Agregar Recurso</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -627,7 +658,7 @@
                 <div class="modal-body">
                     <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
                     <input type="hidden" name="modulo_id" id="inputModuloIdTarea">
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Título de la Tarea</label>
                         <input type="text" name="titulo" class="form-control" required placeholder="Ej: Práctica 1">
@@ -654,115 +685,115 @@
         </div>
     </div>
 
-<div class="modal fade" id="modalEditarModulo" tabindex="-1">
-    <div class="modal-dialog">
-        <form class="modal-content" method="POST" action="index.php?controller=Aula&action=editar_modulo">
-            <div class="modal-header">
-                <h5 class="modal-title">Editar Módulo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" name="id" id="edit_modulo_id">
-                <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
-                <div class="mb-3">
-                    <label class="form-label">Título</label>
-                    <input type="text" name="titulo" id="edit_modulo_titulo" class="form-control" required>
+    <div class="modal fade" id="modalEditarModulo" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content" method="POST" action="index.php?controller=Aula&action=editar_modulo">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Módulo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Descripción</label>
-                    <textarea name="descripcion" id="edit_modulo_desc" class="form-control" rows="2"></textarea>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="edit_modulo_id">
+                    <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
+                    <div class="mb-3">
+                        <label class="form-label">Título</label>
+                        <input type="text" name="titulo" id="edit_modulo_titulo" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea name="descripcion" id="edit_modulo_desc" class="form-control" rows="2"></textarea>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-            </div>
-        </form>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
-<div class="modal fade" id="modalEditarContenido" tabindex="-1">
-    <div class="modal-dialog">
-        <form class="modal-content" method="POST" action="index.php?controller=Aula&action=editar_contenido">
-            <div class="modal-header">
-                <h5 class="modal-title">Editar Recurso</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" name="id" id="edit_content_id">
-                <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
-                
-                <div class="mb-3">
-                    <label class="form-label">Título</label>
-                    <input type="text" name="titulo" id="edit_content_titulo" class="form-control" required>
+    <div class="modal fade" id="modalEditarContenido" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content" method="POST" action="index.php?controller=Aula&action=editar_contenido">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Recurso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">URL / Enlace</label>
-                    <input type="text" name="url_recurso" id="edit_content_url" class="form-control">
-                    <small class="text-muted">Para archivos subidos, la URL es interna.</small>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="edit_content_id">
+                    <input type="hidden" name="curso_id" value="<?php echo $id_curso; ?>">
+
+                    <div class="mb-3">
+                        <label class="form-label">Título</label>
+                        <input type="text" name="titulo" id="edit_content_titulo" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">URL / Enlace</label>
+                        <input type="text" name="url_recurso" id="edit_content_url" class="form-control">
+                        <small class="text-muted">Para archivos subidos, la URL es interna.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea name="descripcion" id="edit_content_desc" class="form-control" rows="2"></textarea>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Descripción</label>
-                    <textarea name="descripcion" id="edit_content_desc" class="form-control" rows="2"></textarea>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
-<script>
-    function prepararModalContenido(moduloId) {
-        document.getElementById('inputModuloId').value = moduloId;
-        var myModal = new bootstrap.Modal(document.getElementById('modalNuevoContenido'));
-        myModal.show();
-        toggleRecursoInputs(); 
-    }
-
-    function prepararModalTarea(moduloId) {
-        document.getElementById('inputModuloIdTarea').value = moduloId;
-        var myModal = new bootstrap.Modal(document.getElementById('modalNuevaTarea'));
-        myModal.show();
-    }
-    
-    function prepararEditarModulo(id, titulo, descripcion) {
-        document.getElementById('edit_modulo_id').value = id;
-        document.getElementById('edit_modulo_titulo').value = titulo;
-        document.getElementById('edit_modulo_desc').value = descripcion;
-        var myModal = new bootstrap.Modal(document.getElementById('modalEditarModulo'));
-        myModal.show();
-    }
-
-    function prepararEditarContenido(id, titulo, url, descripcion) {
-        document.getElementById('edit_content_id').value = id;
-        document.getElementById('edit_content_titulo').value = titulo;
-        document.getElementById('edit_content_url').value = url;
-        document.getElementById('edit_content_desc').value = descripcion;
-        var myModal = new bootstrap.Modal(document.getElementById('modalEditarContenido'));
-        myModal.show();
-    }
-
-    function toggleRecursoInputs() {
-        const tipo = document.getElementById('selectTipoRecurso').value;
-        const groupUrl = document.getElementById('groupUrl');
-        const groupArchivo = document.getElementById('groupArchivo');
-        const inputUrl = document.getElementById('inputUrl');
-        const inputArchivo = document.getElementById('inputArchivo');
-
-        if (tipo === 'archivo') {
-            groupUrl.classList.add('d-none');
-            groupArchivo.classList.remove('d-none');
-            inputUrl.removeAttribute('required');
-            inputArchivo.setAttribute('required', 'required');
-        } else {
-            groupUrl.classList.remove('d-none');
-            groupArchivo.classList.add('d-none');
-            inputUrl.setAttribute('required', 'required');
-            inputArchivo.removeAttribute('required');
+    <script>
+        function prepararModalContenido(moduloId) {
+            document.getElementById('inputModuloId').value = moduloId;
+            var myModal = new bootstrap.Modal(document.getElementById('modalNuevoContenido'));
+            myModal.show();
+            toggleRecursoInputs();
         }
-    }
-</script>
+
+        function prepararModalTarea(moduloId) {
+            document.getElementById('inputModuloIdTarea').value = moduloId;
+            var myModal = new bootstrap.Modal(document.getElementById('modalNuevaTarea'));
+            myModal.show();
+        }
+
+        function prepararEditarModulo(id, titulo, descripcion) {
+            document.getElementById('edit_modulo_id').value = id;
+            document.getElementById('edit_modulo_titulo').value = titulo;
+            document.getElementById('edit_modulo_desc').value = descripcion;
+            var myModal = new bootstrap.Modal(document.getElementById('modalEditarModulo'));
+            myModal.show();
+        }
+
+        function prepararEditarContenido(id, titulo, url, descripcion) {
+            document.getElementById('edit_content_id').value = id;
+            document.getElementById('edit_content_titulo').value = titulo;
+            document.getElementById('edit_content_url').value = url;
+            document.getElementById('edit_content_desc').value = descripcion;
+            var myModal = new bootstrap.Modal(document.getElementById('modalEditarContenido'));
+            myModal.show();
+        }
+
+        function toggleRecursoInputs() {
+            const tipo = document.getElementById('selectTipoRecurso').value;
+            const groupUrl = document.getElementById('groupUrl');
+            const groupArchivo = document.getElementById('groupArchivo');
+            const inputUrl = document.getElementById('inputUrl');
+            const inputArchivo = document.getElementById('inputArchivo');
+
+            if (tipo === 'archivo') {
+                groupUrl.classList.add('d-none');
+                groupArchivo.classList.remove('d-none');
+                inputUrl.removeAttribute('required');
+                inputArchivo.setAttribute('required', 'required');
+            } else {
+                groupUrl.classList.remove('d-none');
+                groupArchivo.classList.add('d-none');
+                inputUrl.setAttribute('required', 'required');
+                inputArchivo.removeAttribute('required');
+            }
+        }
+    </script>
 <?php endif; ?>
 
 <div class="modal fade" id="modalConfirmarParticipacion" tabindex="-1">
