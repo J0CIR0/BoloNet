@@ -15,7 +15,7 @@ class Tarea
     {
         $sql = "INSERT INTO curso_tarea (modulo_id, titulo, descripcion, fecha_entrega, puntaje_maximo) VALUES (?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("issssd", $modulo_id, $titulo, $descripcion, $fecha_entrega, $puntaje);
+        $stmt->bind_param("isssi", $modulo_id, $titulo, $descripcion, $fecha_entrega, $puntaje);
         return $stmt->execute();
     }
 

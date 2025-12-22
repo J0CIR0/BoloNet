@@ -197,23 +197,47 @@
 
                                     <!-- RECURSOS/CONTENIDOS -->
                                     <?php foreach ($mod['contenidos'] as $rec): ?>
-                                        <div class="recurso-item">
-                                            <div class="recurso-icon">
-                                                <?php if ($rec['tipo'] == 'video'): ?><i class="fas fa-play text-danger"></i>
-                                                <?php elseif ($rec['tipo'] == 'archivo'): ?><i
-                                                        class="fas fa-file-pdf text-danger"></i>
-                                                <?php else: ?><i class="fas fa-link text-primary"></i><?php endif; ?>
+                                        <div class="recurso-item d-block">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="recurso-icon">
+                                                    <?php if ($rec['tipo'] == 'video'): ?><i class="fas fa-play text-danger"></i>
+                                                    <?php elseif ($rec['tipo'] == 'archivo'): ?><i
+                                                            class="fas fa-file-pdf text-danger"></i>
+                                                    <?php else: ?><i class="fas fa-link text-primary"></i><?php endif; ?>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                     <a href="<?php echo htmlspecialchars($rec['url_recurso']); ?>" target="_blank"
+                                                        class="text-decoration-none text-white fw-bold">
+                                                        <?php echo htmlspecialchars($rec['titulo']); ?>
+                                                    </a>
+                                                    <?php if ($rec['descripcion']): ?>
+                                                        <p class="mb-0 text-muted small">
+                                                            <?php echo htmlspecialchars($rec['descripcion']); ?></p>
+                                                    <?php endif; ?>
+                                                </div>
                                             </div>
-                                            <div class="flex-grow-1">
-                                                <a href="<?php echo htmlspecialchars($rec['url_recurso']); ?>" target="_blank"
-                                                    class="text-decoration-none text-dark fw-bold">
-                                                    <?php echo htmlspecialchars($rec['titulo']); ?>
-                                                </a>
-                                                <?php if ($rec['descripcion']): ?>
-                                                    <p class="mb-0 text-muted small">
-                                                        <?php echo htmlspecialchars($rec['descripcion']); ?></p>
+
+                                            <!-- Reproductor de Video Embebido -->
+                                            <?php if ($rec['tipo'] == 'video' && !empty($rec['url_recurso'])): 
+                                                // Función helper simple para extraer ID de YouTube (básico)
+                                                // Formatos soportados: youtube.com/watch?v=ID, youtu.be/ID
+                                                $video_url = $rec['url_recurso'];
+                                                $embed_url = '';
+                                                
+                                                if (strpos($video_url, 'youtube.com') !== false || strpos($video_url, 'youtu.be') !== false) {
+                                                    preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video_url, $match);
+                                                    if (isset($match[1])) {
+                                                        $embed_url = 'https://www.youtube.com/embed/' . $match[1];
+                                                    }
+                                                }
+                                            ?>
+                                                <?php if($embed_url): ?>
+                                                    <div class="ratio ratio-16x9 mt-3 mb-3 border border-secondary rounded overflow-hidden">
+                                                        <iframe src="<?php echo $embed_url; ?>" title="YouTube video player" allowfullscreen></iframe>
+                                                    </div>
                                                 <?php endif; ?>
-                                            </div>
+                                            <?php endif; ?>
+
                                         </div>
                                     <?php endforeach; ?>
 
