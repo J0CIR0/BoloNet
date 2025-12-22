@@ -8,6 +8,16 @@ class PagoController
 {
 
     // 1. Mostrar la página de selección de pago (Checkout)
+    // 0. Mostrar selector de planes
+    public function planes()
+    {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        require_once 'views/pagos/planes.php';
+    }
+
+    // 1. Mostrar la página de pago (Checkout)
     public function checkout()
     {
         if (session_status() == PHP_SESSION_NONE) {
@@ -15,27 +25,36 @@ class PagoController
         }
 
         if (!isset($_SESSION['user_id'])) {
+            // Guardar intención de plan si existe
+            if (isset($_GET['plan'])) {
+                $_SESSION['redirect_plan'] = $_GET['plan'];
+            }
             header("Location: index.php?controller=Auth&action=login");
             exit();
         }
 
-        if (!isset($_GET['id_curso'])) {
-            die("Error: Curso no especificado.");
+        // Si no hay plan seleccionado, mandar a seleccionar
+        if (!isset($_GET['plan'])) {
+            header("Location: index.php?controller=Pago&action=planes");
+            exit();
         }
 
-        $id_curso = (int) $_GET['id_curso'];
+        $planStr = $_GET['plan'];
 
-        $cursoModel = new Curso();
-        // Nota: Asumimos que obtenerPorId devuelve un OBJETO según tu código anterior
-        $curso = $cursoModel->obtenerPorId($id_curso);
+        $precios = [
+            'basic' => ['nombre' => 'Plan Básico', 'precio' => 9.99],
+            'pro' => ['nombre' => 'Plan Pro', 'precio' => 19.99],
+            'premium' => ['nombre' => 'Plan Premium', 'precio' => 29.99]
+        ];
 
-        if (!$curso) {
-            die("Error: El curso no existe.");
+        if (!array_key_exists($planStr, $precios)) {
+            die("Error: Plan no válido.");
         }
 
-        // Variables para la vista
-        $nombre_curso = $curso->nombre;
-        $precio = $curso->precio;
+        $plan_seleccionado = $precios[$planStr];
+        $nombre_plan = $plan_seleccionado['nombre'];
+        $precio = $plan_seleccionado['precio'];
+        $plan_type = $planStr; // Para JS
 
         require_once 'views/pagos/checkout.php';
     }
