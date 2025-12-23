@@ -22,12 +22,10 @@ class CursoController
             session_start();
         }
 
-        // 1. Validar Sesión Concurrente (Si fue invalidada por otro login)
         require_once __DIR__ . '/../models/UserSession.php';
         $sessionModel = new UserSession();
         if (isset($_SESSION['user_id']) && !$sessionModel->isValid(session_id())) {
 
-            // Increment interruption count before destroying session
             $this->usuario->incrementarInterrupciones($_SESSION['user_id']);
 
             session_destroy();
@@ -53,22 +51,19 @@ class CursoController
         $cursos_inscritos = [];
         $isSubscribed = false;
 
-        // Lógica Suscripción: Si está activo, tiene acceso a TODO
         if (isset($_SESSION['user_id'])) {
             $isSubscribed = isset($_SESSION['subscription_status']) && $_SESSION['subscription_status'] === 'active';
 
             if ($isSubscribed) {
-                // Si es suscriptor, simulamos que está inscrito en TODOS los cursos para desbloquear el UI
                 $cursos_inscritos = array_column($cursos, 'id');
             } else {
-                // Si no, mantenemos lógica antigua (solo ve lo que compró antes o nada)
                 if (method_exists($this->inscripcion, 'obtenerIdsInscritos')) {
                     $cursos_inscritos = $this->inscripcion->obtenerIdsInscritos($_SESSION['user_id']);
                 }
             }
         }
 
-        // --- LÓGICA DE UPSELL (Banner Interrupciones) ---
+
         $showUpsellBanner = false;
         $upsellMessage = '';
         $interruptionCount = 0;
@@ -110,7 +105,7 @@ class CursoController
             $profesor_id = isset($_POST['profesor_id']) && $_POST['profesor_id'] !== '' ? intval($_POST['profesor_id']) : null;
             $estado = $_POST['estado'] ?? 'activo';
 
-            // Validaciones básicas
+
             $dateRegex = '/^\d{4}-\d{2}-\d{2}$/';
             if (!preg_match($dateRegex, $fecha_inicio) || !preg_match($dateRegex, $fecha_fin)) {
                 $_SESSION['error'] = 'Formato de fechas incorrecto';
@@ -164,10 +159,8 @@ class CursoController
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
 
-    // --- FUNCIÓN EDITAR CORREGIDA (Argumento Opcional) ---
     public function edit($id = null)
     {
-        // Si no llega por parámetro, lo buscamos en GET
         if ($id === null && isset($_GET['id'])) {
             $id = $_GET['id'];
         }
@@ -243,7 +236,6 @@ class CursoController
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
 
-    // --- FUNCIÓN ELIMINAR CORREGIDA (Argumento Opcional) ---
     public function delete($id = null)
     {
         if ($id === null && isset($_GET['id'])) {
@@ -270,10 +262,10 @@ class CursoController
         }
         $estudiante_id = $_SESSION['user_id'];
 
-        // --- LÓGICA DE SINCRONIZACIÓN SUSCRIPCIÓN ---
+
         $isSubscribed = isset($_SESSION['subscription_status']) && $_SESSION['subscription_status'] === 'active';
 
-        // Check for interruption upsell
+
         $userData = $this->usuario->getById($estudiante_id);
         $interruptionCount = $userData['conteo_interrupciones'] ?? 0;
         $planType = $userData['plan_type'] ?? 'basic'; // Default to basic if null
@@ -284,12 +276,10 @@ class CursoController
 
         if ($interruptionCount >= 3) {
             if ($planType === 'basic' || !$planType) {
-                // Basic -> Suggest Pro or Premium
                 $showUpsellBanner = true;
                 $upsellMessage = 'Con el <strong>Plan Básico</strong> solo tienes 1 sesión activa. Actualiza a <strong>Pro (3 sesiones)</strong> o <strong>Premium (5 sesiones)</strong>.';
                 $upsellTarget = 'pro';
             } elseif ($planType === 'pro') {
-                // Pro -> Suggest Premium
                 $showUpsellBanner = true;
                 $upsellMessage = 'Tu <strong>Plan Pro</strong> permite 3 sesiones. Si necesitas más, actualiza a <strong>Premium (5 sesiones)</strong>.';
                 $upsellTarget = 'premium';
@@ -297,7 +287,6 @@ class CursoController
         }
 
         if ((isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'profesor') || $this->usuario->hasPermission($estudiante_id, 'crear_curso')) {
-            // Es PROFESOR: Obtener cursos asignados
             $cursosAsignados = $this->curso->getByProfesor($estudiante_id);
             $inscripciones = [];
             foreach ($cursosAsignados as $c) {
@@ -319,20 +308,19 @@ class CursoController
                 ];
             }
         } elseif ($isSubscribed) {
-            // Si tiene suscripción, ve TODOS los cursos como si estuviera inscrito
             $todosLosCursos = $this->curso->getAll();
             $inscripciones = [];
 
-            // Transformamos formato curso -> inscripcion para la vista
+
             foreach ($todosLosCursos as $c) {
                 $inscripciones[] = [
-                    'id' => $c['id'], // ID para seed de imagen
+                    'id' => $c['id'],
                     'nombre' => $c['nombre'],
                     'codigo' => $c['codigo'],
                     'descripcion' => $c['descripcion'],
-                    'estado_inscripcion' => 'inscrito', // Por defecto
+                    'estado_inscripcion' => 'inscrito',
                     'nota_final' => 0,
-                    'fecha_inscripcion' => $c['fecha_inicio'], // Usamos inicio curso como fecha ref
+                    'fecha_inscripcion' => $c['fecha_inicio'],
                     'fecha_inicio' => $c['fecha_inicio'],
                     'fecha_fin' => $c['fecha_fin'],
                     'estado' => $c['estado'],
@@ -342,7 +330,6 @@ class CursoController
                 ];
             }
         } else {
-            // Si no es suscriptor, ve solo lo que compró individualmente
             $inscripciones = $this->inscripcion->obtenerCursosPorEstudiante($estudiante_id);
             foreach ($inscripciones as &$ins) {
                 if (!isset($ins['nombre']))
@@ -360,7 +347,6 @@ class CursoController
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
 
-    // --- FUNCIÓN GESTIONAR INSCRIPCIONES CORREGIDA ---
     public function gestionarInscripciones($curso_id = null)
     {
         if ($curso_id === null && isset($_GET['id'])) {
@@ -383,10 +369,9 @@ class CursoController
                 ) {
                     $_SESSION['success'] = 'Inscripción actualizada';
 
-                    // --- ENVIAR CORREO SI ES APROBADO ---
+
                     if ($estado === 'aprobado') {
                         try {
-                            // Obtener datos del estudiante e inscripción
                             $estudiante = $this->inscripcion->getInscripcionPorId($inscripcionId);
                             $this->sendCertificateEmail($estudiante);
                             $_SESSION['success'] .= " y notificación enviada.";
@@ -401,7 +386,7 @@ class CursoController
             }
         }
 
-        // Si después de todo no hay ID, volvemos
+
         if (!$curso_id) {
             header('Location: index.php?controller=Curso&action=index');
             exit();
@@ -415,7 +400,6 @@ class CursoController
         require_once __DIR__ . '/../views/cursos/gestionar_inscripciones.php';
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
-    // --- ACCIÓN PARA REENVIAR CERTIFICADO ---
     public function reenviarCertificado()
     {
         $this->checkPermission('gestionar_inscripciones');
@@ -435,7 +419,6 @@ class CursoController
                 $_SESSION['error'] = 'El estudiante no está aprobado o no existe.';
             }
 
-            // Redirigir de vuelta a gestionar inscripciones
             if ($estudiante) {
                 header("Location: index.php?controller=Curso&action=gestionarInscripciones&id=" . $estudiante['curso_id']);
             } else {
@@ -445,7 +428,6 @@ class CursoController
         }
     }
 
-    // --- HELPER PRIVADO PARA ENVIAR EMAIL ---
     private function sendCertificateEmail($estudiante)
     {
         if ($estudiante && !empty($estudiante['email'])) {
@@ -459,7 +441,6 @@ class CursoController
 
             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
             $host = $_SERVER['HTTP_HOST'];
-            // Construir link al certificado
             $certLink = $protocol . "://" . $host . "/BoloNet/index.php?controller=Aula&action=certificado&id=" . $estudiante['curso_id'];
 
             $mail = new \PHPMailer\PHPMailer\PHPMailer(true);

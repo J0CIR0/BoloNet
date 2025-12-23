@@ -11,8 +11,6 @@ class Curso
         $this->db = Database::getConnection();
     }
 
-    // --- NUEVO MÉTODO PARA PAGOCONTROLLER ---
-    // Este método devuelve un OBJETO (->propiedad) en lugar de un array
     public function obtenerPorId($id)
     {
         $sql = "SELECT c.*, CONCAT(p.nombre, ' ', p.apellido) as profesor_nombre 
@@ -27,7 +25,7 @@ class Curso
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-            return $result->fetch_object(); // Devuelve objeto para usar $curso->precio
+            return $result->fetch_object();
         }
         return null;
     }
@@ -71,14 +69,14 @@ class Curso
 
     public function create($data)
     {
-        // ... (Logs existentes) ...
+
 
         $codigo = isset($data['codigo']) ? trim($data['codigo']) : '';
         $nombre = isset($data['nombre']) ? trim($data['nombre']) : '';
         $descripcion = isset($data['descripcion']) ? trim($data['descripcion']) : '';
         $duracion_horas = isset($data['duracion_horas']) ? intval($data['duracion_horas']) : 0;
 
-        // --- NUEVO: CAPTURAR PRECIO ---
+
         $precio = isset($data['precio']) ? floatval($data['precio']) : 0.00;
 
         $fecha_inicio = isset($data['fecha_inicio']) ? trim($data['fecha_inicio']) : '';
@@ -86,7 +84,7 @@ class Curso
         $profesor_id = isset($data['profesor_id']) && $data['profesor_id'] !== '' && $data['profesor_id'] !== null ? intval($data['profesor_id']) : null;
         $estado = isset($data['estado']) && !empty($data['estado']) ? $data['estado'] : 'activo';
 
-        // Validaciones de fecha (Mantenemos tu lógica)
+
         if (empty($fecha_inicio) || $fecha_inicio == '0000-00-00') {
             $fecha_inicio = date('Y-m-d');
         }
@@ -94,13 +92,11 @@ class Curso
             $fecha_fin = date('Y-m-d', strtotime('+1 month'));
         }
 
-        // --- INSERT CON PREPARED STATEMENTS (RECOMENDADO) ---
-        // Se actualiza para incluir el PRECIO
         if ($profesor_id !== null) {
             $sql = "INSERT INTO curso (codigo, nombre, descripcion, duracion_horas, fecha_inicio, fecha_fin, profesor_id, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->db->prepare($sql);
             if ($stmt) {
-                // "sssisssi" 
+
                 $stmt->bind_param(
                     "sssisssi",
                     $codigo,
@@ -120,7 +116,7 @@ class Curso
             $sql = "INSERT INTO curso (codigo, nombre, descripcion, duracion_horas, fecha_inicio, fecha_fin, estado) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->db->prepare($sql);
             if ($stmt) {
-                // "sssiss"
+
                 $stmt->bind_param(
                     "sssiss",
                     $codigo,
@@ -146,7 +142,7 @@ class Curso
         $descripcion = isset($data['descripcion']) ? trim($data['descripcion']) : '';
         $duracion_horas = isset($data['duracion_horas']) ? intval($data['duracion_horas']) : 0;
 
-        // --- NUEVO: CAPTURAR PRECIO ---
+
         $precio = isset($data['precio']) ? floatval($data['precio']) : 0.00;
 
         $fecha_inicio = isset($data['fecha_inicio']) ? trim($data['fecha_inicio']) : '';
@@ -154,7 +150,7 @@ class Curso
         $profesor_id = isset($data['profesor_id']) && $data['profesor_id'] !== '' && $data['profesor_id'] !== null ? intval($data['profesor_id']) : null;
         $estado = isset($data['estado']) && !empty($data['estado']) ? $data['estado'] : 'activo';
 
-        // Lógica de fechas original...
+
         if (empty($fecha_inicio) || $fecha_inicio == '0000-00-00') {
             $fecha_inicio = date('Y-m-d');
         }
@@ -162,7 +158,7 @@ class Curso
             $fecha_fin = date('Y-m-d', strtotime('+1 month'));
         }
 
-        // Normalización de fechas...
+
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_inicio)) {
             if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $fecha_inicio, $matches)) {
                 $fecha_inicio = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
@@ -174,7 +170,6 @@ class Curso
             }
         }
 
-        // --- UPDATE ACTUALIZADO CON PRECIO ---
         $sql = "UPDATE curso SET ";
         $sql .= "codigo = '" . $this->db->real_escape_string($codigo) . "', ";
         $sql .= "nombre = '" . $this->db->real_escape_string($nombre) . "', ";
@@ -206,7 +201,6 @@ class Curso
 
     public function getCursosActivos()
     {
-        // Al usar c.* automáticamente traerá el precio si la columna existe en BD
         $sql = "SELECT c.*, CONCAT(p.nombre, ' ', p.apellido) as profesor_nombre 
                 FROM curso c 
                 LEFT JOIN usuario u ON c.profesor_id = u.id 
@@ -233,7 +227,7 @@ class Curso
         return $stmt->execute();
     }
 
-    // ... (El resto de métodos getInscripcionesByEstudiante, etc. se mantienen igual) ...
+
     public function getInscripcionesByEstudiante($estudiante_id)
     {
         $sql = "SELECT i.*, c.codigo, c.nombre as curso_nombre, c.estado as curso_estado 

@@ -1,5 +1,5 @@
 <?php
-// Usamos una ruta absoluta para encontrar el archivo de configuración sin errores
+
 $rutaConexion = __DIR__ . '/../config/conexion.php';
 
 if (file_exists($rutaConexion)) {
@@ -15,7 +15,7 @@ class Inscripcion
 
     public function __construct()
     {
-        // Verificamos si la clase existe antes de usarla
+
         if (class_exists('Conexion')) {
             $this->db = Conexion::conectar();
         } else {
@@ -23,7 +23,6 @@ class Inscripcion
         }
     }
 
-    // Registrar inscripción (Pago exitoso)
     public function registrar($usuario_id, $curso_id)
     {
         if ($this->verificarInscripcion($usuario_id, $curso_id)) {
@@ -45,7 +44,6 @@ class Inscripcion
         }
     }
 
-    // Verificar si ya existe inscripción (True/False)
     public function verificarInscripcion($usuario_id, $curso_id)
     {
         $sql = "SELECT id FROM inscripcion WHERE estudiante_id = ? AND curso_id = ?";
@@ -61,7 +59,6 @@ class Inscripcion
         return false;
     }
 
-    // Obtener detalles completos para la vista "Mis Cursos"
     public function obtenerCursosPorEstudiante($usuario_id)
     {
         $sql = "SELECT c.*, i.fecha_inscripcion, i.estado as estado_inscripcion, i.nota_final
@@ -88,9 +85,6 @@ class Inscripcion
         }
     }
 
-    // --- NUEVA FUNCIÓN NECESARIA ---
-    // Esta función devuelve solo los IDs de los cursos (ej: [1, 5])
-    // Sirve para que el Catálogo sepa qué botones deshabilitar
     public function obtenerIdsInscritos($usuario_id)
     {
         $sql = "SELECT curso_id FROM inscripcion WHERE estudiante_id = ? AND estado IN ('inscrito', 'aprobado')";
@@ -111,7 +105,6 @@ class Inscripcion
         return [];
     }
 
-    // Aprobar estudiante manualmente
     public function aprobarEstudiante($curso_id, $estudiante_id, $nota_final)
     {
         $sql = "UPDATE inscripcion SET estado = 'aprobado', nota_final = ? WHERE curso_id = ? AND estudiante_id = ?";

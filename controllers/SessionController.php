@@ -11,7 +11,6 @@ class SessionController
             session_start();
         }
 
-        // Verificar Permisos: Solo Admin (rol_id 1 o 2) o Permiso explicito 'ver_usuarios'
         if (!isset($_SESSION['user_id'])) {
             header('Location: index.php');
             exit();
@@ -23,8 +22,7 @@ class SessionController
 
     public function index()
     {
-        // Verificar Rol Admin (1=Registro, 2=Admin)
-        // Ojo: Asumiendo roles 1 y 2 son administrativos. Mejor usar permisos si existen.
+
         $rol = $_SESSION['role_id'] ?? 0;
         if ($rol != 1 && $rol != 2) {
             header('Location: dashboard.php');
@@ -33,7 +31,7 @@ class SessionController
 
         $allSessions = $this->userSessionModel->getAllActiveSessionsWithUser();
 
-        // Agrupar por Usuario
+
         $groupedSessions = [];
         foreach ($allSessions as $s) {
             $userId = $s['user_id'];
@@ -58,7 +56,7 @@ class SessionController
 
     public function revoke()
     {
-        // Verificar Rol Admin
+
         $rol = $_SESSION['role_id'] ?? 0;
         if ($rol != 1 && $rol != 2) {
             header('Location: dashboard.php');
@@ -79,7 +77,7 @@ class SessionController
 
     public function refresh()
     {
-        // Verificar Rol Admin
+
         $rol = $_SESSION['role_id'] ?? 0;
         if ($rol != 1 && $rol != 2) {
             exit();
@@ -87,7 +85,7 @@ class SessionController
 
         $allSessions = $this->userSessionModel->getAllActiveSessionsWithUser();
 
-        // Agrupar por Usuario (misma lógica que index)
+
         $groupedSessions = [];
         foreach ($allSessions as $s) {
             $userId = $s['user_id'];

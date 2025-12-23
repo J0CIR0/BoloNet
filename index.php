@@ -3,19 +3,16 @@ session_start();
 require_once 'config/conexion.php';
 require_once 'config/constantes.php';
 
-// Cargar Autoload si existe
 if (file_exists('autoload.php')) {
     require_once 'autoload.php';
 }
 
-// ==========================================
-// 1. LOGICA DEL ENRUTADOR (CORREGIDA Y BLINDADA)
-// ==========================================
+
 
 if (isset($_GET['controller']) && isset($_GET['action'])) {
 
-    $nombreControlador = $_GET['controller'] . 'Controller'; // Ej: CursoController
-    $accion = $_GET['action']; // Ej: edit
+    $nombreControlador = $_GET['controller'] . 'Controller';
+    $accion = $_GET['action'];
     $archivoControlador = 'controllers/' . $nombreControlador . '.php';
 
     if (file_exists($archivoControlador)) {
@@ -26,16 +23,14 @@ if (isset($_GET['controller']) && isset($_GET['action'])) {
 
             if (method_exists($controlador, $accion)) {
 
-                // --- SOLUCIÓN AL ERROR FATAL (ArgumentCountError) ---
-                // Si la URL trae un ID, se lo pasamos a la función
                 if (isset($_GET['id'])) {
                     $controlador->$accion($_GET['id']);
                 } else {
                     $controlador->$accion();
                 }
-                // ----------------------------------------------------
 
-                exit(); // Detenemos la ejecución aquí
+
+                exit();
             } else {
                 die("Error: Método '$accion' no encontrado.");
             }
@@ -47,14 +42,10 @@ if (isset($_GET['controller']) && isset($_GET['action'])) {
     }
 }
 
-// ==========================================
-// 2. REDIRECCIÓN DASHBOARD (Si ya está logueado)
-// ==========================================
+
 
 if (isset($_SESSION['user_id'])) {
 
-    // VALIDACIÓN DE SESIÓN GLOBAL (Server-Side)
-    // Evita navegar si la sesión fue eliminada en BD
     require_once 'models/UserSession.php';
     $sessionModel = new UserSession();
     if (!$sessionModel->isValid(session_id())) {
@@ -67,9 +58,7 @@ if (isset($_SESSION['user_id'])) {
     exit();
 }
 
-// ==========================================
-// 3. LÓGICA DE LOGIN
-// ==========================================
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'])) {
     if (file_exists('controllers/AuthController.php')) {
         require_once 'controllers/AuthController.php';
@@ -80,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'])) {
 }
 
 $title = defined('SITE_NAME') ? SITE_NAME : 'BoloNet';
-// Cargamos el header público
 require_once 'views/layouts/public_header.php';
 ?>
 

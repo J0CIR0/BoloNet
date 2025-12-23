@@ -11,7 +11,7 @@ class Modulo
         $this->db = Database::getConnection();
     }
 
-    // Obtener módulos de un curso con su contenido y tareas
+
     public function getByCurso($curso_id)
     {
         $sql = "SELECT * FROM curso_modulo WHERE curso_id = ? ORDER BY orden ASC";
