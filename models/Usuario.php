@@ -316,7 +316,6 @@ class Usuario
     {
         $this->db->begin_transaction();
         try {
-            // 1. Validar Email único (excluyendo al propio usuario)
             $sql = "SELECT id FROM usuario WHERE email = ? AND id != ?";
             $stmt = $this->db->prepare($sql);
             $stmt->bind_param("si", $email, $id);
@@ -325,13 +324,11 @@ class Usuario
                 return ['success' => false, 'error' => 'El email ya está en uso.'];
             }
 
-            // 2. Actualizar Usuario
             $sqlUsuario = "UPDATE usuario SET email = ? WHERE id = ?";
             $types = "si";
             $params = [$email, $id];
 
             if ($password) {
-                // Verificar historial de contraseñas
                 $userData = $this->getById($id);
                 $history = $userData['password_history'] ? json_decode($userData['password_history'], true) : [];
 
@@ -344,7 +341,6 @@ class Usuario
                 $hash = password_hash($password, PASSWORD_DEFAULT);
                 $sqlUsuario = "UPDATE usuario SET email = ?, password = ?, password_history = ? WHERE id = ?";
 
-                // Actualizar historial
                 array_unshift($history, $hash);
                 if (count($history) > 3)
                     array_pop($history);
@@ -358,7 +354,6 @@ class Usuario
             $stmt->bind_param($types, ...$params);
             $stmt->execute();
 
-            // 3. Actualizar Persona (Teléfono)
             $sqlPersona = "UPDATE persona SET telefono = ? WHERE id = (SELECT persona_id FROM usuario WHERE id = ?)";
             $stmt = $this->db->prepare($sqlPersona);
             $stmt->bind_param("si", $telefono, $id);

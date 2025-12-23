@@ -21,20 +21,18 @@ class AuthController
                     exit();
                 }
                 if ($password == $user['password']) {
-                    // --- CONTROL DE SESIONES CONCURRENTES ---
                     require_once __DIR__ . '/../models/UserSession.php';
                     $sessionModel = new UserSession();
 
-                    // Regenerar ID de sesión por seguridad
                     session_regenerate_id(true);
 
-                    // Intentar registrar la sesión según el plan
+
                     $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
                     $ip = $_SERVER['REMOTE_ADDR'] ?? '';
                     $regResult = $sessionModel->registerSession($user['id'], session_id(), $ua, $ip);
 
                     if (!$regResult['success']) {
-                        $_SESSION['error'] = $regResult['error']; // "Límite de sesiones alcanzado..."
+                        $_SESSION['error'] = $regResult['error'];
                         header('Location: index.php');
                         exit();
                     }
@@ -45,7 +43,7 @@ class AuthController
                     $_SESSION['user_role'] = $user['rol_nombre'];
                     $_SESSION['role_id'] = $user['rol_id'];
 
-                    // Datos de Suscripción en Sesión
+
                     $_SESSION['plan_type'] = $user['plan_type'];
                     $_SESSION['subscription_status'] = $user['subscription_status'];
 
@@ -111,7 +109,7 @@ class AuthController
             session_start();
         }
 
-        // Eliminar sesión de la base de datos
+
         require_once __DIR__ . '/../models/UserSession.php';
         $sessionModel = new UserSession();
         $sessionModel->removeSession(session_id());
@@ -195,17 +193,16 @@ class AuthController
 
     public function checkSessionStatus()
     {
-        // Si es un Beacon, solo procesamos y salimos
+
         if (isset($_GET['beacon'])) {
             if (session_status() == PHP_SESSION_NONE)
                 session_start();
-            // Podríamos forzar logout, pero con el GC de 15s es suficiente.
             exit;
         }
 
         header('Content-Type: application/json');
 
-        // Si no hay sesión PHP iniciada, claramente no es inválido (o ya expiró)
+
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
@@ -218,23 +215,19 @@ class AuthController
         require_once __DIR__ . '/../models/UserSession.php';
         $sessionModel = new UserSession();
 
-        // Verificar si la sesión actual existe en BD
+
         $isValid = $sessionModel->isValid(session_id());
 
         if (!$isValid) {
-            // Si no es válida en BD, destruir sesión PHP local
+
             session_destroy();
             echo json_encode(['valid' => false, 'reason' => 'concurrent_login']);
             exit;
         }
 
-        // --- HEARTBEAT REAL ---
-        // Actualizar timestamp de última actividad
         $sessionModel->updateLastActivity(session_id());
 
-        // Opcional: Ejecutar Garbage Collector ocasionalmente (ej: 5% de veces)
-        // Ejecutar Garbage Collector SIEMPRE (100%) para respuesta rápida
-        // Umbral de 15 segundos. Si no hubo heartbeat en 15s, adiós.
+
         $sessionModel->garbageCollect(15);
 
         echo json_encode(['valid' => true]);
