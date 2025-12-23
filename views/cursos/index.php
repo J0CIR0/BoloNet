@@ -107,19 +107,15 @@ $title = 'Cursos';
                                     <div class="d-grid gap-2">
                                         <?php if ($ya_inscrito): ?>
                                             <a href="index.php?controller=Aula&action=index&id=<?php echo $curso['id']; ?>"
-                                                class="btn btn-secondary btn-sm">
-                                                <i class="fas fa-chalkboard"></i> Ir al Aula
+                                                class="btn btn-primary btn-sm fw-bold">
+                                                <i class="fas fa-play-circle"></i> Continuar
                                             </a>
                                         <?php else: ?>
-                                            <?php
-
-                                            $rol = $_SESSION['user_role'] ?? 'estudiante';
-                                            if ($rol !== 'profesor' && $rol !== 'admin'):
-                                                ?>
-                                                <a href="index.php?controller=Pago&action=planes" class="btn btn-success btn-sm">
-                                                    <i class="fas fa-unlock"></i> Obtener Acceso
-                                                </a>
-                                            <?php endif; ?>
+                                            <!-- Botón Freemium: Todos pueden entrar a ver -->
+                                            <a href="index.php?controller=Aula&action=index&id=<?php echo $curso['id']; ?>"
+                                                class="btn btn-outline-light btn-sm">
+                                                <i class="fas fa-eye"></i> Vista Previa
+                                            </a>
                                         <?php endif; ?>
 
                                         <div class="btn-group btn-group-sm">
