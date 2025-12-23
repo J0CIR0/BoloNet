@@ -76,4 +76,37 @@ class SessionController
         header('Location: index.php?controller=Session&action=index');
         exit();
     }
+
+    public function refresh()
+    {
+        // Verificar Rol Admin
+        $rol = $_SESSION['role_id'] ?? 0;
+        if ($rol != 1 && $rol != 2) {
+            exit();
+        }
+
+        $allSessions = $this->userSessionModel->getAllActiveSessionsWithUser();
+
+        // Agrupar por Usuario (misma lógica que index)
+        $groupedSessions = [];
+        foreach ($allSessions as $s) {
+            $userId = $s['user_id'];
+            if (!isset($groupedSessions[$userId])) {
+                $groupedSessions[$userId] = [
+                    'user_data' => [
+                        'nombre' => $s['nombre'],
+                        'apellido' => $s['apellido'],
+                        'email' => $s['email'],
+                        'plan_type' => $s['plan_type'],
+                        'id' => $userId
+                    ],
+                    'sessions' => []
+                ];
+            }
+            $groupedSessions[$userId]['sessions'][] = $s;
+        }
+
+        require __DIR__ . '/../views/admin/partials/session_list.php';
+        exit();
+    }
 }
