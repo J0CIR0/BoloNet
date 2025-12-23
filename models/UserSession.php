@@ -103,5 +103,19 @@ class UserSession
                 return 1;
         }
     }
+
+    public function getAllActiveSessionsWithUser()
+    {
+        $sql = "SELECT us.*, 
+                       u.email, u.plan_type, u.subscription_status,
+                       p.nombre, p.apellido 
+                FROM user_sessions us
+                JOIN usuario u ON us.user_id = u.id
+                JOIN persona p ON u.persona_id = p.id
+                ORDER BY u.id, us.last_activity DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
 }
 ?>

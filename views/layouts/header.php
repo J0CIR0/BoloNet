@@ -132,6 +132,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
                                 class="<?php echo $current_page == 'rolpermiso.php' ? 'bg-success text-dark' : ''; ?>">Asignar
                                 Permisos</a>
                         <?php endif; ?>
+                        <?php if (isset($_SESSION['role_id']) && ($_SESSION['role_id'] == 1 || $_SESSION['role_id'] == 2)): ?>
+                            <a href="index.php?controller=Session&action=index"
+                                class="<?php echo $current_page == 'index.php?controller=Session&action=index' ? 'bg-success text-dark' : ''; ?>">
+                                Monitor Sesiones
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="col-md-10 p-4">
