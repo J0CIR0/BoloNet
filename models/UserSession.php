@@ -110,11 +110,30 @@ class UserSession
 
     private function invalidateOldestSession($userId)
     {
-        // Borra la que tenga last_activity más antiguo
-        $sql = "DELETE FROM user_sessions WHERE user_id = ? ORDER BY last_activity ASC LIMIT 1";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("i", $userId);
-        $stmt->execute();
+        // 1. Obtener datos de la sesión que se va a eliminar
+        $sqlSelect = "SELECT * FROM user_sessions WHERE user_id = ? ORDER BY last_activity ASC LIMIT 1";
+        $stmtSelect = $this->db->prepare($sqlSelect);
+        $stmtSelect->bind_param("i", $userId);
+        $stmtSelect->execute();
+        $sessionToDelete = $stmtSelect->get_result()->fetch_assoc();
+
+        if ($sessionToDelete) {
+            // 2. Registrar en Log
+            $logSql = "INSERT INTO session_logs (user_id, action, device, ip_address) VALUES (?, 'session_rotated', ?, ?)";
+            $logStmt = $this->db->prepare($logSql);
+            // Simplificar User Agent para el log si es muy largo, o guardarlo completo
+            $device = $sessionToDelete['user_agent'];
+            $ip = $sessionToDelete['ip_address'];
+
+            $logStmt->bind_param("iss", $userId, $device, $ip);
+            $logStmt->execute();
+
+            // 3. Eliminar la sesión
+            $sqlDelete = "DELETE FROM user_sessions WHERE session_id = ?";
+            $stmtDelete = $this->db->prepare($sqlDelete);
+            $stmtDelete->bind_param("s", $sessionToDelete['session_id']);
+            $stmtDelete->execute();
+        }
     }
 
     private function getUserPlan($userId)
