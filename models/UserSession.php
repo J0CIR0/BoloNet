@@ -13,29 +13,22 @@ class UserSession
 
     public function registerSession($userId, $sessionId, $userAgent = '', $ip = '')
     {
-        // 1. Limpieza General (Garbage Collection) - 5% de probabilidad o siempre
-        // Para asegurar que el monitor esté limpio, lo haremos siempre en el login por ahora
-        $this->garbageCollect(120); // 120 segundos = 2 minutos de inactividad
+        $this->garbageCollect(120);
 
-        // 2. Verificar si ya existe una sesión para este mismo navegador/IP
-        // Si el usuario cerró la pestaña y volvió a abrir, es el mismo 'dispositivo'
-        // pero PHP generó una nueva session_id. Reclamamos el slot.
-        // Ojo: session_id cambió, pero las características son iguales.
-        // Haremos un "force replace" si encontramos coincidencia exacta de UA + IP + UserID
         $this->reclaimSessionSlot($userId, $userAgent, $ip);
 
-        // 3. Verificar límites
+
         $plan = $this->getUserPlan($userId);
         $limit = $this->getSessionLimit($plan);
         $activeSessions = $this->getActiveSessions($userId);
 
-        // Si alcanzamos el límite, rotamos (FIFO)
+
         while (count($activeSessions) >= $limit) {
             $this->invalidateOldestSession($userId);
-            $activeSessions = $this->getActiveSessions($userId); // Refrescar lista
+            $activeSessions = $this->getActiveSessions($userId);
         }
 
-        // 4. Registrar nueva sesión
+
         $sql = "INSERT INTO user_sessions (user_id, session_id, user_agent, ip_address) VALUES (?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("isss", $userId, $sessionId, $userAgent, $ip);
@@ -118,17 +111,15 @@ class UserSession
         $sessionToDelete = $stmtSelect->get_result()->fetch_assoc();
 
         if ($sessionToDelete) {
-            // 2. Registrar en Log
             $logSql = "INSERT INTO session_logs (user_id, action, device, ip_address) VALUES (?, 'session_rotated', ?, ?)";
             $logStmt = $this->db->prepare($logSql);
-            // Simplificar User Agent para el log si es muy largo, o guardarlo completo
+
             $device = $sessionToDelete['user_agent'];
             $ip = $sessionToDelete['ip_address'];
 
             $logStmt->bind_param("iss", $userId, $device, $ip);
             $logStmt->execute();
 
-            // 3. Eliminar la sesión
             $sqlDelete = "DELETE FROM user_sessions WHERE session_id = ?";
             $stmtDelete = $this->db->prepare($sqlDelete);
             $stmtDelete->bind_param("s", $sessionToDelete['session_id']);

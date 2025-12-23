@@ -7,8 +7,6 @@ require_once 'models/Inscripcion.php';
 class PagoController
 {
 
-    // 1. Mostrar la página de selección de pago (Checkout)
-    // 0. Mostrar selector de planes
     public function planes()
     {
         if (session_status() == PHP_SESSION_NONE) {
@@ -17,7 +15,6 @@ class PagoController
         require_once 'views/pagos/planes.php';
     }
 
-    // 1. Mostrar la página de pago (Checkout)
     public function checkout()
     {
         if (session_status() == PHP_SESSION_NONE) {
@@ -25,7 +22,6 @@ class PagoController
         }
 
         if (!isset($_SESSION['user_id'])) {
-            // Guardar intención de plan si existe
             if (isset($_GET['plan'])) {
                 $_SESSION['redirect_plan'] = $_GET['plan'];
             }
@@ -33,7 +29,6 @@ class PagoController
             exit();
         }
 
-        // Si no hay plan seleccionado, mandar a seleccionar
         if (!isset($_GET['plan'])) {
             header("Location: index.php?controller=Pago&action=planes");
             exit();
@@ -59,10 +54,8 @@ class PagoController
         require_once 'views/pagos/checkout.php';
     }
 
-    // 2. Método que procesa la respuesta de PayPal (AJAX)
     public function procesarPagoExitoso()
     {
-        // --- 1. INICIAR BUFFER: Atrapa cualquier error/warning de PHP ---
         ob_start();
 
         header('Content-Type: application/json');
@@ -73,7 +66,6 @@ class PagoController
                 session_start();
             }
 
-            // Recibir y decodificar JSON
             $input = file_get_contents("php://input");
             $data = json_decode($input);
 
@@ -81,7 +73,6 @@ class PagoController
                 throw new Exception("Error decodificando JSON: " . json_last_error_msg());
             }
 
-            // Validar datos mínimos
             if (!isset($data->orderID) || !isset($data->plan_type) || !isset($data->usuario_id)) {
                 throw new Exception("Datos incompletos recibidos. Se requiere plan_type.");
             }
@@ -89,13 +80,12 @@ class PagoController
             if ($data->estado === 'COMPLETED') {
 
                 $pagoModel = new Pago();
-                // $inscripcionModel ya no es necesario para suscripciones
+                $pagoModel = new Pago();
 
                 $usuario_id = (int) $data->usuario_id;
                 $planType = $data->plan_type; // basic, pro, premium
                 $transaccion_id = $data->orderID;
 
-                // --- VALIDACIÓN DE PRECIOS DE SUSCRIPCIÓN ---
                 $precios = [
                     'basic' => 9.99,
                     'pro' => 19.99,
@@ -109,13 +99,11 @@ class PagoController
                 $precioEsperado = $precios[$planType];
                 $montoPagado = (float) $data->monto;
 
-                // Validación anti-fraude
                 if ($montoPagado < ($precioEsperado - 0.50)) {
                     error_log("FRAUDE SUBSCRIPCIÓN: Usuario $usuario_id pagó $montoPagado por plan $planType ($precioEsperado)");
                     throw new Exception("El monto pagado no coincide con el precio del plan.");
                 }
 
-                // PASO A: Registrar el pago (curso_id = 0 para indicar suscripción general)
                 $pagoRegistrado = $pagoModel->registrar(
                     $usuario_id,
                     0,
@@ -126,16 +114,13 @@ class PagoController
                 );
 
                 if ($pagoRegistrado) {
-                    // PASO B: Actualizar Estado del Usuario
                     require_once 'models/Usuario.php';
                     $usuarioModel = new Usuario();
 
-                    // Calcular fecha fin (1 mes desde hoy)
                     $fechaFin = date('Y-m-d H:i:s', strtotime('+30 days'));
 
                     if ($usuarioModel->updateSubscription($usuario_id, $planType, 'active', $fechaFin)) {
 
-                        // Actualizar sesión actual si corresponde
                         if (session_status() == PHP_SESSION_NONE) {
                             session_start();
                         }
@@ -144,7 +129,6 @@ class PagoController
                             $_SESSION['subscription_status'] = 'active';
                         }
 
-                        // --- PASO C: Enviar Correo de Facturación ---
                         require_once 'models/Email.php';
                         $usuarioData = $usuarioModel->getById($usuario_id);
 
@@ -182,7 +166,6 @@ class PagoController
             error_log("Error PagoController: " . $e->getMessage());
         }
 
-        // --- 2. LIMPIAR BUFFER: Asegura que solo salga JSON limpio ---
         ob_end_clean();
 
         echo json_encode($response);

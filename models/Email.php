@@ -54,9 +54,9 @@ class Email
 
         } catch (Exception $e) {
             error_log("Error enviando verificación: " . $this->mailer->ErrorInfo);
-            // Fallback para localhost/desarrollo
+
             $this->logEmail($email, "Verificación (Fallback por Error)", $verification_link);
-            return true; // Retornamos true para no bloquear el registro en desarrollo
+            return true;
         }
     }
 
@@ -150,7 +150,7 @@ class Email
         } catch (Exception $e) {
             error_log("Error enviando factura: " . $this->mailer->ErrorInfo);
             $this->logEmail($email, "Factura Error", "ID: $transaccionId");
-            return true; // No bloquear flujo
+            return true;
         }
     }
 

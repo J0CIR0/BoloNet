@@ -11,14 +11,11 @@ require_once __DIR__ . '/../layouts/header.php';
         --text-muted: #adb5bd;
         --accent-basic: #0d6efd;
         --accent-pro: #8a2be2;
-        /* Violeta Neon */
         --accent-premium: #ffc107;
-        /* Gold */
     }
 
     body {
         background-color: #121416;
-        /* Darker background for contrast */
     }
 
     .plans-header {
@@ -33,7 +30,6 @@ require_once __DIR__ . '/../layouts/header.php';
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
-    /* Card Styles */
     .plan-card {
         background-color: var(--card-bg);
         border: 1px solid var(--card-border);
@@ -52,7 +48,6 @@ require_once __DIR__ . '/../layouts/header.php';
         border-color: rgba(255, 255, 255, 0.1);
     }
 
-    /* Glow Effects */
     .plan-card::before {
         content: '';
         position: absolute;
@@ -69,7 +64,6 @@ require_once __DIR__ . '/../layouts/header.php';
         opacity: 1;
     }
 
-    /* Plan Specific Colors & Glows */
     .plan-basic {
         color: var(--accent-basic);
     }
@@ -98,7 +92,6 @@ require_once __DIR__ . '/../layouts/header.php';
         border-color: var(--accent-premium);
     }
 
-    /* Best Value Badge */
     .badge-popular {
         position: absolute;
         top: 20px;
@@ -166,7 +159,6 @@ require_once __DIR__ . '/../layouts/header.php';
         color: #495057;
     }
 
-    /* Buttons */
     .btn-plan {
         padding: 12px 20px;
         border-radius: 50px;
@@ -255,7 +247,6 @@ require_once __DIR__ . '/../layouts/header.php';
 
     <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
 
-        <!-- Búsico -->
         <div class="col animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
             <div class="plan-card plan-basic">
                 <div class="card-header-custom text-center">
@@ -293,7 +284,6 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
         </div>
 
-        <!-- Pro -->
         <div class="col animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
             <div class="plan-card plan-pro">
                 <div class="badge-popular">POPULAR</div>
@@ -331,7 +321,6 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
         </div>
 
-        <!-- Premium -->
         <div class="col animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
             <div class="plan-card plan-premium">
                 <div class="card-header-custom text-center">
@@ -370,7 +359,6 @@ require_once __DIR__ . '/../layouts/header.php';
 
     </div>
 
-    <!-- FAQ Section Optional -->
     <div class="row justify-content-center mt-5 animate__animated animate__fadeIn" style="animation-delay: 0.5s;">
         <div class="col-md-8 text-center text-muted">
             <p><small><i class="fas fa-lock me-1"></i> Pagos seguros y encriptados. Puedes cancelar tu suscripción en

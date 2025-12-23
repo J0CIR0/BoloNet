@@ -9,7 +9,6 @@ $version = time();
         --checkout-bg: #121416;
         --card-bg: rgba(33, 37, 41, 0.7);
         --accent-color: #2fb344;
-        /* Green for money/success */
         --text-main: #e0e0e0;
         --text-muted: #adb5bd;
     }
@@ -172,7 +171,6 @@ $version = time();
 
             <div class="divider"></div>
 
-            <!-- Contenedor de PayPal -->
             <div id="paypal-button-container"></div>
 
             <a href="index.php?controller=Curso&action=index" class="cancel-link">
@@ -215,11 +213,9 @@ $version = time();
         onApprove: function (data, actions) {
             console.log("1. Autorizado. Iniciando captura...");
 
-            // Ocultar botones visualmente pero NO eliminarlos del DOM para no romper post-robot
             const btnContainer = document.getElementById('paypal-button-container');
             btnContainer.style.display = 'none';
 
-            // Mostrar mensaje de carga en un contenedor separado
             const msgContainer = document.createElement('div');
             msgContainer.id = 'checkout-message';
             msgContainer.innerHTML = `
@@ -264,7 +260,6 @@ $version = time();
                 })
                 .then(data => {
                     if (data.status === 'success') {
-                        // Redirección con un pequeño delay para que el usuario vea el éxito
                         setTimeout(() => {
                             window.location.href = "index.php?controller=Curso&action=mis_cursos";
                         }, 1500);
@@ -274,7 +269,6 @@ $version = time();
                 })
                 .catch(error => {
                     console.error("ERROR:", error);
-                    // Restaurar botones si hay error, o mostrar mensaje
                     const msgDiv = document.getElementById('checkout-message');
                     if (msgDiv) {
                         msgDiv.innerHTML = `
@@ -291,7 +285,6 @@ $version = time();
         },
         onError: function (err) {
             console.error(err);
-            // Usar alert nativo solo si es crítico, si no, manipular DOM pero con cuidado
             const btnContainer = document.getElementById('paypal-button-container');
             const msgContainer = document.createElement('div');
             msgContainer.innerHTML = '<div class="alert alert-warning">Ocurrió un error con PayPal. Intenta de nuevo.</div>';
