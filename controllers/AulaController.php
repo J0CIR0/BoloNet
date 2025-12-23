@@ -42,6 +42,24 @@ class AulaController
         $user_role = $_SESSION['user_role'] ?? '';
         $esProfesor = ($user_role === 'profesor') || $this->usuarioModel->hasPermission($user_id, 'crear_curso');
 
+        // Lógica Freemium:
+        // Todos pueden entrar.
+        // Acceso Premium si: Es Profesor O Tiene Suscripción Activa.
+        $isSubscribed = isset($_SESSION['subscription_status']) && $_SESSION['subscription_status'] === 'active';
+        $isPremiumAccess = $esProfesor || $isSubscribed;
+
+        // También permitimos acceso completo si el usuario YA estaba inscrito formalmente (Legacy o becado)
+        if (!$isPremiumAccess) {
+            require_once __DIR__ . '/../models/Inscripcion.php';
+            $inscripcionCheck = new Inscripcion();
+            $yaInscrito = $inscripcionCheck->verificarInscripcion($user_id, $id_curso);
+            if ($yaInscrito) {
+                $isPremiumAccess = true;
+            }
+        }
+
+        // Eliminamos el boqueo estricto
+        /*
         if (!$esProfesor) {
             require_once __DIR__ . '/../models/Inscripcion.php';
             $inscripcionCheck = new Inscripcion();
@@ -54,6 +72,7 @@ class AulaController
                 exit();
             }
         }
+        */
 
         $curso = $this->cursoModel->obtenerPorId($id_curso);
         if (!$curso) {

@@ -239,13 +239,28 @@
             <?php else: ?>
                 <div class="accordion" id="accordionModulos">
                     <?php foreach ($modulos as $index => $mod): ?>
-                        <div class="modulo-card shadow-sm">
+                        <?php 
+                            // Lógica de Bloqueo: Bloquear si no es premium y no es el primer módulo (índice 0)
+                            $isLocked = !$isPremiumAccess && $index > 0; 
+                        ?>
+                        <div class="modulo-card shadow-sm position-relative">
+                            
+                            <!-- Header del Módulo -->
                             <div class="modulo-header d-flex justify-content-between align-items-center"
-                                data-bs-toggle="collapse" data-bs-target="#collapse<?php echo $mod['id']; ?>"
-                                aria-expanded="true">
+                                <?php if (!$isLocked): ?>
+                                    data-bs-toggle="collapse" data-bs-target="#collapse<?php echo $mod['id']; ?>"
+                                    aria-expanded="<?php echo $index === 0 ? 'true' : 'false'; ?>"
+                                    style="cursor: pointer;"
+                                <?php else: ?>
+                                    style="cursor: not-allowed; opacity: 0.7;"
+                                <?php endif; ?>
+                                >
                                 <h5 class="mb-0 fw-bold text-dark text-break">
+                                    <?php if ($isLocked): ?>
+                                        <i class="fas fa-lock text-muted me-2"></i>
+                                    <?php endif; ?>
                                     <?php echo htmlspecialchars($mod['titulo']); ?>
-
+                                    
                                     <?php if ($esProfesor): ?>
                                         <button class="btn btn-sm btn-outline-warning ms-2"
                                             onclick="event.stopPropagation(); prepararEditarModulo(<?php echo $mod['id']; ?>, '<?php echo addslashes($mod['titulo']); ?>', '<?php echo addslashes($mod['descripcion']); ?>')">
@@ -253,12 +268,30 @@
                                         </button>
                                     <?php endif; ?>
                                 </h5>
-                                <i class="fas fa-chevron-down text-muted"></i>
+                                <?php if (!$isLocked): ?>
+                                    <i class="fas fa-chevron-down text-muted"></i>
+                                <?php endif; ?>
                             </div>
 
-                            <div id="collapse<?php echo $mod['id']; ?>" class="collapse show"
-                                data-bs-parent="#accordionModulos">
-                                <div class="bg-dark">
+                            <!-- Contenido del Módulo -->
+                            <div id="collapse<?php echo $mod['id']; ?>" 
+                                 class="collapse <?php echo ($index === 0 && !$isLocked) ? 'show' : ''; ?>"
+                                 data-bs-parent="#accordionModulos">
+                                <div class="bg-dark position-relative">
+                                    
+                                    <?php if ($isLocked): ?>
+                                        <!-- Overlay de Bloqueo -->
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center" 
+                                             style="background: rgba(33, 37, 41, 0.85); z-index: 10; backdrop-filter: blur(4px);">
+                                            <i class="fas fa-lock fa-3x text-warning mb-3"></i>
+                                            <h4 class="text-white fw-bold">Contenido Bloqueado</h4>
+                                            <p class="text-white-50 mb-3 text-center px-3">Suscríbete para acceder a todo el curso.</p>
+                                            <a href="index.php?controller=Pago&action=planes" class="btn btn-warning fw-bold pulse-animation">
+                                                <i class="fas fa-crown me-2"></i> Desbloquear Curso
+                                            </a>
+                                        </div>
+                                    <?php endif; ?>
+
                                     <?php if (!empty($mod['descripcion'])): ?>
                                         <div class="p-3 text-muted small bg-dark border-bottom border-secondary">
                                             <?php echo htmlspecialchars($mod['descripcion']); ?>
