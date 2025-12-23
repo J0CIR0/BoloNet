@@ -52,6 +52,17 @@ if (isset($_GET['controller']) && isset($_GET['action'])) {
 // ==========================================
 
 if (isset($_SESSION['user_id'])) {
+
+    // VALIDACIÓN DE SESIÓN GLOBAL (Server-Side)
+    // Evita navegar si la sesión fue eliminada en BD
+    require_once 'models/UserSession.php';
+    $sessionModel = new UserSession();
+    if (!$sessionModel->isValid(session_id())) {
+        session_destroy();
+        header('Location: index.php?error=sesion_invalida');
+        exit();
+    }
+
     header('Location: dashboard.php');
     exit();
 }

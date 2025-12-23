@@ -192,5 +192,36 @@ class AuthController
         }
         require_once __DIR__ . '/../views/auth/reset_password.php';
     }
+
+    public function checkSessionStatus()
+    {
+        header('Content-Type: application/json');
+
+        // Si no hay sesión PHP iniciada, claramente no es inválido (o ya expiró)
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['valid' => false, 'reason' => 'no_session']);
+            exit;
+        }
+
+        require_once __DIR__ . '/../models/UserSession.php';
+        $sessionModel = new UserSession();
+
+        // Verificar si la sesión actual existe en BD
+        $isValid = $sessionModel->isValid(session_id());
+
+        if (!$isValid) {
+            // Si no es válida en BD, destruir sesión PHP local
+            session_destroy();
+            echo json_encode(['valid' => false, 'reason' => 'concurrent_login']);
+            exit;
+        }
+
+        echo json_encode(['valid' => true]);
+        exit;
+    }
 }
 ?>
