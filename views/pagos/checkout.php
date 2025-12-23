@@ -215,20 +215,26 @@ $version = time();
         onApprove: function (data, actions) {
             console.log("1. Autorizado. Iniciando captura...");
 
-            // Mostrar estado de carga
-            const container = document.getElementById('paypal-button-container');
-            container.innerHTML = `
+            // Ocultar botones visualmente pero NO eliminarlos del DOM para no romper post-robot
+            const btnContainer = document.getElementById('paypal-button-container');
+            btnContainer.style.display = 'none';
+
+            // Mostrar mensaje de carga en un contenedor separado
+            const msgContainer = document.createElement('div');
+            msgContainer.id = 'checkout-message';
+            msgContainer.innerHTML = `
                  <div class="text-center py-4">
                     <div class="spinner-border text-success mb-3" style="width: 3rem; height: 3rem;"></div>
                     <h5 class="text-white">Procesando pago...</h5>
                     <p class="text-muted small">Por favor no cierres esta ventana.</p>
                 </div>
             `;
+            btnContainer.parentNode.insertBefore(msgContainer, btnContainer);
 
             return actions.order.capture().then(function (details) {
                 console.log("2. Captura completada. Dinero recibido.");
 
-                container.innerHTML = `
+                msgContainer.innerHTML = `
                     <div class="alert alert-success border-0 bg-success bg-opacity-25 text-white">
                         <h4><i class="fas fa-check-circle"></i> ¡Pago Exitoso!</h4>
                         <p class="mb-0">Activando tu suscripción...</p>
@@ -268,21 +274,28 @@ $version = time();
                 })
                 .catch(error => {
                     console.error("ERROR:", error);
-                    document.getElementById('paypal-button-container').innerHTML = `
-                    <div class="alert alert-danger bg-danger bg-opacity-10 border-danger text-danger">
-                        <i class="fas fa-exclamation-circle me-2"></i> Error: ${error.message} <br>
-                        <a href="javascript:location.reload()" class="text-danger fw-bold mt-2 d-inline-block">Reintentar</a>
-                    </div>
-                `;
+                    // Restaurar botones si hay error, o mostrar mensaje
+                    const msgDiv = document.getElementById('checkout-message');
+                    if (msgDiv) {
+                        msgDiv.innerHTML = `
+                        <div class="alert alert-danger bg-danger bg-opacity-10 border-danger text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i> Error: ${error.message} <br>
+                            <a href="javascript:location.reload()" class="text-danger fw-bold mt-2 d-inline-block">Reintentar</a>
+                        </div>`;
+                    }
                 });
         },
 
         onCancel: function (data) {
-            // Opcional: Feedback visual de cancelación
+            console.log("Pago cancelado", data);
         },
         onError: function (err) {
             console.error(err);
-            alert("Error de conexión con PayPal. Por favor intenta de nuevo.");
+            // Usar alert nativo solo si es crítico, si no, manipular DOM pero con cuidado
+            const btnContainer = document.getElementById('paypal-button-container');
+            const msgContainer = document.createElement('div');
+            msgContainer.innerHTML = '<div class="alert alert-warning">Ocurrió un error con PayPal. Intenta de nuevo.</div>';
+            btnContainer.parentNode.insertBefore(msgContainer, btnContainer);
         }
 
     }).render('#paypal-button-container');
