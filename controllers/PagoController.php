@@ -144,6 +144,27 @@ class PagoController
                             $_SESSION['subscription_status'] = 'active';
                         }
 
+                        // --- PASO C: Enviar Correo de Facturación ---
+                        require_once 'models/Email.php';
+                        $usuarioData = $usuarioModel->getById($usuario_id);
+
+                        if ($usuarioData && !empty($usuarioData['email'])) {
+                            $mailer = new Email();
+                            $nombreCompleto = $usuarioData['persona_nombre'] . ' ' . $usuarioData['persona_apellido'];
+
+                            $emailEnviado = $mailer->enviarFactura(
+                                $usuarioData['email'],
+                                $nombreCompleto,
+                                $planType,
+                                $montoPagado,
+                                $transaccion_id
+                            );
+
+                            if ($emailEnviado) {
+                                error_log("Factura enviada a: " . $usuarioData['email']);
+                            }
+                        }
+
                         $response = ["status" => "success", "mensaje" => "Suscripción $planType activada exitosamente."];
                     } else {
                         throw new Exception("Pago registrado, pero error al activar suscripción en BD.");

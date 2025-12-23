@@ -131,5 +131,82 @@ class Email
             </div>
         </div>';
     }
+
+    public function enviarFactura($email, $nombre, $plan, $monto, $transaccionId)
+    {
+        try {
+            $this->mailer->clearAddresses();
+            $this->mailer->addAddress($email, $nombre);
+            $this->mailer->isHTML(true);
+            $this->mailer->Subject = 'Factura de Suscripción - ' . SITE_NAME;
+            $this->mailer->Body = $this->crearTemplateFactura($nombre, $plan, $monto, $transaccionId);
+            $this->mailer->AltBody = "Hola $nombre, gracias por tu compra.\nPlan: $plan\nMonto: $$monto\nTransacción: $transaccionId";
+
+            if ($this->mailer->send()) {
+                return true;
+            }
+            $this->logEmail($email, "Factura Fallida", "ID: $transaccionId");
+            return false;
+        } catch (Exception $e) {
+            error_log("Error enviando factura: " . $this->mailer->ErrorInfo);
+            $this->logEmail($email, "Factura Error", "ID: $transaccionId");
+            return true; // No bloquear flujo
+        }
+    }
+
+    private function crearTemplateFactura($nombre, $plan, $monto, $transaccionId)
+    {
+        $fecha = date('d/m/Y H:i');
+        return '
+        <div style="font-family:\'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; max-width:600px; margin:0 auto; background-color:#121416; color:#e0e0e0; border-radius:12px; overflow:hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #198754 0%, #157347 100%); padding: 30px; text-align: center;">
+                <h1 style="margin:0; color:white; font-size: 24px;">¡Gracias por tu suscripción!</h1>
+                <p style="margin: 10px 0 0; color: rgba(255,255,255,0.8);">Tu pago ha sido procesado exitosamente</p>
+            </div>
+
+            <!-- Body -->
+            <div style="padding: 40px 30px; background-color: #212529;">
+                <p style="margin-top: 0;">Hola <strong>' . htmlspecialchars($nombre) . '</strong>,</p>
+                <p>Hemos recibido confirmación de tu pago. A continuación los detalles de tu transacción:</p>
+
+                <div style="background-color: #2c3034; border-radius: 8px; padding: 20px; margin: 25px 0;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 8px 0; color: #adb5bd;">Plan Suscrito:</td>
+                            <td style="padding: 8px 0; text-align: right; color: #fff; font-weight: bold; text-transform: capitalize;">' . htmlspecialchars($plan) . '</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; color: #adb5bd;">ID Transacción:</td>
+                            <td style="padding: 8px 0; text-align: right; color: #fff; font-family: monospace;">' . htmlspecialchars($transaccionId) . '</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; color: #adb5bd;">Fecha:</td>
+                            <td style="padding: 8px 0; text-align: right; color: #fff;">' . $fecha . '</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; border-top: 1px solid #495057; margin-top: 8px; font-weight: bold; color: #fff;">TOTAL PAGADO</td>
+                            <td style="padding: 8px 0; border-top: 1px solid #495057; margin-top: 8px; text-align: right; font-weight: bold; color: #198754; font-size: 18px;">$' . number_format($monto, 2) . ' USD</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <p style="font-size: 0.9em; color: #adb5bd; line-height: 1.5;">
+                    Ahora tienes acceso completo a las características de tu nuevo plan. 
+                    Puedes descargar este comprobante en cualquier momento desde tu perfil.
+                </p>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="' . SITE_URL . '" style="background-color: #0d6efd; color: white; padding: 12px 30px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block;">Ir a Mis Cursos</a>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #1a1d20; padding: 20px; text-align: center; font-size: 12px; color: #6c757d;">
+                <p style="margin: 0;">&copy; ' . date('Y') . ' BolaNet Learning Code. Todos los derechos reservados.</p>
+                <p style="margin: 5px 0 0;">Este es un correo automático, por favor no respondas a este mensaje.</p>
+            </div>
+        </div>';
+    }
 }
 ?>
