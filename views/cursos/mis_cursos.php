@@ -153,78 +153,141 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     <?php else: ?>
 
-        <?php foreach ($inscripciones as $fila): ?>
+        <?php
+        // Definir una paleta de degradados premium para las tarjetas
+        $gradients = [
+            'linear-gradient(135deg, #1e2024 0%, #23272b 100%)', // Dark Modern
+            'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', // Slate Blue
+            'linear-gradient(135deg, #18181b 0%, #27272a 100%)', // Zinc
+            'linear-gradient(135deg, #14532d 0%, #166534 100%)', // Dark Green (Subtle)
+            'linear-gradient(135deg, #312e81 0%, #3730a3 100%)', // Indigo Night
+        ];
+        ?>
+
+        <?php foreach ($inscripciones as $index => $fila): ?>
             <?php
             $est = $fila['estado_inscripcion'];
             $nombreCurso = isset($fila['nombre']) ? $fila['nombre'] : 'Curso sin nombre';
             $codigo = isset($fila['codigo']) ? $fila['codigo'] : '---';
 
-            // Simulación de datos para diseño (adaptar con datos reales si existen)
-            $progreso = rand(0, 100);
-            $fecha = isset($fila['fecha_inscripcion']) ? date('Y / n / j', strtotime($fila['fecha_inscripcion'])) : '2025 / 1 / 1';
-            $modalidad = "Presencial/Mañana"; // Placeholder
-    
-            // Colores de tarjeta según el índice para variar (opcional)
-            $cardColors = ['#1a1a1a', '#0f2e1b', '#1c1c1c'];
-            $bgColor = $cardColors[rand(0, 2)];
+            // --- CÁLCULO DE PROGRESO BASADO EN FECHAS ---
+            $now = time();
+            $fechaInicioStr = $fila['fecha_inicio'] ?? null;
+            $fechaFinStr = $fila['fecha_fin'] ?? null;
 
-            // Determinamos color de fondo específico si es que queremos variar por curso
-            // Usando hash del nombre para mantener consistencia
-            $hash = crc32($nombreCurso);
-            $hue = $hash % 360;
-            // Generar un color oscuro basado en el nombre
-            $dynamicBg = "hsl($hue, 40%, 15%)";
+            $start = $fechaInicioStr ? strtotime($fechaInicioStr) : 0;
+            $end = $fechaFinStr ? strtotime($fechaFinStr) : 0;
+
+            $progreso = 0;
+            $statusText = "Por iniciar";
+            $statusColor = "secondary"; // default
+    
+            if ($start > 0 && $end > 0 && $end > $start) {
+                if ($now >= $end) {
+                    // Curso finalizado
+                    $progreso = 100;
+                    $statusText = "Finalizado";
+                    $statusColor = "success";
+                } elseif ($now < $start) {
+                    // Aún no empieza
+                    $progreso = 0;
+                    $statusText = "Próximamente";
+                    $statusColor = "info";
+                } else {
+                    // En progreso
+                    $totalSeconds = $end - $start;
+                    $elapsed = $now - $start;
+                    $progreso = round(($elapsed / $totalSeconds) * 100);
+                    $statusText = "En curso";
+                    $statusColor = "primary";
+                }
+            } else {
+                // Fechas inválidas, asumimos 0
+                $progreso = 0;
+            }
+
+            // Si ya está aprobado manualmente, forzamos 100%
+            if ($est === 'aprobado') {
+                $progreso = 100;
+                $statusText = "Aprobado";
+                $statusColor = "success";
+            }
+
+            $fechaMostrar = isset($fila['fecha_inicio']) ? date('d M, Y', strtotime($fila['fecha_inicio'])) : '---';
+            $modalidad = "Virtual"; // Placeholder fijo por el momento o dinámico si existe en DB
+    
+            // Asignar gradiente basado en índice para variedad ordenada
+            $bgGradient = $gradients[$index % count($gradients)];
             ?>
 
             <div class="col curso-item" data-nombre="<?php echo strtolower($nombreCurso); ?>" data-estado="<?php echo $est; ?>">
-                <!-- Card con diseño Overlay -->
+                <!-- Card con diseño Premium -->
                 <div class="card h-100 border-0 shadow-lg position-relative overflow-hidden text-white"
-                    style="background-color: <?php echo $dynamicBg; ?>; border-radius: 12px; min-height: 350px;">
+                    style="background: <?php echo $bgGradient; ?>; border-radius: 16px; min-height: 320px; transition: transform 0.3s ease, box-shadow 0.3s ease;">
 
-                    <!-- Fondo Semi-transparente o patrón -->
-                    <div class="position-absolute w-100 h-100"
-                        style="background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.8) 100%); z-index: 1;">
-                    </div>
+                    <!-- Hover Effect Trigger (CSS needed elsewhere or inline) -->
+                    <style>
+                        .curso-item:hover .card {
+                            transform: translateY(-5px);
+                            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3) !important;
+                        }
 
-                    <!-- Menú de opciones (tres puntos) -->
-                    <div class="position-absolute top-0 end-0 m-3" style="z-index: 2;">
-                        <button class="btn btn-sm btn-dark rounded-circle bg-opacity-50 border-0">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                    </div>
+                        .curso-item:hover .btn-light {
+                            background-color: #fff;
+                            transform: scale(1.05);
+                        }
+                    </style>
 
-                    <!-- Contenido Principal -->
-                    <div class="card-body d-flex flex-column justify-content-center position-relative"
-                        style="z-index: 2; margin-top: 40px;">
+                    <!-- Header de la Card -->
+                    <div class="p-4 d-flex flex-column h-100">
 
-                        <h4 class="fw-bold mb-1" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
-                            <?php echo htmlspecialchars($nombreCurso); ?>
-                        </h4>
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge bg-dark bg-opacity-50 border border-secondary text-white-50 rounded-pill px-3">
+                                <i class="far fa-calendar-alt me-1"></i> <?php echo $fechaMostrar; ?>
+                            </span>
 
-                        <p class="mb-3 text-light opacity-75 fw-bold" style="font-size: 0.9rem;">
-                            (<?php echo $modalidad; ?>/<?php echo htmlspecialchars($codigo); ?>)
-                        </p>
-
-                        <p class="text-white-50 mb-0" style="font-size: 0.85rem;">
-                            <?php echo $fecha; ?>
-                        </p>
-
-                    </div>
-
-                    <!-- Footer con Barra de Progreso -->
-                    <div class="card-footer bg-transparent border-0 position-relative pb-4" style="z-index: 2;">
-                        <div class="d-flex justify-content-between align-items-end mb-2">
-                            <span class="small fw-bold text-white"><?php echo $progreso; ?>% completado</span>
-                            <a href="index.php?controller=Aula&action=index&id=<?php echo $fila['id']; ?>"
-                                class="btn btn-sm btn-light px-3 rounded-pill fw-bold" style="font-size: 0.8rem;">
-                                Aula <i class="fas fa-arrow-right ms-1"></i>
-                            </a>
+                            <!-- Menú (Visual) -->
+                            <i class="fas fa-ellipsis-h text-white-50"></i>
                         </div>
-                        <div class="progress bg-secondary bg-opacity-25" style="height: 8px; border-radius: 4px;">
-                            <div class="progress-bar bg-success" role="progressbar"
-                                style="width: <?php echo $progreso; ?>%; border-radius: 4px;"></div>
+
+                        <div class="mb-auto">
+                            <h3 class="fw-bold mb-1 text-white" style="letter-spacing: -0.5px;">
+                                <?php echo htmlspecialchars($nombreCurso); ?>
+                            </h3>
+                            <p class="text-white-50 mb-0 small">
+                                <?php echo htmlspecialchars($codigo); ?> • <?php echo $modalidad; ?>
+                            </p>
                         </div>
+
+                        <!-- Footer Info y Progreso -->
+                        <div class="mt-4">
+                            <div class="d-flex justify-content-between align-items-end mb-2">
+                                <div>
+                                    <span class="d-block h2 fw-bold mb-0 text-white"><?php echo $progreso; ?>%</span>
+                                    <small class="text-<?php echo ($progreso == 100) ? 'success' : 'light'; ?> opacity-75">
+                                        <?php echo $statusText; ?>
+                                    </small>
+                                </div>
+                                <a href="index.php?controller=Aula&action=index&id=<?php echo $fila['id']; ?>"
+                                    class="btn btn-light rounded-pill px-4 fw-bold shadow-sm border-0 d-flex align-items-center">
+                                    Aula <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
+
+                            <div class="progress bg-white bg-opacity-10" style="height: 6px; border-radius: 10px;">
+                                <div class="progress-bar bg-<?php echo $statusColor; ?>" role="progressbar"
+                                    style="width: <?php echo $progreso; ?>%; border-radius: 10px; transition: width 1s ease-in-out;">
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
+
+                    <!-- Decoración de Fondo (Círculos sutiles) -->
+                    <div class="position-absolute top-0 end-0 translate-middle-y me-n4 mt-n4 rounded-circle bg-white bg-opacity-10"
+                        style="width: 150px; height: 150px; filter: blur(40px);"></div>
+                    <div class="position-absolute bottom-0 start-0 translate-middle-y ms-n4 mb-n4 rounded-circle bg-black bg-opacity-25"
+                        style="width: 200px; height: 200px; filter: blur(40px);"></div>
                 </div>
             </div>
         <?php endforeach; ?>
