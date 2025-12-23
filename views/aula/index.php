@@ -247,15 +247,22 @@
 
                             <!-- Header del Módulo -->
                             <div class="modulo-header d-flex justify-content-between align-items-center"
-                                data-bs-toggle="collapse" data-bs-target="#collapse<?php echo $mod['id']; ?>"
-                                aria-expanded="<?php echo $index === 0 ? 'true' : 'false'; ?>"
-                                style="cursor: pointer; <?php echo $isLocked ? 'background: #2c3034;' : ''; ?>">
+                                <?php if (!$isLocked): ?>
+                                    data-bs-toggle="collapse" data-bs-target="#collapse<?php echo $mod['id']; ?>"
+                                    aria-expanded="<?php echo $index === 0 ? 'true' : 'false'; ?>"
+                                    style="cursor: pointer;"
+                                <?php else: ?>
+                                    onclick="window.location.href='index.php?controller=Pago&action=planes'"
+                                    title="Haz click para desbloquear"
+                                    style="cursor: pointer; background: #2c3034;"
+                                <?php endif; ?>
+                                >
                                 <h5 class="mb-0 fw-bold <?php echo $isLocked ? 'text-muted' : 'text-dark'; ?> text-break">
                                     <?php if ($isLocked): ?>
                                         <i class="fas fa-lock me-2 text-warning"></i>
                                     <?php endif; ?>
                                     <?php echo htmlspecialchars($mod['titulo']); ?>
-
+                                
                                     <?php if ($esProfesor): ?>
                                         <button class="btn btn-sm btn-outline-warning ms-2"
                                             onclick="event.stopPropagation(); prepararEditarModulo(<?php echo $mod['id']; ?>, '<?php echo addslashes($mod['titulo']); ?>', '<?php echo addslashes($mod['descripcion']); ?>')">
@@ -267,37 +274,19 @@
                                 <div class="d-flex align-items-center">
                                     <?php if ($isLocked): ?>
                                         <span class="badge bg-warning text-dark me-2"><i class="fas fa-crown"></i> Premium</span>
+                                        <i class="fas fa-external-link-alt text-muted small"></i>
+                                    <?php else: ?>
+                                        <i class="fas fa-chevron-down text-muted"></i>
                                     <?php endif; ?>
-                                    <i class="fas fa-chevron-down text-muted"></i>
                                 </div>
                             </div>
 
-                            <!-- Contenido del Módulo -->
-                            <div id="collapse<?php echo $mod['id']; ?>"
-                                class="collapse <?php echo ($index === 0 && !$isLocked) ? 'show' : ''; ?>"
-                                data-bs-parent="#accordionModulos">
-                                <div class="bg-dark position-relative">
-
-                                    <?php if ($isLocked): ?>
-                                        <!-- Overlay de Bloqueo -->
-                                        <div class="p-5 text-center"
-                                            style="background: linear-gradient(rgba(33, 37, 41, 0.95), rgba(33, 37, 41, 0.95)), url('https://picsum.photos/seed/bg/800/400'); background-size: cover; min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                                            <div class="mb-4">
-                                                <div class="d-inline-block p-3 rounded-circle bg-warning bg-opacity-25 mb-3">
-                                                    <i class="fas fa-lock fa-3x text-warning"></i>
-                                                </div>
-                                                <h3 class="text-white fw-bold">Contenido Exclusivo</h3>
-                                                <p class="text-white-50 mx-auto" style="max-width: 500px;">
-                                                    Este módulo es parte del contenido Premium. Suscríbete hoy para desbloquear el
-                                                    acceso completo a todos los cursos.
-                                                </p>
-                                            </div>
-                                            <a href="index.php?controller=Pago&action=planes"
-                                                class="btn btn-warning btn-lg fw-bold shadow-lg pulse-animation px-5 rounded-pill">
-                                                <i class="fas fa-crown me-2"></i> Obtener Acceso Premium
-                                            </a>
-                                        </div>
-                                    <?php endif; ?>
+                            <!-- Contenido del Módulo (Solo renderizar si NO está bloqueado) -->
+                            <?php if (!$isLocked): ?>
+                                <div id="collapse<?php echo $mod['id']; ?>"
+                                    class="collapse <?php echo ($index === 0) ? 'show' : ''; ?>"
+                                    data-bs-parent="#accordionModulos">
+                                    <div class="bg-dark position-relative">
 
                                     <?php if (!empty($mod['descripcion'])): ?>
                                         <div class="p-3 text-muted small bg-dark border-bottom border-secondary">
