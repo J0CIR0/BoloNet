@@ -309,6 +309,8 @@ class CursoController
                     'estado_inscripcion' => 'asignado', // Estado especial para profesor
                     'nota_final' => 0,
                     'fecha_inscripcion' => $c['fecha_inicio'],
+                    'fecha_inicio' => $c['fecha_inicio'],
+                    'fecha_fin' => $c['fecha_fin'],
                     'estado' => $c['estado'],
                     'modalidad' => 'Presencial',
                     'hora_inicio' => '08:00',
@@ -331,6 +333,8 @@ class CursoController
                     'estado_inscripcion' => 'inscrito', // Por defecto
                     'nota_final' => 0,
                     'fecha_inscripcion' => $c['fecha_inicio'], // Usamos inicio curso como fecha ref
+                    'fecha_inicio' => $c['fecha_inicio'],
+                    'fecha_fin' => $c['fecha_fin'],
                     'estado' => $c['estado'],
                     'modalidad' => 'Presencial',
                     'hora_inicio' => '09:00',
