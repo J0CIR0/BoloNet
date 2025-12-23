@@ -13,19 +13,29 @@ class UserSession
 
     public function registerSession($userId, $sessionId, $userAgent = '', $ip = '')
     {
-        // Verificar límites antes de registrar
+        // 1. Limpieza General (Garbage Collection) - 5% de probabilidad o siempre
+        // Para asegurar que el monitor esté limpio, lo haremos siempre en el login por ahora
+        $this->garbageCollect(120); // 120 segundos = 2 minutos de inactividad
+
+        // 2. Verificar si ya existe una sesión para este mismo navegador/IP
+        // Si el usuario cerró la pestaña y volvió a abrir, es el mismo 'dispositivo'
+        // pero PHP generó una nueva session_id. Reclamamos el slot.
+        // Ojo: session_id cambió, pero las características son iguales.
+        // Haremos un "force replace" si encontramos coincidencia exacta de UA + IP + UserID
+        $this->reclaimSessionSlot($userId, $userAgent, $ip);
+
+        // 3. Verificar límites
         $plan = $this->getUserPlan($userId);
         $limit = $this->getSessionLimit($plan);
         $activeSessions = $this->getActiveSessions($userId);
 
-        // Si alcanzamos (o superamos) el límite, rotamos sesiones (FIFO)
-        // Eliminamos las más antiguas hasta tener espacio para la nueva
+        // Si alcanzamos el límite, rotamos (FIFO)
         while (count($activeSessions) >= $limit) {
             $this->invalidateOldestSession($userId);
-            array_shift($activeSessions); // Actualizamos conteo local
+            $activeSessions = $this->getActiveSessions($userId); // Refrescar lista
         }
 
-        // Registrar nueva sesión
+        // 4. Registrar nueva sesión
         $sql = "INSERT INTO user_sessions (user_id, session_id, user_agent, ip_address) VALUES (?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("isss", $userId, $sessionId, $userAgent, $ip);
@@ -34,6 +44,33 @@ class UserSession
             return ['success' => true];
         }
         return ['success' => false, 'error' => 'Error al registrar sesión'];
+    }
+
+    public function updateLastActivity($sessionId)
+    {
+        $sql = "UPDATE user_sessions SET last_activity = CURRENT_TIMESTAMP WHERE session_id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("s", $sessionId);
+        return $stmt->execute();
+    }
+
+    public function garbageCollect($seconds)
+    {
+        // Borrar sesiones inactivas por más de X segundos
+        $sql = "DELETE FROM user_sessions WHERE last_activity < (NOW() - INTERVAL ? SECOND)";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("i", $seconds);
+        $stmt->execute();
+    }
+
+    private function reclaimSessionSlot($userId, $ua, $ip)
+    {
+        // Borra sesiones anteriores del mismo usuario en el mismo dispositivo IP/UA
+        // Esto evita 'duplicados' cuando el usuario solo cerró el navegador
+        $sql = "DELETE FROM user_sessions WHERE user_id = ? AND user_agent = ? AND ip_address = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("iss", $userId, $ua, $ip);
+        $stmt->execute();
     }
 
     public function isValid($sessionId)
