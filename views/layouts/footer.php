@@ -13,7 +13,14 @@
                     }
                 })
                 .catch(error => console.error('Error verificando sesión:', error));
-        }, 5000); // Revisar cada 5 segundos
+        }, 2000); // Revisar cada 2 segundos
+
+        // Notificar al servidor si cerramos la pestaña (Beacon)
+        window.addEventListener('beforeunload', function () {
+            const data = new FormData();
+            data.append('closing_tab', 'true');
+            navigator.sendBeacon('index.php?controller=Auth&action=checkSessionStatus&beacon=1', data);
+        });
     </script>
 <?php endif; ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

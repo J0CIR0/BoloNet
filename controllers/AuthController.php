@@ -195,6 +195,14 @@ class AuthController
 
     public function checkSessionStatus()
     {
+        // Si es un Beacon, solo procesamos y salimos
+        if (isset($_GET['beacon'])) {
+            if (session_status() == PHP_SESSION_NONE)
+                session_start();
+            // Podríamos forzar logout, pero con el GC de 15s es suficiente.
+            exit;
+        }
+
         header('Content-Type: application/json');
 
         // Si no hay sesión PHP iniciada, claramente no es inválido (o ya expiró)
@@ -225,9 +233,9 @@ class AuthController
         $sessionModel->updateLastActivity(session_id());
 
         // Opcional: Ejecutar Garbage Collector ocasionalmente (ej: 5% de veces)
-        if (rand(1, 100) <= 5) {
-            $sessionModel->garbageCollect(120); // Limpiar sesiones inactivas > 2 min
-        }
+        // Ejecutar Garbage Collector SIEMPRE (100%) para respuesta rápida
+        // Umbral de 15 segundos. Si no hubo heartbeat en 15s, adiós.
+        $sessionModel->garbageCollect(15);
 
         echo json_encode(['valid' => true]);
         exit;
