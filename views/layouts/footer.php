@@ -7,7 +7,7 @@
                 .then(data => {
                     if (!data.valid) {
                         if (data.reason === 'concurrent_login') {
-                            alert('Tu sesión ha sido cerrada porque has iniciado sesión en otro dispositivo.');
+                            alert('Sesión cerrada: Sesiones simultáneas máximas alcanzadas. Mejora tu plan.');
                         }
                         window.location.href = 'index.php?controller=Auth&action=logout';
                     }

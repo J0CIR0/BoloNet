@@ -160,10 +160,9 @@ require_once 'views/layouts/public_header.php';
             <?php if (isset($_GET['error']) && $_GET['error'] == 'sesion_invalida'): ?>
                 <div class="alert alert-warning border border-warning shadow-lg mt-3" role="alert">
                     <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Sesión Cerrada</h5>
-                    <p class="mb-0">Tu cuenta inició sesión en otro dispositivo. Por seguridad, se ha cerrado esta sesión.
-                    </p>
+                    <p class="mb-0">Sesiones simultáneas máximas alcanzadas.</p>
                     <hr>
-                    <p class="mb-0 small">Mejora tu plan para conectar más dispositivos simultáneamente.</p>
+                    <p class="mb-0 small">Mejora tu plan para conectar más dispositivos.</p>
                 </div>
             <?php endif; ?>
 
