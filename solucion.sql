@@ -238,85 +238,53 @@ CREATE TABLE IF NOT EXISTS pago (
 -- ACTUALIZACIÓN PARA AULA VIRTUAL (LMS)
 -- ==========================================
 
+-- 5. Módulos/Temas del Curso
+CREATE TABLE IF NOT EXISTS curso_modulo (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    curso_id INT NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    descripcion TEXT,
+    orden INT DEFAULT 0,
+    estado ENUM('activo', 'inactivo') DEFAULT 'activo',
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (curso_id) REFERENCES curso(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ==========================================
--- SEEDING DE CONTENIDO (DATOS DE EJEMPLO)
--- ==========================================
+-- 6. Tareas/Actividades
+CREATE TABLE IF NOT EXISTS curso_tarea (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    modulo_id INT NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    descripcion TEXT,
+    fecha_entrega DATETIME NULL,
+    puntaje_maximo DECIMAL(5,2) DEFAULT 100.00,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (modulo_id) REFERENCES curso_modulo(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 1. MODULOS PARA CURSO 1: PROG101 (Programación Básica) - [FINALIZADO]
-INSERT INTO curso_modulo (curso_id, titulo, descripcion, orden, estado) VALUES 
-(1, 'Módulo 1: Introducción y Lógica', 'Conceptos básicos y video introductorio.', 1, 'activo'),
-(1, 'Módulo 2: Recursos Web y Documentación', 'Aprendiendo a buscar información.', 2, 'activo'),
-(1, 'Módulo 3: Clase en Vivo y Cierre', 'Sesión sincrónica y evaluación final.', 3, 'activo');
+-- 7. Contenidos/Recursos (Videos, PDF, Links)
+CREATE TABLE IF NOT EXISTS curso_contenido (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    modulo_id INT NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    tipo ENUM('video', 'archivo', 'enlace') NOT NULL,
+    url_recurso TEXT NOT NULL,
+    descripcion TEXT,
+    orden INT DEFAULT 0,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (modulo_id) REFERENCES curso_modulo(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Contenido Módulo 1 (Video YouTube)
-INSERT INTO curso_contenido (modulo_id, titulo, tipo, url_recurso, descripcion, orden) VALUES 
-(1, 'Video: Lógica de Programación', 'video', 'https://www.youtube.com/embed/2eebptXfEvw', 'Introducción fundamental.', 1);
-
--- Tarea Módulo 1
-INSERT INTO curso_tarea (modulo_id, titulo, descripcion, fecha_entrega, puntaje_maximo) VALUES 
-(1, 'Resumen del Video', 'Escribe un resumen de 100 palabras sobre el video visto.', '2024-02-01 23:59:00', 10.00);
-
-
--- Contenido Módulo 2 (Enlace Sitio Web)
-INSERT INTO curso_contenido (modulo_id, titulo, tipo, url_recurso, descripcion, orden) VALUES 
-(2, 'Documentación Oficial Python', 'enlace', 'https://docs.python.org/es/3/', 'Referencia obligatoria.', 1);
-
--- Tarea Módulo 2
-INSERT INTO curso_tarea (modulo_id, titulo, descripcion, fecha_entrega, puntaje_maximo) VALUES 
-(2, 'Investigación de Tipos', 'Investiga 3 tipos de datos en la documentación y da ejemplos.', '2024-02-05 23:59:00', 15.00);
-
-
--- Contenido Módulo 3 (Clase Zoom)
-INSERT INTO curso_contenido (modulo_id, titulo, tipo, url_recurso, descripcion, orden) VALUES 
-(3, 'Enlace a Clase Grabada (Zoom)', 'enlace', 'https://zoom.us/rec/share/dummy-link', 'Grabación de la sesión final.', 1);
-
--- Tarea Módulo 3
-INSERT INTO curso_tarea (modulo_id, titulo, descripcion, fecha_entrega, puntaje_maximo) VALUES 
-(3, 'Proyecto Final: Calculadora', 'Sube el archivo .py de tu calculadora final.', '2024-02-10 23:59:00', 25.00);
-
-
--- 2. MODULOS PARA CURSO 2: WEB101 (Desarrollo Web) - [FINALIZADO]
-INSERT INTO curso_modulo (curso_id, titulo, descripcion, orden, estado) VALUES 
-(2, 'HTML5: El Esqueleto', 'Estructura semántica de la web.', 1, 'activo'),
-(2, 'CSS3: El Estilo', 'Diseño y belleza visual.', 2, 'activo');
-
--- Contenido para Módulo 1 (WEB101)
-INSERT INTO curso_contenido (modulo_id, titulo, tipo, url_recurso, descripcion, orden) VALUES 
-(4, 'Etiquetas Básicas HTML', 'video', 'https://www.youtube.com/embed/rD6e3w2G9bY', 'Aprende <div>, <span>, <header>, etc.', 1);
-
--- Tarea para Módulo 1 (WEB101)
-INSERT INTO curso_tarea (modulo_id, titulo, descripcion, fecha_entrega, puntaje_maximo) VALUES 
-(4, 'Mi Primera Página Personal', 'Crea un index.html con tu foto y biografía.', '2024-02-15 23:59:00', 15.00);
-
-
--- 3. MODULOS PARA CURSO 3: BD101 (Bases de Datos) - [EN CURSO]
-INSERT INTO curso_modulo (curso_id, titulo, descripcion, orden, estado) VALUES 
-(3, 'Fundamentos Relacionales', 'Tablas, Llaves Primarias y Foráneas.', 1, 'activo'),
-(3, 'Lenguaje SQL (DDL)', 'CREATE, ALTER, DROP.', 2, 'activo');
-
--- Contenido para Módulo 1 (BD101)
-INSERT INTO curso_contenido (modulo_id, titulo, tipo, url_recurso, descripcion, orden) VALUES 
-(6, '¿Qué es una Base de Datos?', 'video', 'https://www.youtube.com/embed/col', 'Introducción teórica.', 1);
-
--- Tarea para Módulo 1 (BD101)
-INSERT INTO curso_tarea (modulo_id, titulo, descripcion, fecha_entrega, puntaje_maximo) VALUES 
-(6, 'Diseñar ER de una Biblioteca', 'Entrega el diagrama ER para un sistema de préstamos de libros.', '2024-12-30 23:59:00', 30.00);
-
-
--- ACTUALIZAR ESTADO DE CURSOS E INSCRIPCIONES
--- Estudiante 3 (Estudiante Demo) completó los dos primeros cursos
-INSERT INTO inscripcion (estudiante_id, curso_id, estado, nota_final) VALUES 
-(3, 2, 'aprobado', 95.00), -- Completó Web
-(3, 3, 'inscrito', NULL);   -- Está cursando BD
-
--- Actualizar curso 1 a 'completado'
-UPDATE curso SET estado = 'completado' WHERE id IN (1, 2);
-UPDATE curso SET estado = 'activo' WHERE id = 3;
-
--- Registrar entregas pasadas
-INSERT INTO curso_entrega (tarea_id, estudiante_id, archivo_url, comentario, calificacion, retroalimentacion) VALUES
-(1, 3, 'resumen.txt', 'Adjunto resumen', 10.00, 'Muy bien sintetizado'),
-(3, 3, 'calculadora.py', 'Funciona correctamente', 25.00, 'Excelente lógica');
-
-
+-- 8. Entregas de Tareas
+CREATE TABLE IF NOT EXISTS curso_entrega (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    tarea_id INT NOT NULL,
+    estudiante_id INT NOT NULL,
+    archivo_url TEXT,
+    comentario TEXT,
+    fecha_entrega TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    calificacion DECIMAL(5,2) NULL,
+    retroalimentacion TEXT,
+    FOREIGN KEY (tarea_id) REFERENCES curso_tarea(id) ON DELETE CASCADE,
+    FOREIGN KEY (estudiante_id) REFERENCES usuario(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
