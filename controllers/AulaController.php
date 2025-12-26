@@ -152,7 +152,7 @@ class AulaController
             }
         }
 
-        if (!$esProfesor && ($yaInscrito || ($isSubscribed && $puedeInscribirse))) {
+        if (!$esProfesor && ($estaInscrito || ($isSubscribed && $puedeInscribirse))) {
 
             foreach ($todasLasTareas as &$tarea) {
                 $entrega = $this->tareaModel->getEntregaEstudiante($tarea['id'], $_SESSION['user_id']);

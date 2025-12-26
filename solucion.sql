@@ -288,3 +288,19 @@ CREATE TABLE IF NOT EXISTS curso_entrega (
     FOREIGN KEY (tarea_id) REFERENCES curso_tarea(id) ON DELETE CASCADE,
     FOREIGN KEY (estudiante_id) REFERENCES usuario(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+SELECT 
+    CONCAT(p.nombre, ' ', p.apellido) AS Nombre_Completo,
+    u.email AS Email,
+    u.plan_type AS Plan,
+    us.ip_address AS IP,
+    us.user_agent AS Dispositivo,
+    us.last_activity AS Ultima_Actividad
+FROM 
+    user_sessions us
+JOIN 
+    usuario u ON us.user_id = u.id
+JOIN 
+    persona p ON u.persona_id = p.id
+ORDER BY 
+    us.last_activity DESC;
